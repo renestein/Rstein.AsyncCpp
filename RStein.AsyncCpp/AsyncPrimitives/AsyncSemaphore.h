@@ -4,7 +4,7 @@
 
 namespace RStein::AsyncCpp::AsyncPrimitives
 {
-  class AsyncSemaphore
+  class AsyncSemaphore final
   {
   public:
     AsyncSemaphore(int maxCount, int initialCount);
@@ -14,14 +14,14 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     AsyncSemaphore& operator=(AsyncSemaphore&& other) noexcept = delete;
     ~AsyncSemaphore();
 
-    std::shared_future<void> WaitAsync();
+    [[nodiscard]]
+    std::future<void> WaitAsync();
     void Release();
         
   private:
-    static std::shared_future<void> _completedFuture;
     using Waiters = std::deque<std::promise<void>>;
-    int _initialCount;
-    int _maxCount;
+    const int _initialCount;
+    const int _maxCount;
     int _currentCount;
     Waiters _waiters;
     std::mutex _waitersLock;
