@@ -21,8 +21,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
   }
 
   void CancellationRegistration::Dispose() const
-  {
-    assert(_disposeAction != nullptr);
+  {  
     if (_disposeAction)
     {
       _disposeAction();

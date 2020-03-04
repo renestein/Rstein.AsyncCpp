@@ -33,6 +33,12 @@
     <ClCompile Include="AsyncPrimitives\CancellationRegistration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AsyncPrimitivesTest\CancellationTokenSourceTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AsyncPrimitivesTest\CancellationTokenTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h">

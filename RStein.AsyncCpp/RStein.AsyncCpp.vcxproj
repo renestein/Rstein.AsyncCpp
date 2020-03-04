@@ -153,6 +153,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AsyncPrimitivesTest\CancellationTokenSourceTest.cpp" />
+    <ClCompile Include="AsyncPrimitivesTest\CancellationTokenTest.cpp">
+      <FileType>CppCode</FileType>
+    </ClCompile>
     <ClCompile Include="AsyncPrimitives\AsyncSemaphore.cpp" />
     <ClCompile Include="AsyncPrimitivesTest\AsyncSemaphoreTest.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationRegistration.cpp" />

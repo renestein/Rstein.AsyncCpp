@@ -5,7 +5,7 @@
 
 namespace RStein::AsyncCpp::AsyncPrimitives
 {
-  class CancellationTokenSource : private std::enable_shared_from_this<CancellationTokenSource>
+  class CancellationTokenSource : public std::enable_shared_from_this<CancellationTokenSource>
   {
   public:
     using CancellationTokenSourcePtr = std::shared_ptr<CancellationTokenSource>;
@@ -16,7 +16,11 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     CancellationTokenSource(CancellationTokenSource&& other) noexcept = delete;
     CancellationTokenSource& operator=(const CancellationTokenSource& other) = delete;
     CancellationTokenSource& operator=(CancellationTokenSource&& other) noexcept = delete;
-    ~CancellationTokenSource() = default;
+
+    ~CancellationTokenSource()
+    {
+    }
+
     void Cancel();
     bool IsCancellationRequested() const;
     CancellationToken::CancellationTokenPtr Token() const;
