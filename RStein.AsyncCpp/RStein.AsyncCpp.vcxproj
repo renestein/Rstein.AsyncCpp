@@ -155,10 +155,16 @@
   <ItemGroup>
     <ClCompile Include="AsyncPrimitives\AsyncSemaphore.cpp" />
     <ClCompile Include="AsyncPrimitivesTest\AsyncSemaphoreTest.cpp" />
+    <ClCompile Include="AsyncPrimitives\CancellationRegistration.cpp" />
+    <ClCompile Include="AsyncPrimitives\CancellationToken.cpp" />
+    <ClCompile Include="AsyncPrimitives\CancellationTokenSource.cpp" />
     <ClCompile Include="RStein.AsyncCpp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h" />
+    <ClInclude Include="AsyncPrimitives\CancellationRegistration.h" />
+    <ClInclude Include="AsyncPrimitives\CancellationToken.h" />
+    <ClInclude Include="AsyncPrimitives\CancellationTokenSource.h" />
     <ClInclude Include="AsyncPrimitives\FutureEx.h" />
     <ClInclude Include="AsyncPrimitives\OperationCanceledException.h" />
     <ClInclude Include="AsyncPrimitives\SemaphoreFullException.h" />

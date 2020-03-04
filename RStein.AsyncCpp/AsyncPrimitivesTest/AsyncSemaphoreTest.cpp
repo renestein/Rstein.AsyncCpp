@@ -24,6 +24,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       AsyncSemaphore semaphore{ maxCount, initialCount };
 
       auto future = semaphore.WaitAsync();
+      
       co_await future;
       semaphore.Release();
     }

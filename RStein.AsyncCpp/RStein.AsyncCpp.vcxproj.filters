@@ -24,6 +24,15 @@
     <ClCompile Include="AsyncPrimitivesTest\AsyncSemaphoreTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AsyncPrimitives\CancellationTokenSource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AsyncPrimitives\CancellationToken.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AsyncPrimitives\CancellationRegistration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h">
@@ -36,6 +45,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AsyncPrimitives\OperationCanceledException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncPrimitives\CancellationTokenSource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncPrimitives\CancellationToken.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncPrimitives\CancellationRegistration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

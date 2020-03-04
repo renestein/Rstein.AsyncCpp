@@ -51,8 +51,6 @@ namespace RStein::AsyncCpp::AsyncPrimitives
       return waiterFuture;
     }
 
-
-
     _waiters.push_back(std::move(newWaitingPromise));
 
     return waiterFuture;
