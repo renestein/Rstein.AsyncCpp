@@ -42,6 +42,18 @@
     <ClCompile Include="Collections\ThreadSafeMinimalisticVector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AsyncPrimitives\IAsyncProducerConsumerCollection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AsyncPrimitives\SimpleAsyncProducerConsumerCollection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Collections\ThreadSafeMinimalisticQueue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AsyncPrimitivesTest\IAsyncProducerConsumerCollectionTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h">
@@ -66,6 +78,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Collections\ThreadSafeMinimalisticVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncPrimitives\IAsyncProducerConsumerCollection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncPrimitives\SimpleAsyncProducerConsumerCollection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Collections\ThreadSafeMinimalisticQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

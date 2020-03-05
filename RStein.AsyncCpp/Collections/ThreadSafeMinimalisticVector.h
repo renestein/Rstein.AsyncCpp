@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <mutex>
+#include <optional>
 #include <vector>
 
 namespace RStein::AsyncCpp::Collections
@@ -32,7 +33,7 @@ namespace RStein::AsyncCpp::Collections
     void Reserve(size_type newCapacity);
     std::vector<T> GetSnapshot();
     void Clear();
-
+    std::optional<T> TryTake();
     
     reference operator [] (int index);
     const_reference operator [] (int index) const;

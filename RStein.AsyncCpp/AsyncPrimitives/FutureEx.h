@@ -15,9 +15,17 @@ namespace RStein::AsyncCpp::AsyncPrimitives
 
     inline std::shared_future<void> GetCompletedSharedFuture()
     {
-      std::promise<void> _promise;
-       _promise.set_value();
-      auto _completedFuture = _promise.get_future().share();
+      std::promise<void> promise;
+       promise.set_value();
+      auto _completedFuture = promise.get_future().share();
+       return _completedFuture;
+    }
+
+    inline std::future<void> GetCompletedFuture()
+    {
+      std::promise<void> promise;
+       promise.set_value();
+      auto _completedFuture = promise.get_future();
        return _completedFuture;
     }
 }

@@ -162,6 +162,10 @@
     <ClCompile Include="AsyncPrimitives\CancellationRegistration.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationToken.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationTokenSource.cpp" />
+    <ClCompile Include="AsyncPrimitives\IAsyncProducerConsumerCollection.cpp" />
+    <ClCompile Include="AsyncPrimitives\SimpleAsyncProducerConsumerCollection.cpp" />
+    <ClCompile Include="Collections\ThreadSafeMinimalisticQueue.cpp" />
+    <ClCompile Include="AsyncPrimitivesTest\IAsyncProducerConsumerCollectionTest.cpp" />
     <ClCompile Include="RStein.AsyncCpp.cpp" />
     <ClCompile Include="Collections\ThreadSafeMinimalisticVector.cpp" />
   </ItemGroup>
@@ -171,8 +175,11 @@
     <ClInclude Include="AsyncPrimitives\CancellationToken.h" />
     <ClInclude Include="AsyncPrimitives\CancellationTokenSource.h" />
     <ClInclude Include="AsyncPrimitives\FutureEx.h" />
+    <ClInclude Include="AsyncPrimitives\IAsyncProducerConsumerCollection.h" />
     <ClInclude Include="AsyncPrimitives\OperationCanceledException.h" />
     <ClInclude Include="AsyncPrimitives\SemaphoreFullException.h" />
+    <ClInclude Include="AsyncPrimitives\SimpleAsyncProducerConsumerCollection.h" />
+    <ClInclude Include="Collections\ThreadSafeMinimalisticQueue.h" />
     <ClInclude Include="Collections\ThreadSafeMinimalisticVector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
