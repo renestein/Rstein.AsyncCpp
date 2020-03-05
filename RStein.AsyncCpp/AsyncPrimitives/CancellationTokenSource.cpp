@@ -5,7 +5,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
 {
   CancellationTokenSource::CancellationTokenSourcePtr CancellationTokenSource::Create()
   {
-    auto cts = make_shared<CancellationTokenSource>();
+    auto cts = std::shared_ptr<CancellationTokenSource>(new CancellationTokenSource);
     cts->Token()->_parent = cts->shared_from_this();
     return cts;
   }

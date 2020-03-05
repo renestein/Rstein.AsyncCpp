@@ -11,7 +11,7 @@
 namespace RStein::AsyncCpp::AsyncPrimitives
 {
   class CancellationTokenSource;
-  class CancellationToken : public std::enable_shared_from_this<CancellationToken>
+  class CancellationToken final : public std::enable_shared_from_this<CancellationToken>
   {
     friend class CancellationTokenSource;
 

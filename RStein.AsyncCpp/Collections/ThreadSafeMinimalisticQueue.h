@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include <algorithm>
+#include <cassert>
 #include <mutex>
 #include <optional>
 #include <queue>
+#include <vector>
 
 namespace RStein::AsyncCpp::Collections
 {
@@ -24,7 +26,9 @@ namespace RStein::AsyncCpp::Collections
     virtual ~ThreadSafeMinimalisticQueue() = default;
     void Push(const T& item);
     void Push(T&& item);
+    std::optional<T> tryPopInner();
     std::optional<T> TryPop();
+    std::vector<T> PopAll();
 
   private:
     std::queue<T> _innerQueue;
@@ -50,21 +54,47 @@ namespace RStein::AsyncCpp::Collections
   template <typename T>
   void ThreadSafeMinimalisticQueue<T>::Push(const T& item)
   {
-     std::lock_guard{_mutex};
+     std::lock_guard lock{_mutex};
     _innerQueue.push(item);
   }
 
   template <typename T>
   void ThreadSafeMinimalisticQueue<T>::Push(T&& item)
   {
-    std::lock_guard{_mutex};
+    std::lock_guard lock{_mutex};
     _innerQueue.push(std::move(item));
   }
+
 
   template <typename T>
   std::optional<T> ThreadSafeMinimalisticQueue<T>::TryPop()
   {
-    std::lock_guard{_mutex};
+    std::lock_guard lock{_mutex};
+    return tryPopInner();
+  }
+
+  template <typename T>
+  std::vector<T> ThreadSafeMinimalisticQueue<T>::PopAll()
+  {
+    std::lock_guard lock{_mutex};
+    auto itemsCount = _innerQueue.size();
+    std::vector<T> retVector{};
+    retVector.reserve(itemsCount);
+
+    for (size_t i = 0; i < itemsCount; ++i)
+    {
+      auto optionalValue = tryPopInner();
+      assert(optionalValue);
+      retVector.push_back(optionalValue.value());
+    }
+
+    return retVector;
+  }
+
+  
+  template <typename T>
+  std::optional<T> ThreadSafeMinimalisticQueue<T>::tryPopInner()
+  {
     if (_innerQueue.empty())
     {
       return {};

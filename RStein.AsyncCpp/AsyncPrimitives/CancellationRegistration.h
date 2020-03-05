@@ -2,7 +2,7 @@
 #include <functional>
 namespace RStein::AsyncCpp::AsyncPrimitives
 {
-  class CancellationRegistration
+  class CancellationRegistration final
   {
     friend class CancellationToken;
   public:

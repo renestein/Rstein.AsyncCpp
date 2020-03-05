@@ -1,16 +1,15 @@
 ﻿#pragma once
+#include "IAsyncProducerConsumerCollection.h"
 #include "../Collections/ThreadSafeMinimalisticQueue.h"
 #include "AsyncSemaphore.h"
 #include "FutureEx.h"
-#include "IAsyncProducerConsumerCollection.h"
 
 #include <stdexcept>
 
 namespace RStein::AsyncCpp::AsyncPrimitives
 {
   template <typename TItem>
-  class SimpleAsyncProducerConsumerCollection : public IAsyncProducerConsumerCollection<TItem
-      >
+  class SimpleAsyncProducerConsumerCollection : public IAsyncProducerConsumerCollection<TItem>
   {
   public:
     SimpleAsyncProducerConsumerCollection();
@@ -26,7 +25,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     std::future<void> AddAsync(TItem&& item) override;
     std::future<TItem> TakeAsync() override;
     std::future<TItem> TakeAsync(CancellationToken::CancellationTokenPtr cancellationToken) override;
-
+    std::vector<TItem> TryTakeAll() override;
   private:
 
     Collections::ThreadSafeMinimalisticQueue<TItem> _innerCollection;
@@ -86,8 +85,7 @@ std::future<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsume
 }
 
 template <typename TItem>
-std::future<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::TakeAsync(
-    CancellationToken::CancellationTokenPtr cancellationToken)
+std::future<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::TakeAsync(CancellationToken::CancellationTokenPtr cancellationToken)
 {
   co_await _asyncSemaphore.WaitAsync(cancellationToken);
   auto retValue = _innerCollection.TryPop();
@@ -97,4 +95,10 @@ std::future<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsume
   }
 
   co_return retValue.value();
+}
+
+template <typename TItem>
+std::vector<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::TryTakeAll()
+{
+  return _innerCollection.PopAll();
 }
