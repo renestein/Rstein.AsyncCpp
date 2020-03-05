@@ -157,6 +157,7 @@
     <ClCompile Include="AsyncPrimitivesTest\CancellationTokenTest.cpp">
       <FileType>CppCode</FileType>
     </ClCompile>
+    <ClCompile Include="AsyncPrimitivesTest\FutureExTest.cpp" />
     <ClCompile Include="AsyncPrimitives\AsyncSemaphore.cpp" />
     <ClCompile Include="AsyncPrimitivesTest\AsyncSemaphoreTest.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationRegistration.cpp" />

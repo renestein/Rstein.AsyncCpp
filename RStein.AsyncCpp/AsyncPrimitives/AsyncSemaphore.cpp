@@ -66,7 +66,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
           {
             newWaitingPromise->set_exception(make_exception_ptr(oce));
           }
-          catch (const future_error & error)
+          catch (const future_error&)
           {
             //Already fulfilled promise.
           }
@@ -106,7 +106,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
           cancellationRegistration->Dispose();
         }
       }
-      catch (const future_error & error)
+      catch (const future_error&)
       {
         cerr << "AsyncSemaphore::Release - Already fulfilled future.\n";
       }

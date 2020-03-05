@@ -88,6 +88,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
 
     auto asyncCollectionItemsEqualToItems  = equal(items.begin(), items.end(),
                                                   asyncCollectionItems.begin(), asyncCollectionItems.end());
+
     ASSERT_TRUE(asyncCollectionItemsEqualToItems);
 
   }
