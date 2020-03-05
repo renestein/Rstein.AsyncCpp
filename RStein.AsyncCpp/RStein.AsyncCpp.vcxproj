@@ -163,6 +163,7 @@
     <ClCompile Include="AsyncPrimitives\CancellationToken.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationTokenSource.cpp" />
     <ClCompile Include="RStein.AsyncCpp.cpp" />
+    <ClCompile Include="Collections\ThreadSafeMinimalisticVector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="AsyncPrimitives\FutureEx.h" />
     <ClInclude Include="AsyncPrimitives\OperationCanceledException.h" />
     <ClInclude Include="AsyncPrimitives\SemaphoreFullException.h" />
+    <ClInclude Include="Collections\ThreadSafeMinimalisticVector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
