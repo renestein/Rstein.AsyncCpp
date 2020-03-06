@@ -169,6 +169,10 @@
     <ClCompile Include="AsyncPrimitivesTest\IAsyncProducerConsumerCollectionTest.cpp" />
     <ClCompile Include="RStein.AsyncCpp.cpp" />
     <ClCompile Include="Collections\ThreadSafeMinimalisticVector.cpp" />
+    <ClCompile Include="Schedulers\Scheduler.cpp" />
+    <ClCompile Include="Schedulers\SimpleThreadPool.cpp" />
+    <ClCompile Include="Schedulers\StrandSchedulerDecorator.cpp" />
+    <ClCompile Include="Schedulers\ThreadPoolScheduler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h" />
@@ -182,6 +186,10 @@
     <ClInclude Include="AsyncPrimitives\SimpleAsyncProducerConsumerCollection.h" />
     <ClInclude Include="Collections\ThreadSafeMinimalisticQueue.h" />
     <ClInclude Include="Collections\ThreadSafeMinimalisticVector.h" />
+    <ClInclude Include="Schedulers\Scheduler.h" />
+    <ClInclude Include="Schedulers\SimpleThreadPool.h" />
+    <ClInclude Include="Schedulers\StrandSchedulerDecorator.h" />
+    <ClInclude Include="Schedulers\ThreadPoolScheduler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
