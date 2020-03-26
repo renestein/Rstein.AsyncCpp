@@ -69,6 +69,7 @@ namespace RStein::AsyncCpp::DataFlow
   template <typename TInputItem, typename TOutputItem, typename TState>
   void TransformBlock<TInputItem, TOutputItem, TState>::Start()
   {
+    _innerBlock ->Start();
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>

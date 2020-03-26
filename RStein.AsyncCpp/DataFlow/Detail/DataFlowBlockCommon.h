@@ -15,36 +15,36 @@ namespace RStein::AsyncCpp::DataFlow::Detail
 {
   struct NoState
   {
-    
+
   };
-  template<typename TInputItem, typename TOutputItem, typename TState=NoState>
+  template<typename TInputItem, typename TOutputItem, typename TState = NoState>
   class DataFlowBlockCommon : public IInputOutputBlock<TInputItem, TOutputItem>,
-                              public std::enable_shared_from_this<DataFlowBlockCommon<TInputItem, TOutputItem, TState>>
+    public std::enable_shared_from_this<DataFlowBlockCommon<TInputItem, TOutputItem, TState>>
   {
   public:
 
-      //TODO: Detect awaitable 
+    //TODO: Detect awaitable 
     using TransformFuncType = std::function<TOutputItem(const TInputItem& inputItem, TState*& state)>;
     using CanAcceptFuncType = std::function<bool(const TInputItem& item)>;
-   
-      using DataFlowBlockCommonPtr = std::shared_ptr<DataFlowBlockCommon<TInputItem, TOutputItem, TState>>;
-      
-      explicit DataFlowBlockCommon(TransformFuncType transformFunc, CanAcceptFuncType canAcceptFunc = []{return true;});
-      DataFlowBlockCommon(const DataFlowBlockCommon& other) = delete;
-      DataFlowBlockCommon(DataFlowBlockCommon&& other) = delete;
-      DataFlowBlockCommon& operator=(const DataFlowBlockCommon& other) = delete;
-      DataFlowBlockCommon& operator=(DataFlowBlockCommon&& other) = delete;
-      [[nodiscard]] std::string Name() const override;
-      void Name(std::string name);
-      [[nodiscard]] typename IDataFlowBlock::TaskVoidType Completion() const override;
-      void Start() override;
-      void Complete() override;
-      void SetFaulted(std::exception_ptr exception) override;
-      bool CanAcceptInput(const TInputItem& item) override;
-      typename IDataFlowBlock::TaskVoidType AcceptInputAsync(const TInputItem& item) override;
-      typename IDataFlowBlock::TaskVoidType AcceptInputAsync(TInputItem&& item) override;
-      void ConnectTo(const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock) override;
-      virtual ~DataFlowBlockCommon();
+
+    using DataFlowBlockCommonPtr = std::shared_ptr<DataFlowBlockCommon<TInputItem, TOutputItem, TState>>;
+
+    explicit DataFlowBlockCommon(TransformFuncType transformFunc, CanAcceptFuncType canAcceptFunc = [] {return true; });
+    DataFlowBlockCommon(const DataFlowBlockCommon& other) = delete;
+    DataFlowBlockCommon(DataFlowBlockCommon&& other) = delete;
+    DataFlowBlockCommon& operator=(const DataFlowBlockCommon& other) = delete;
+    DataFlowBlockCommon& operator=(DataFlowBlockCommon&& other) = delete;
+    [[nodiscard]] std::string Name() const override;
+    void Name(std::string name);
+    [[nodiscard]] typename IDataFlowBlock::TaskVoidType Completion() const override;
+    void Start() override;
+    void Complete() override;
+    void SetFaulted(std::exception_ptr exception) override;
+    bool CanAcceptInput(const TInputItem& item) override;
+    typename IDataFlowBlock::TaskVoidType AcceptInputAsync(const TInputItem& item) override;
+    typename IDataFlowBlock::TaskVoidType AcceptInputAsync(TInputItem&& item) override;
+    void ConnectTo(const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock) override;
+    virtual ~DataFlowBlockCommon();
 
   private:
     enum class BlockState
@@ -71,47 +71,47 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     AsyncPrimitives::CancellationTokenSource::CancellationTokenSourcePtr _processingCts;
     Collections::ThreadSafeMinimalisticVector<typename IInputBlock<TOutputItem>::InputBlockPtr> _outputNodes;
 
-      typename DataFlowBlockCommon<TInputItem, TOutputItem, TState>::TaskVoidType runProcessingTask(
-          AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken);
+    std::shared_future<void> runProcessingTask(
+      AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken);
     void completeCommon(std::exception_ptr exceptionPtr);
     void throwIfNotStarted();
-    
+
 
 
   };
 
   template <typename TInputItem, typename TOutputItem, typename TState>
   DataFlowBlockCommon<TInputItem, TOutputItem, TState>::DataFlowBlockCommon(TransformFuncType transformFunc,
-                                                                            std::function<bool(const TInputItem&)> canAcceptFunc) :
-                                                                                                                     IInputOutputBlock<TInputItem, TOutputItem>{},
-                                                                                                                     std::enable_shared_from_this<DataFlowBlockCommon<TInputItem, TOutputItem, TState>>{},
-                                                                                                                     _isAsyncNode{false},
-                                                                                                                    _transformSyncFunc{},
-                                                                                                                    _transformAsyncFunc{},
-                                                                                                                    _canAcceptFunc{},
-                                                                                                                    _name{},
-                                                                                                                    _completedTaskPromise{},
-                                                                                                                    _completedTask{_completedTaskPromise.get_future().share()},
-                                                                                                                    _startTaskPromise{},
-                                                                                                                    _startTask{_startTaskPromise.get_future().share()},
-                                                                                                                    _state{BlockState::Created},
-                                                                                                                    _stateMutex{},
-                                                                                                                    _inputItems{},
-                                                                                                                    _processingCts{AsyncPrimitives::CancellationTokenSource::Create()},
-                                                                                                                    _outputNodes{std::vector<typename IInputBlock<TOutputItem>::InputBlockPtr>{}}
+    std::function<bool(const TInputItem&)> canAcceptFunc) :
+    IInputOutputBlock<TInputItem, TOutputItem>{},
+    std::enable_shared_from_this<DataFlowBlockCommon<TInputItem, TOutputItem, TState>>{},
+    _isAsyncNode{ false },
+    _transformSyncFunc{},
+    _transformAsyncFunc{},
+    _canAcceptFunc{canAcceptFunc},
+    _name{},
+    _completedTaskPromise{},
+    _completedTask{ _completedTaskPromise.get_future().share() },
+    _startTaskPromise{},
+    _startTask{ _startTaskPromise.get_future().share() },
+    _state{ BlockState::Created },
+    _stateMutex{},
+    _inputItems{},
+    _processingCts{ AsyncPrimitives::CancellationTokenSource::Create() },
+    _outputNodes{ std::vector<typename IInputBlock<TOutputItem>::InputBlockPtr>{} }
   {
-  
 
-  
-   _transformSyncFunc = transformFunc;
 
-    if (_transformSyncFunc == nullptr && _transformAsyncFunc == nullptr)
+
+    _transformSyncFunc = transformFunc;
+
+    if (!_transformSyncFunc && !_transformAsyncFunc)
     {
       throw std::invalid_argument("transformFunc");
     }
-    if (canAcceptFunc == nullptr)
+    if (!canAcceptFunc)
     {
-      _canAcceptFunc = [] (auto _) {return true;};
+      _canAcceptFunc = [](auto _) {return true; };
     }
   }
 
@@ -133,42 +133,49 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     return _completedTask;
   }
 
-  
+
   template <typename TInputItem, typename TOutputItem, typename TState>
   void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::Start()
   {
-    std::lock_guard lock{_stateMutex};
+    std::lock_guard lock{ _stateMutex };
     if (_state != BlockState::Created)
     {
       throw std::logic_error("Could not start node!");
     }
 
     _processingTask = runProcessingTask(_processingCts->Token());
+
+    for (auto& nextBlock : _outputNodes.GetSnapshot())
+    {
+      nextBlock->Start();
+    }
+
     _state = BlockState::Started;
+
     _startTaskPromise.set_value();
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
   void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::Complete()
   {
-    std::lock_guard lock{_stateMutex}; 
+    std::lock_guard lock{ _stateMutex };
     completeCommon(nullptr);
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
   void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::SetFaulted(std::exception_ptr exception)
   {
-    std::lock_guard lock{_stateMutex}; 
+    std::lock_guard lock{ _stateMutex };
     completeCommon(exception);
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
   bool DataFlowBlockCommon<TInputItem, TOutputItem, TState>::CanAcceptInput(
-      const TInputItem& item)
+    const TInputItem& item)
   {
     //Avoid lock
     {
-      std::lock_guard lock{_stateMutex};
+      std::lock_guard lock{ _stateMutex };
       if (_state != BlockState::Started)
       {
         return false;
@@ -181,7 +188,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   template <typename TInputItem, typename TOutputItem, typename TState>
   void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::throwIfNotStarted()
   {
-    std::lock_guard lock{_stateMutex};
+    std::lock_guard lock{ _stateMutex };
     if (_state != BlockState::Started)
     {
       throw std::logic_error("Node does not running");
@@ -189,25 +196,25 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
-  typename IDataFlowBlock::TaskVoidType DataFlowBlockCommon<TInputItem,TOutputItem, TState>::AcceptInputAsync(const TInputItem& item)
+  typename IDataFlowBlock::TaskVoidType DataFlowBlockCommon<TInputItem, TOutputItem, TState>::AcceptInputAsync(const TInputItem& item)
   {
     //TODO: Avoid lock
-     throwIfNotStarted();
+    throwIfNotStarted();
     return _inputItems.AddAsync(item);
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
   typename IDataFlowBlock::TaskVoidType DataFlowBlockCommon<TInputItem,
-  TOutputItem, TState>::AcceptInputAsync(TInputItem&& item)
+    TOutputItem, TState>::AcceptInputAsync(TInputItem&& item)
   {
     //TODO: Avoid lock
-     throwIfNotStarted();
+    throwIfNotStarted();
     return _inputItems.AddAsync(item);
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
   void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::ConnectTo(
-      const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock)
+    const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock)
   {
     if (!nextBlock)
     {
@@ -224,87 +231,83 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
-  typename DataFlowBlockCommon<TInputItem, TOutputItem, TState>::TaskVoidType DataFlowBlockCommon<
+  std::shared_future<void> DataFlowBlockCommon<
     TInputItem, TOutputItem, TState>::runProcessingTask(
       AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken)
   {
-    //TODO: Use Scheduler
-    
-        std::packaged_task<std::future<void>(DataFlowBlockCommonPtr, AsyncPrimitives::CancellationToken::CancellationTokenPtr)> task{
-            [](DataFlowBlockCommonPtr node, AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken)-> std::future<void>
-            {
-                try
-                {
-                  TState state{};
-                  auto statePtr = &state;
-                  //For co_await operator
-                  using namespace RStein::AsyncCpp::AsyncPrimitives;
-                  co_await node->_startTask;
-                  TInputItem inputItem;            
-                  while(!cancellationToken->IsCancellationRequested())
-                  {
-                    try
-                    {
-                      inputItem = co_await node->_inputItems.TakeAsync(cancellationToken);
-                    }
-                    catch(AsyncPrimitives::OperationCanceledException&)
-                    {
-                      continue;
-                    }
+    //TODO: Use Scheduler   
+    try
+    {
+      TState state{};
+      auto statePtr = &state;
+      //For co_await operator
+      using namespace RStein::AsyncCpp::AsyncPrimitives;
+      co_await _startTask;
+      TInputItem inputItem;
+      while (!cancellationToken->IsCancellationRequested())
+      {
+        try
+        {
+          inputItem = co_await _inputItems.TakeAsync(cancellationToken);
+        }
+        catch (AsyncPrimitives::OperationCanceledException&)
+        {
+          continue;
+        }
 
-                    auto outputItem = node->_isAsyncNode
-                                          ? co_await node->_transformAsyncFunc(inputItem, statePtr)
-                                          : node->_transformSyncFunc(inputItem, statePtr);
+        auto outputItem = _isAsyncNode
+          ? co_await _transformAsyncFunc(inputItem, statePtr)
+          : _transformSyncFunc(inputItem, statePtr);
 
-                    //Todo: Do not copy nodes
-                    for(auto& outputNode : node->_outputNodes.GetSnapshot())
-                    {
-                      if (outputNode->CanAcceptInput(outputItem))
-                      {
-                        co_await outputNode->AcceptInputAsync(outputItem);
-                      }
-                    }
-                  }
+        //Todo: Do not copy nodes
+        for (auto& outputNode : _outputNodes.GetSnapshot())
+        {
+          if (outputNode->CanAcceptInput(outputItem))
+          {
+            co_await outputNode->AcceptInputAsync(outputItem);
+          }
+        }
+      }
 
-                  //refactor cycle
-                  auto toProcessInputItems  = node->_inputItems.TryTakeAll();
-                  for(auto& item : toProcessInputItems) 
-                  {
-                    auto outputRemainingItem = node->_isAsyncNode
-                                              ? co_await node->_transformAsyncFunc(item, statePtr)
-                                              : node->_transformSyncFunc(item, statePtr);
+      //refactor cycle
+      auto toProcessInputItems = _inputItems.TryTakeAll();
+      for (auto& item : toProcessInputItems)
+      {
+        auto outputRemainingItem = _isAsyncNode
+          ? co_await _transformAsyncFunc(item, statePtr)
+          : _transformSyncFunc(item, statePtr);
 
-                    for(auto& outputNode : node->_outputNodes.GetSnapshot())
-                    {
-                        if (outputNode->CanAcceptInput(outputRemainingItem))
-                        {
-                          co_await outputNode->AcceptInputAsync(outputRemainingItem);
-                        }
-                    }
-                  }
-                }
-                catch(std::exception ex)
-                {
-                  auto message = " DataFlow node: " + node->Name() + " - processing task failed with exception: " + + ex.what();
-                  std::cout << message;
-                  auto exceptionPtr = std::current_exception();
-                  //TODO: Schedule call
-                  auto callCompleteThread = std::thread{[node, exceptionPtr] {node->SetFaulted(exceptionPtr);}};
-                  callCompleteThread.detach();
-                  throw;
-                }
-            }
-        };
-
-        std::thread runner{std::move(task), this->shared_from_this(), cancellationToken};
-        _processingTask = task.get_future().get();
-        return _processingTask;
+        for (auto& outputNode : _outputNodes.GetSnapshot())
+        {
+          if (outputNode->CanAcceptInput(outputRemainingItem))
+          {
+            co_await outputNode->AcceptInputAsync(outputRemainingItem);
+          }
+        }
+      }
+    }
+    catch (const std::exception& ex)
+    {
+      const auto message = " DataFlow node: " + Name() + " - processing task failed with exception: \n " + ex.what();
+      std::cout << message;
+      const auto exceptionPtr = std::current_exception();
+      //TODO: Schedule call
+      auto callCompleteThread = std::thread{
+          [sharedThis = this->shared_from_this(), exceptionPtr]
+          {
+            sharedThis->SetFaulted(exceptionPtr);
+          }
+      };
+      callCompleteThread.detach();
+      throw;
+    }
   }
+
 
   template <typename TInputItem, typename TOutputItem, typename TState>
   void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::completeCommon(std::exception_ptr exceptionPtr)
   {
-    
+
     if (_state == BlockState::Created)
     {
       throw std::logic_error("Could not stop node.");
@@ -316,10 +319,33 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     }
 
     _state = BlockState::Stopping;
-    Utils::FinallyBlock finally{[this] {_state = BlockState::Stopped;}};
+    Utils::FinallyBlock finally
+    {
+        [this, isExceptional = exceptionPtr != nullptr, exceptionPtr = exceptionPtr]
+        {
+          _state = BlockState::Stopped;
+
+          for (auto& nextBlock : _outputNodes.GetSnapshot())
+          {
+            //TODO: Handle failing output node;
+
+            if (isExceptional)
+            {
+              nextBlock->SetFaulted(exceptionPtr);
+            }
+            else
+            {
+              nextBlock->Complete();
+            }
+          }
+        }
+    };
+
 
     try
     {
+      _processingCts->Cancel();
+      _processingTask.get();
       if (exceptionPtr != nullptr)
       {
         _completedTaskPromise.set_exception(exceptionPtr);
@@ -329,7 +355,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
         _completedTaskPromise.set_value();
       }
     }
-    catch(const std::future_error&)
+    catch (const std::future_error&)
     {
       const auto alreadySetMessage = "DataFlow node " + Name() + " Completion task already fulfilled. Future_error ignored.";
       std::cout << alreadySetMessage;
