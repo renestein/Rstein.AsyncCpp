@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "IDataFlowBlock.h"
 #include "IInputBlock.h"
 
 namespace RStein::AsyncCpp::DataFlow
@@ -8,6 +7,7 @@ namespace RStein::AsyncCpp::DataFlow
   class IInputOutputBlock : public IInputBlock<TInputItem>
   {
   public:
+        using IInputOutputBlockPtr = std::shared_ptr<IInputOutputBlock>;
         using OutputType = TOutputItem;
         using TaskOutputItemType = std::shared_future<OutputType>;
         IInputOutputBlock() = default;
@@ -17,6 +17,6 @@ namespace RStein::AsyncCpp::DataFlow
         IInputOutputBlock& operator=(IInputOutputBlock&& other) = delete;
         virtual ~IInputOutputBlock() = default;
         
-        virtual void ConnectTo(IInputBlock<TOutputItem> nextBlock) = 0;
-    };;
+        virtual void ConnectTo(const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock) = 0;
+    };
 }

@@ -28,7 +28,7 @@ public:
 	virtual ~SimpleThreadPool();
 	void Start();
 	void Stop();
-	//Dopiste si metodu, ltera prijima LVAlue
+	//Dopiste si metodu, ktera prijima LVAlue
 	void EnqueueItem(WorkItem &&originalFunction);
 	int GetNumberOfThreads() const;
 	SimpleThreadPool::ThreadPoolState GetThreadPoolState();

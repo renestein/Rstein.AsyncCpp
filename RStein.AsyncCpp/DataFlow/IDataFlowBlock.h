@@ -7,7 +7,9 @@ namespace RStein::AsyncCpp::DataFlow
   class IDataFlowBlock
   {
     public:
+      using DataFlowBlockPtr = std::shared_ptr<IDataFlowBlock>;
       using TaskVoidType = std::shared_future<void>;
+      using PromiseVoidType = std::promise<void>;
       IDataFlowBlock() = default;;
       IDataFlowBlock(const IDataFlowBlock& other) = delete;
       IDataFlowBlock(IDataFlowBlock&& other) = delete;
