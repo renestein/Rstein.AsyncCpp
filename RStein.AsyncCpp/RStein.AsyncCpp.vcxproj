@@ -167,6 +167,10 @@
     <ClCompile Include="AsyncPrimitives\SimpleAsyncProducerConsumerCollection.cpp" />
     <ClCompile Include="Collections\ThreadSafeMinimalisticQueue.cpp" />
     <ClCompile Include="AsyncPrimitivesTest\IAsyncProducerConsumerCollectionTest.cpp" />
+    <ClCompile Include="DataFlow\Detail\DataFlowBlockCommon.cpp" />
+    <ClCompile Include="DataFlow\IDataFlowBlock.cpp" />
+    <ClCompile Include="DataFlow\IInputBlock.cpp" />
+    <ClCompile Include="DataFlow\IInputOutputBlock.cpp" />
     <ClCompile Include="RStein.AsyncCpp.cpp" />
     <ClCompile Include="Collections\ThreadSafeMinimalisticVector.cpp" />
     <ClCompile Include="Schedulers\Scheduler.cpp" />
@@ -186,6 +190,10 @@
     <ClInclude Include="AsyncPrimitives\SimpleAsyncProducerConsumerCollection.h" />
     <ClInclude Include="Collections\ThreadSafeMinimalisticQueue.h" />
     <ClInclude Include="Collections\ThreadSafeMinimalisticVector.h" />
+    <ClInclude Include="DataFlow\Detail\DataFlowBlockCommon.h" />
+    <ClInclude Include="DataFlow\IDataFlowBlock.h" />
+    <ClInclude Include="DataFlow\IInputBlock.h" />
+    <ClInclude Include="DataFlow\IInputOutputBlock.h" />
     <ClInclude Include="Schedulers\Scheduler.h" />
     <ClInclude Include="Schedulers\SimpleThreadPool.h" />
     <ClInclude Include="Schedulers\StrandSchedulerDecorator.h" />
