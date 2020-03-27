@@ -32,7 +32,7 @@ namespace RStein::AsyncCpp::DataFlow
       typename IDataFlowBlock::TaskVoidType AcceptInputAsync(const TInputItem& item) override;
       typename IDataFlowBlock::TaskVoidType AcceptInputAsync(TInputItem&& item) override;
       void ConnectTo(const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock) override;
-    virtual ~TransformBlock() = default;
+      virtual ~TransformBlock() = default;
  
   private:
    
@@ -107,6 +107,7 @@ namespace RStein::AsyncCpp::DataFlow
   void TransformBlock<TInputItem, TOutputItem, TState>::ConnectTo(
       const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock)
   {
-    return _innerBlock->ConnectTo(nextBlock);
+    _innerBlock->Then(nextBlock);
   }
+
 };

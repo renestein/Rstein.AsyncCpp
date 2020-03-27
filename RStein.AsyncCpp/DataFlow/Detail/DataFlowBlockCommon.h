@@ -225,7 +225,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
 
   template <typename TInputItem, typename TOutputItem, typename TState>
   void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::ConnectTo(
-    const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock)
+      const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock)
   {
     if (!nextBlock)
     {

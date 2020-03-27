@@ -7,7 +7,7 @@ namespace RStein::AsyncCpp::DataFlow
   class IInputOutputBlock : public IInputBlock<TInputItem>
   {
   public:
-        using IInputOutputBlockPtr = std::shared_ptr<IInputOutputBlock>;
+        using IInputOutputBlockPtr = std::shared_ptr<IInputOutputBlock<TInputItem, TOutputItem>>;
         using OutputType = TOutputItem;
         using TaskOutputItemType = std::shared_future<OutputType>;
         IInputOutputBlock() = default;
@@ -18,5 +18,12 @@ namespace RStein::AsyncCpp::DataFlow
         virtual ~IInputOutputBlock() = default;
         
         virtual void ConnectTo(const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock) = 0;
+             
+        template<typename TNextBlock>
+        const std::shared_ptr<TNextBlock>& Then(const std::shared_ptr<TNextBlock>& nextBlock)
+        {
+          ConnectTo(nextBlock);
+          return nextBlock;
+        }; 
     };
 }

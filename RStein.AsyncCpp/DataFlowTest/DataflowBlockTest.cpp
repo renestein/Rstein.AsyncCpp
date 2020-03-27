@@ -34,8 +34,10 @@ namespace RStein::AsyncCpp::DataFlowTest
       _processedItems.push_back(item);
 
     });
-    transform1->ConnectTo(transform2);
-    transform2->ConnectTo(finalAction);
+
+    transform1->Then(transform2)
+              ->Then(finalAction);
+                         
     transform1->Start();
     for (int i = 0; i < EXPECTED_PROCESSED_ITEMS; ++i)
     {
