@@ -79,6 +79,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TInputItem> _inputItems;
     AsyncPrimitives::CancellationTokenSource::CancellationTokenSourcePtr _processingCts;
     Collections::ThreadSafeMinimalisticVector<typename IInputBlock<TOutputItem>::InputBlockPtr> _outputNodes;
+    int _startCallsCount;
 
     std::shared_future<void> runProcessingTask(
       AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken);
@@ -107,7 +108,8 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     _stateMutex{},
     _inputItems{},
     _processingCts{ AsyncPrimitives::CancellationTokenSource::Create() },
-    _outputNodes{ std::vector<typename IInputBlock<TOutputItem>::InputBlockPtr>{} }
+    _outputNodes{ std::vector<typename IInputBlock<TOutputItem>::InputBlockPtr>{}},
+    _startCallsCount{}
   {
 
 
@@ -149,6 +151,12 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::Start()
   {
     std::lock_guard lock{ _stateMutex };
+    _startCallsCount++;
+    if (_state == BlockState::Started)
+    {
+      return;
+    }
+
     if (_state != BlockState::Created)
     {
       throw std::logic_error("Could not start node!");
@@ -318,6 +326,10 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   template <typename TInputItem, typename TOutputItem, typename TState>
   void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::completeCommon(std::exception_ptr exceptionPtr)
   {
+    if (--_startCallsCount > 0 && exceptionPtr == nullptr)
+    {
+      return;
+    }
 
     if (_state == BlockState::Created)
     {
