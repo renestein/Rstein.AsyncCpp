@@ -90,6 +90,9 @@
     <ClCompile Include="DataFlowTest\DataflowBlockTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DataFlow\ActionBlock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h">
@@ -156,6 +159,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DataFlow\TransformBlock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataFlow\ActionBlock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

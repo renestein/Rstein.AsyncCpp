@@ -17,13 +17,22 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   {
 
   };
+  struct NoOutput
+  {
+    static NoOutput& Default()
+    {
+      static NoOutput noOutput;
+      return noOutput;
+    }
+  };
   template<typename TInputItem, typename TOutputItem, typename TState = NoState>
   class DataFlowBlockCommon : public IInputOutputBlock<TInputItem, TOutputItem>,
     public std::enable_shared_from_this<DataFlowBlockCommon<TInputItem, TOutputItem, TState>>
   {
   public:
 
-    //TODO: Detect awaitable 
+    //TODO: Detect awaitable
+    using ActionFuncType = std::function<void(const TInputItem& inputItem, TState*& state)>;
     using TransformFuncType = std::function<TOutputItem(const TInputItem& inputItem, TState*& state)>;
     using CanAcceptFuncType = std::function<bool(const TInputItem& item)>;
 
@@ -114,6 +123,8 @@ namespace RStein::AsyncCpp::DataFlow::Detail
       _canAcceptFunc = [](auto _) {return true; };
     }
   }
+
+
 
   template <typename TInputItem, typename TOutputItem, typename TState>
   std::string DataFlowBlockCommon<TInputItem, TOutputItem, TState>::Name() const

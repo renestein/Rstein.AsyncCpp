@@ -158,7 +158,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       {
         co_await firstWaiter;
       }
-      catch(OperationCanceledException& exception)
+      catch(OperationCanceledException&)
       {
         cerr << "First task canceled.\n";
       }

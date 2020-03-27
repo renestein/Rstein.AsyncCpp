@@ -2,6 +2,7 @@
 #include "IInputOutputBlock.h"
 #include "Detail/DataFlowBlockCommon.h"
 #include <memory>
+
 namespace RStein::AsyncCpp::DataFlow
 {
   template<typename TInputItem, typename TOutputItem, typename TState=Detail::NoState>

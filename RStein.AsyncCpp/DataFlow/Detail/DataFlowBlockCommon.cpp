@@ -1,6 +1,6 @@
 ﻿#include "DataFlowBlockCommon.h"
 
-namespace RStein::AsyncCpp::DataFlow
+namespace RStein::AsyncCpp::DataFlow::Detail
 {
   
 }
