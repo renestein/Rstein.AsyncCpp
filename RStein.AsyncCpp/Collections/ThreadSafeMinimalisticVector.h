@@ -37,8 +37,7 @@ namespace RStein::AsyncCpp::Collections
     std::vector<T> GetSnapshot();
     template <typename TR, typename TMapFunc>
     auto MapSnapshot(TMapFunc&& mapFunc);
-    void Clear();
-    std::optional<T> TryTake();
+    void Clear(); 
     
     reference operator [] (int index);
     const_reference operator [] (int index) const;
