@@ -33,11 +33,15 @@ namespace RStein::AsyncCpp::DataFlow::Detail
 
     //TODO: Detect awaitable
     using ActionFuncType = std::function<void(const TInputItem& inputItem, TState*& state)>;
+    using AsyncActionFuncType = std::function<typename IInputBlock<TInputItem>::TaskVoidType(const TInputItem& inputItem, TState*& state)>;
     using TransformFuncType = std::function<TOutputItem(const TInputItem& inputItem, TState*& state)>;
+    using AsyncTransformFuncType= std::function<typename IInputOutputBlock<TInputItem, TOutputItem>::TaskOutputItemType(const TInputItem& inputItem, TState*& state)>;
+
     using CanAcceptFuncType = std::function<bool(const TInputItem& item)>;
 
     using DataFlowBlockCommonPtr = std::shared_ptr<DataFlowBlockCommon<TInputItem, TOutputItem, TState>>;
 
+    explicit DataFlowBlockCommon(AsyncTransformFuncType transformFunc, CanAcceptFuncType canAcceptFunc = [] {return true;});
     explicit DataFlowBlockCommon(TransformFuncType transformFunc, CanAcceptFuncType canAcceptFunc = [] {return true; });
     DataFlowBlockCommon(const DataFlowBlockCommon& other) = delete;
     DataFlowBlockCommon(DataFlowBlockCommon&& other) = delete;
@@ -66,7 +70,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     };
     bool _isAsyncNode;
     TransformFuncType _transformSyncFunc;
-    std::function<typename DataFlowBlockCommon::TaskOutputItemType(TInputItem, TState*&)> _transformAsyncFunc;
+    AsyncTransformFuncType _transformAsyncFunc;
     std::function<bool(const TInputItem&)> _canAcceptFunc;;
     std::string _name;
     typename DataFlowBlockCommon::PromiseVoidType _completedTaskPromise;
@@ -81,6 +85,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     Collections::ThreadSafeMinimalisticVector<typename IInputBlock<TOutputItem>::InputBlockPtr> _outputNodes;
     int _startCallsCount;
 
+    DataFlowBlockCommon(CanAcceptFuncType canAcceptFunc);
     std::shared_future<void> runProcessingTask(
       AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken);
     void completeCommon(std::exception_ptr exceptionPtr);
@@ -91,41 +96,60 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   };
 
   template <typename TInputItem, typename TOutputItem, typename TState>
-  DataFlowBlockCommon<TInputItem, TOutputItem, TState>::DataFlowBlockCommon(TransformFuncType transformFunc,
-    std::function<bool(const TInputItem&)> canAcceptFunc) :
-    IInputOutputBlock<TInputItem, TOutputItem>{},
-    std::enable_shared_from_this<DataFlowBlockCommon<TInputItem, TOutputItem, TState>>{},
-    _isAsyncNode{ false },
-    _transformSyncFunc{},
-    _transformAsyncFunc{},
-    _canAcceptFunc{canAcceptFunc},
-    _name{},
-    _completedTaskPromise{},
-    _completedTask{ _completedTaskPromise.get_future().share() },
-    _startTaskPromise{},
-    _startTask{ _startTaskPromise.get_future().share() },
-    _state{ BlockState::Created },
-    _stateMutex{},
-    _inputItems{},
-    _processingCts{ AsyncPrimitives::CancellationTokenSource::Create() },
-    _outputNodes{ std::vector<typename IInputBlock<TOutputItem>::InputBlockPtr>{}},
-    _startCallsCount{}
+  DataFlowBlockCommon<TInputItem, TOutputItem, TState>::DataFlowBlockCommon(AsyncTransformFuncType transformFunc,
+                                                                            CanAcceptFuncType canAcceptFunc) : DataFlowBlockCommon(std::move(canAcceptFunc))
+  
   {
-
-
-
-    _transformSyncFunc = transformFunc;
-
-    if (!_transformSyncFunc && !_transformAsyncFunc)
+    if (!transformFunc)
     {
       throw std::invalid_argument("transformFunc");
     }
-    if (!canAcceptFunc)
+
+    _isAsyncNode = true;
+    _transformAsyncFunc = transformFunc;
+
+  }
+  template <typename TInputItem, typename TOutputItem, typename TState>
+  DataFlowBlockCommon<TInputItem, TOutputItem, TState>::DataFlowBlockCommon(TransformFuncType transformFunc,
+                                                                            CanAcceptFuncType canAcceptFunc) : DataFlowBlockCommon(std:: move(canAcceptFunc))
+  
+  {
+    if (!transformFunc)
+    {
+      throw std::invalid_argument("transformFunc");
+    }
+
+    _isAsyncNode = false;
+    _transformSyncFunc = transformFunc;
+
+  }
+
+  
+  template <typename TInputItem, typename TOutputItem, typename TState>
+  DataFlowBlockCommon<TInputItem, TOutputItem, TState>::DataFlowBlockCommon(CanAcceptFuncType canAcceptFunc) :
+                                                                            IInputOutputBlock<TInputItem, TOutputItem>{},
+                                                                            std::enable_shared_from_this<DataFlowBlockCommon<TInputItem, TOutputItem, TState>>{},
+                                                                            _isAsyncNode(),
+                                                                            _transformSyncFunc{},
+                                                                            _transformAsyncFunc{},
+                                                                            _canAcceptFunc{std::move(canAcceptFunc)},
+                                                                            _name{},
+                                                                            _completedTaskPromise{},
+                                                                            _completedTask{ _completedTaskPromise.get_future().share() },
+                                                                            _startTaskPromise{},
+                                                                            _startTask{ _startTaskPromise.get_future().share() },
+                                                                            _state{ BlockState::Created },
+                                                                            _stateMutex{},
+                                                                            _inputItems{},
+                                                                            _processingCts{ AsyncPrimitives::CancellationTokenSource::Create() },
+                                                                            _outputNodes{ std::vector<typename IInputBlock<TOutputItem>::InputBlockPtr>{}},
+                                                                            _startCallsCount{}
+  {
+    if (!_canAcceptFunc)
     {
       _canAcceptFunc = [](auto _) {return true; };
     }
   }
-
 
 
   template <typename TInputItem, typename TOutputItem, typename TState>

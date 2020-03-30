@@ -169,6 +169,7 @@
     <ClCompile Include="AsyncPrimitivesTest\IAsyncProducerConsumerCollectionTest.cpp" />
     <ClCompile Include="DataFlowTest\DataflowBlockTest.cpp" />
     <ClCompile Include="DataFlow\ActionBlock.cpp" />
+    <ClCompile Include="DataFlow\DataflowAsyncFactory.cpp" />
     <ClCompile Include="DataFlow\Detail\DataFlowBlockCommon.cpp" />
     <ClCompile Include="DataFlow\IDataFlowBlock.cpp" />
     <ClCompile Include="DataFlow\IInputBlock.cpp" />
@@ -195,6 +196,7 @@
     <ClInclude Include="Collections\ThreadSafeMinimalisticQueue.h" />
     <ClInclude Include="Collections\ThreadSafeMinimalisticVector.h" />
     <ClInclude Include="DataFlow\ActionBlock.h" />
+    <ClInclude Include="DataFlow\DataflowAsyncFactory.h" />
     <ClInclude Include="DataFlow\Detail\DataFlowBlockCommon.h" />
     <ClInclude Include="DataFlow\IDataFlowBlock.h" />
     <ClInclude Include="DataFlow\IInputBlock.h" />

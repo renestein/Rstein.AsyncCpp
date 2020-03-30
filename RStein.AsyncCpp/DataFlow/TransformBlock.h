@@ -17,6 +17,7 @@ namespace RStein::AsyncCpp::DataFlow
 
   public:
     explicit TransformBlock(typename InnerDataFlowBlock::TransformFuncType transformFunc, typename InnerDataFlowBlock::CanAcceptFuncType canAcceptFunc = [] (auto _){return true;});
+    explicit TransformBlock(typename InnerDataFlowBlock::AsyncTransformFuncType transformFunc, typename InnerDataFlowBlock::CanAcceptFuncType canAcceptFunc = [] (auto _){return true;});
     TransformBlock(const TransformBlock& other) = delete;
     TransformBlock(TransformBlock&& other) = delete;
     TransformBlock& operator=(const TransformBlock& other) = delete;
@@ -44,6 +45,16 @@ namespace RStein::AsyncCpp::DataFlow
                                                                   typename InnerDataFlowBlock::CanAcceptFuncType canAcceptFunc) : IInputOutputBlock<TInputItem, TOutputItem>{},
                                                                                                                                   std::enable_shared_from_this<TransformBlock<TInputItem, TOutputItem, TState>>{},
                                                                                                                                   _innerBlock{std::make_shared<InnerDataFlowBlock>(transformFunc, canAcceptFunc)}
+  {
+
+  }
+
+  template <typename TInputItem, typename TOutputItem, typename TState>
+  TransformBlock<TInputItem, TOutputItem, TState>::TransformBlock(
+      typename InnerDataFlowBlock::AsyncTransformFuncType transformFunc,
+      typename InnerDataFlowBlock::CanAcceptFuncType canAcceptFunc) : IInputOutputBlock<TInputItem, TOutputItem>{},
+                                                                     std::enable_shared_from_this<TransformBlock<TInputItem, TOutputItem, TState>>{},
+                                                                     _innerBlock{std::make_shared<InnerDataFlowBlock>(transformFunc, canAcceptFunc)}
   {
 
   }

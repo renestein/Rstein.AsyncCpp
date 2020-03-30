@@ -4,6 +4,7 @@
 
 namespace RStein::AsyncCpp::DataFlow
 {
+
   template<typename TInputItem, typename TState = Detail::NoState>
   class ActionBlock : public IInputBlock<TInputItem>,
                       public std::enable_shared_from_this<ActionBlock<TInputItem, TState>>
@@ -13,16 +14,18 @@ namespace RStein::AsyncCpp::DataFlow
     private:
       using InnerDataFlowBlock = Detail::DataFlowBlockCommon<TInputItem, Detail::NoOutput, TState>;
       using InnerDataFlowBlockPtr = typename InnerDataFlowBlock::DataFlowBlockCommonPtr;
+    
 
   public:
-      ActionBlock(typename InnerDataFlowBlock::ActionFuncType actionFunc,
+
+     ActionBlock(typename InnerDataFlowBlock::AsyncActionFuncType actionFunc,
                   typename InnerDataFlowBlock::CanAcceptFuncType canAcceptFunc = [](const auto& _){ return true;}) :
                                                                                   IInputBlock<TInputItem>{},
                                                                                   std::enable_shared_from_this<ActionBlock<TInputItem, TState>>{},
-                                                                                  _innerBlock{std::make_shared<InnerDataFlowBlock>([actionFunc](const TInputItem& inputItem, TState*& state)
+                                                                                  _innerBlock{std::make_shared<InnerDataFlowBlock>([actionFunc](const TInputItem& inputItem, TState*& state) ->std::shared_future<Detail::NoOutput>
                                                                                               {
-                                                                                                actionFunc(inputItem, state);
-                                                                                                return Detail::NoOutput::Default();
+                                                                                                co_await actionFunc(inputItem, state);
+                                                                                                co_return Detail::NoOutput::Default();
                                                                                               },
                                                                                               canAcceptFunc)}
                                                                              
@@ -45,8 +48,12 @@ namespace RStein::AsyncCpp::DataFlow
       bool CanAcceptInput(const TInputItem& item) override;
       typename IDataFlowBlock::TaskVoidType AcceptInputAsync(const TInputItem& item) override;
       typename IDataFlowBlock::TaskVoidType AcceptInputAsync(TInputItem&& item) override;
+      
 
      private:
+      
+
+     
       InnerDataFlowBlockPtr _innerBlock;
   };
 
