@@ -1,6 +1,7 @@
 #include "../AsyncPrimitives/FutureEx.h"
 #include "../DataFlow/ActionBlock.h"
 #include "../DataFlow/DataflowAsyncFactory.h"
+#include "../DataFlow/DataFlowSyncFactory.h"
 #include "../DataFlow/TransformBlock.h"
 
 #include <gtest/gtest.h>
@@ -15,14 +16,14 @@ namespace RStein::AsyncCpp::DataFlowTest
   TEST(DataFlowTest, WhenFlatDataflowThenAllInputsProcessed)
   {
     const int EXPECTED_PROCESSED_ITEMS = 1000;
-    auto transform1 = std::make_shared<TransformBlock<int, std::string>>([](const int& item, Detail::NoState*& _)
+    auto transform1 = DataFlowSyncFactory::CreateTransformBlock<int, std::string, Detail::NoState>([](const int& item, Detail::NoState*& _)
     {
       auto message = "int: "  + to_string(item) + "\n";
       cout << message;
       return to_string(item);
     });
 
-    auto transform2 = std::make_shared<TransformBlock<std::string, std::string>>([](const string& item, Detail::NoState*& _)
+    auto transform2 = DataFlowSyncFactory::CreateTransformBlock<std::string, std::string>([](const string& item)
     {
       auto message = "String transform: " + item + "\n";
       cout << message;
@@ -112,15 +113,15 @@ namespace RStein::AsyncCpp::DataFlowTest
   TEST(DataFlowTest, WhenAsyncFlatDataflowThenAllInputsProcessed)
   {
     const int EXPECTED_PROCESSED_ITEMS = 1000;
-    auto transform1 = std::make_shared<TransformBlock<int, std::string>>([](const int& item, Detail::NoState*& _)->shared_future<string>
+    auto transform1 = DataFlowAsyncFactory::CreateTransformBlock<int, string, Detail::NoState>([](const int& item, Detail::NoState*& _)->shared_future<string>
     {
       auto message = "int: "  + to_string(item) + "\n";
       cout << message;
       co_await GetCompletedSharedFuture();
-      co_return item + ": {string}";
+      co_return to_string(item);
     });
 
-    auto transform2 = std::make_shared<TransformBlock<std::string, std::string>>([](const string& item, Detail::NoState*& _)->shared_future<string>
+    auto transform2 = DataFlowAsyncFactory::CreateTransformBlock<string, string>([](const string& item)->shared_future<string>
     {
       auto message = "String transform: " + item + "\n";
       cout << message;
@@ -129,7 +130,7 @@ namespace RStein::AsyncCpp::DataFlowTest
     });
 
     vector<string> _processedItems{};
-    auto finalAction =DataFlowAsyncFactory::CreateActionBlock<string>([&_processedItems](const string& item)->shared_future<void>
+    auto finalAction=DataFlowAsyncFactory::CreateActionBlock<string>([&_processedItems](const string& item)->shared_future<void>
     {
       auto message = "Final action: " + item + "\n";
       cout << message;
@@ -147,7 +148,7 @@ namespace RStein::AsyncCpp::DataFlowTest
     }
 
     transform1->Complete();
-    //finalAction->Completion().get();
+    finalAction->Completion().get();
     const auto processedItemsCount = _processedItems.size();
 
     ASSERT_EQ(EXPECTED_PROCESSED_ITEMS, processedItemsCount);
