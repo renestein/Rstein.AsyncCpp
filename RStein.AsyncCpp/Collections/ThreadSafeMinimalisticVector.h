@@ -12,6 +12,7 @@ namespace RStein::AsyncCpp::Collections
   {
   public:
     using size_type = typename std::vector<T>::size_type;
+    using value_type = typename std::vector<T>::value_type;
     using reference = typename std::vector<T>::reference;
     using const_reference = typename std::vector<T>::const_reference;
     using iterator = typename std::vector<T>::iterator;
@@ -28,10 +29,14 @@ namespace RStein::AsyncCpp::Collections
     void Add(const T& item);
     void Add(T&& item);
     void Remove(const T& item);
+    template <class TPredicate>
+    void RemoveIf(TPredicate&& predicate);
     size_type Count;
     size_type Capacity;
     void Reserve(size_type newCapacity);
     std::vector<T> GetSnapshot();
+    template <typename TR, typename TMapFunc>
+    auto MapSnapshot(TMapFunc&& mapFunc);
     void Clear();
     std::optional<T> TryTake();
     
@@ -90,6 +95,15 @@ namespace RStein::AsyncCpp::Collections
   }
 
   template <typename T>
+  template <typename TPredicate>
+  void ThreadSafeMinimalisticVector<T>::RemoveIf(TPredicate&& predicate)
+
+  {
+     std::lock_guard lock{_mutex};
+    _innerVector.erase(std::remove_if(_innerVector.begin(), _innerVector.end(), predicate), _innerVector.end());
+  }
+
+  template <typename T>
   void ThreadSafeMinimalisticVector<T>::Reserve(size_type newCapacity)
   {
     std::lock_guard lock{_mutex};
@@ -102,6 +116,19 @@ namespace RStein::AsyncCpp::Collections
     std::lock_guard lock{_mutex};
     auto copy = _innerVector;
     return copy;
+  }
+
+
+  template <typename T>
+  template <typename TR, typename TMapFunc>
+  auto ThreadSafeMinimalisticVector<T>::MapSnapshot(TMapFunc&& mapFunc)
+  {
+    
+    std::lock_guard lock{_mutex};
+    std::vector<TR> mappedValues{};
+    mappedValues.reserve(_innerVector.size());
+    std::transform(_innerVector.begin(), _innerVector.end(), std::back_inserter(mappedValues), mapFunc);
+    return mappedValues;
   }
 
   template <typename T>

@@ -58,6 +58,8 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     typename IDataFlowBlock::TaskVoidType AcceptInputAsync(TInputItem&& item) override;
     void ConnectTo(const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock) override;
     virtual ~DataFlowBlockCommon();
+    void removeDeadOutputNodes();
+    std::future<void> propagateOutput(TOutputItem outputItem);
 
   private:
     enum class BlockState
@@ -82,7 +84,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     std::mutex _stateMutex;
     AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TInputItem> _inputItems;
     AsyncPrimitives::CancellationTokenSource::CancellationTokenSourcePtr _processingCts;
-    Collections::ThreadSafeMinimalisticVector<typename IInputBlock<TOutputItem>::InputBlockPtr> _outputNodes;
+    Collections::ThreadSafeMinimalisticVector<std::weak_ptr<IInputBlock<TOutputItem>>> _outputNodes;
     int _startCallsCount;
 
     DataFlowBlockCommon(CanAcceptFuncType canAcceptFunc);
@@ -142,7 +144,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
                                                                             _stateMutex{},
                                                                             _inputItems{},
                                                                             _processingCts{ AsyncPrimitives::CancellationTokenSource::Create() },
-                                                                            _outputNodes{ std::vector<typename IInputBlock<TOutputItem>::InputBlockPtr>{}},
+                                                                            _outputNodes{ std::vector<std::weak_ptr<IInputBlock<TOutputItem>>>{}},
                                                                             _startCallsCount{}
   {
     if (!_canAcceptFunc)
@@ -188,13 +190,20 @@ namespace RStein::AsyncCpp::DataFlow::Detail
 
     _processingTask = runProcessingTask(_processingCts->Token());
 
-    for (auto& nextBlock : _outputNodes.GetSnapshot())
+    for (auto& nextBlock : _outputNodes.MapSnapshot<IInputBlock<TOutputItem>::InputBlockPtr>([](auto &weakPtr){return weakPtr.lock();}))
     {
+      
+      if (!nextBlock)
+      {    
+        continue;;
+      }
+
       nextBlock->Start();
     }
 
+    removeDeadOutputNodes();
     _state = BlockState::Started;
-
+    
     _startTaskPromise.set_value();
   }
 
@@ -263,7 +272,6 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     {
       throw std::invalid_argument("nextBlock");
     }
-
     _outputNodes.Add(nextBlock);
   }
 
@@ -271,6 +279,51 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   DataFlowBlockCommon<TInputItem, TOutputItem, TState>::~DataFlowBlockCommon()
   {
 
+  }
+
+  template <typename TInputItem, typename TOutputItem, typename TState>
+  void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::removeDeadOutputNodes()
+  {
+    _outputNodes.RemoveIf([](std::weak_ptr<IInputBlock<TOutputItem>> weakPtr){return !weakPtr.lock();});
+  }
+
+  template <typename TInputItem, typename TOutputItem, typename TState>
+  std::future<void> DataFlowBlockCommon<TInputItem, TOutputItem, TState>::propagateOutput(TOutputItem outputItem)
+  {
+    auto outputNodesSnapshot = _outputNodes.MapSnapshot<IInputBlock<TOutputItem>::InputBlockPtr>([](auto& weakPtr){return weakPtr.lock();});
+    
+    //Todo: Do not copy nodes
+    //TODO: Optimize cycle
+    //
+    auto shouldRemoveDeadBlocks = false;
+    for (auto nodeIterator = outputNodesSnapshot.begin(); nodeIterator != outputNodesSnapshot.end(); ++nodeIterator)
+    {
+      auto inputNodePtr = *nodeIterator;
+      if (!inputNodePtr)
+      {
+        shouldRemoveDeadBlocks = true;
+        continue;
+      }
+
+      if (!inputNodePtr->CanAcceptInput(outputItem))
+      {
+
+        *nodeIterator = IInputBlock<TOutputItem>::InputBlockPtr();
+      }
+    }
+
+    if(shouldRemoveDeadBlocks)
+    {
+      removeDeadOutputNodes();
+    }
+
+    for (auto& node : outputNodesSnapshot)
+    {
+      if (node)
+      {
+        co_await node->AcceptInputAsync(outputItem);
+      }
+    }
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
@@ -284,7 +337,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
       TState state{};
       auto statePtr = &state;
       //For co_await operator
-      using namespace RStein::AsyncCpp::AsyncPrimitives;
+      using namespace AsyncPrimitives;
       co_await _startTask;
       TInputItem inputItem;
       while (!cancellationToken->IsCancellationRequested())
@@ -293,7 +346,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
         {
           inputItem = co_await _inputItems.TakeAsync(cancellationToken);
         }
-        catch (AsyncPrimitives::OperationCanceledException&)
+        catch (OperationCanceledException&)
         {
           continue;
         }
@@ -302,14 +355,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
           ? co_await _transformAsyncFunc(inputItem, statePtr)
           : _transformSyncFunc(inputItem, statePtr);
 
-        //Todo: Do not copy nodes
-        for (auto& outputNode : _outputNodes.GetSnapshot())
-        {
-          if (outputNode->CanAcceptInput(outputItem))
-          {
-            co_await outputNode->AcceptInputAsync(outputItem);
-          }
-        }
+        propagateOutput(outputItem);
       }
 
       //refactor cycle
@@ -320,13 +366,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
           ? co_await _transformAsyncFunc(item, statePtr)
           : _transformSyncFunc(item, statePtr);
 
-        for (auto& outputNode : _outputNodes.GetSnapshot())
-        {
-          if (outputNode->CanAcceptInput(outputRemainingItem))
-          {
-            co_await outputNode->AcceptInputAsync(outputRemainingItem);
-          }
-        }
+        propagateOutput(outputRemainingItem);
       }
     }
     catch (const std::exception& ex)
@@ -372,9 +412,13 @@ namespace RStein::AsyncCpp::DataFlow::Detail
         {
           _state = BlockState::Stopped;
 
-          for (auto& nextBlock : _outputNodes.GetSnapshot())
+          for (auto& nextBlock : _outputNodes.MapSnapshot<IInputBlock<TOutputItem>::InputBlockPtr>([](auto &weakPtr){return weakPtr.lock();}))
           {
             //TODO: Handle failing output node;
+            if (!nextBlock)
+            {
+              continue;
+            }
 
             if (isExceptional)
             {
