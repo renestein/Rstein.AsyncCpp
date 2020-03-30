@@ -30,7 +30,7 @@ namespace RStein::AsyncCpp::DataFlowTest
     });
 
     vector<string> _processedItems{};
-    auto finalAction = std::make_shared<ActionBlock<string>>([&_processedItems](const string& item, Detail::NoState*& )->shared_future<void>
+    auto finalAction = DataFlowAsyncFactory::CreateActionBlock<string, Detail::NoState>([&_processedItems](const string& item, Detail::NoState*& )->shared_future<void>
     {
       auto message = "Final action: " + item + "\n";
       cout << message;
@@ -82,7 +82,7 @@ namespace RStein::AsyncCpp::DataFlowTest
       [](const int& item){return item % 2 != 0;});
 
     vector<string> _processedItems{};
-    auto finalAction = std::make_shared<ActionBlock<string>>([&_processedItems](const string& item, Detail::NoState*& )->shared_future<void>
+    auto finalAction = DataFlowAsyncFactory::CreateActionBlock<string>([&_processedItems](const string& item)->shared_future<void>
     {
       auto message = "Final action: " + item + "\n";
       cout << message;
@@ -129,7 +129,7 @@ namespace RStein::AsyncCpp::DataFlowTest
     });
 
     vector<string> _processedItems{};
-    auto finalAction = make_shared<ActionBlock<string>>([&_processedItems](const string& item, Detail::NoState*& )->shared_future<void>
+    auto finalAction =DataFlowAsyncFactory::CreateActionBlock<string>([&_processedItems](const string& item)->shared_future<void>
     {
       auto message = "Final action: " + item + "\n";
       cout << message;
