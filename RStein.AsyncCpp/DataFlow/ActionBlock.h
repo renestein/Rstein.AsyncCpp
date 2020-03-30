@@ -32,6 +32,23 @@ namespace RStein::AsyncCpp::DataFlow
       {
         
       }
+
+     ActionBlock(//TODO: Avoid unused variable, ambiguous ctor
+               
+                  typename InnerDataFlowBlock::ActionFuncType actionFunc,
+                  typename InnerDataFlowBlock::CanAcceptFuncType canAcceptFunc = [](const auto& _){ return true;}) :
+                                                                                  IInputBlock<TInputItem>{},
+                                                                                  std::enable_shared_from_this<ActionBlock<TInputItem, TState>>{},
+                                                                                  _innerBlock{std::make_shared<InnerDataFlowBlock>([actionFunc](const TInputItem& inputItem, TState*& state)
+                                                                                              {
+                                                                                                actionFunc(inputItem, state);
+                                                                                                return Detail::NoOutput::Default();
+                                                                                              },
+                                                                                              canAcceptFunc)}
+                                                                             
+      {
+        
+      }
       ActionBlock(const ActionBlock& other) = delete;
       ActionBlock(ActionBlock&& other) = delete;
       ActionBlock& operator=(const ActionBlock& other) = delete;

@@ -31,11 +31,10 @@ namespace RStein::AsyncCpp::DataFlowTest
     });
 
     vector<string> _processedItems{};
-    auto finalAction = DataFlowAsyncFactory::CreateActionBlock<string, Detail::NoState>([&_processedItems](const string& item, Detail::NoState*& )->shared_future<void>
+    auto finalAction = DataFlowSyncFactory::CreateActionBlock<string, Detail::NoState>([&_processedItems](const string& item, Detail::NoState*&)
     {
       auto message = "Final action: " + item + "\n";
-      cout << message;
-       co_await GetCompletedSharedFuture();
+      cout << message;     
       _processedItems.push_back(item);
 
     });
@@ -83,11 +82,10 @@ namespace RStein::AsyncCpp::DataFlowTest
       [](const int& item){return item % 2 != 0;});
 
     vector<string> _processedItems{};
-    auto finalAction = DataFlowAsyncFactory::CreateActionBlock<string>([&_processedItems](const string& item)->shared_future<void>
+    auto finalAction = DataFlowSyncFactory::CreateActionBlock<string>([&_processedItems](const string& item)
     {
       auto message = "Final action: " + item + "\n";
       cout << message;
-       co_await GetCompletedSharedFuture();
       _processedItems.push_back(item);
      
     });
