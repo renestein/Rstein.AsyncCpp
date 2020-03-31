@@ -107,6 +107,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/await</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,6 +146,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/await</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -178,6 +182,7 @@
     <ClCompile Include="DataFlow\TransformBlock.cpp" />
     <ClCompile Include="RStein.AsyncCpp.cpp" />
     <ClCompile Include="Collections\ThreadSafeMinimalisticVector.cpp" />
+    <ClCompile Include="SchedulerTest\SchedulerAwaiterTest.cpp" />
     <ClCompile Include="Schedulers\CurrentThreadScheduler.cpp" />
     <ClCompile Include="Schedulers\Scheduler.cpp" />
     <ClCompile Include="Schedulers\SimpleThreadPool.cpp" />

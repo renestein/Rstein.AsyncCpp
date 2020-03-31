@@ -12,6 +12,12 @@ namespace RStein::AsyncCpp::Schedulers
   public:
 	  StrandSchedulerDecorator(const std::shared_ptr<Scheduler> &scheduler);
 	  virtual ~StrandSchedulerDecorator();
+
+    StrandSchedulerDecorator(const StrandSchedulerDecorator& other) = delete;
+    StrandSchedulerDecorator(StrandSchedulerDecorator&& other) = delete;
+    StrandSchedulerDecorator& operator=(const StrandSchedulerDecorator& other) = delete;
+    StrandSchedulerDecorator& operator=(StrandSchedulerDecorator&& other) = delete;
+
 	  void Start() override;
 	  void Stop() override;
 	  void EnqueueItem(std::function<void()> &&originalFunction) override;

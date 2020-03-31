@@ -10,6 +10,13 @@ namespace RStein::AsyncCpp::Schedulers
 
   CurrentThreadScheduler::~CurrentThreadScheduler() = default;
 
+  void CurrentThreadScheduler::Start()
+  {
+  }
+
+  void CurrentThreadScheduler::Stop()
+  {
+  }
 
 
   void CurrentThreadScheduler::EnqueueItem(std::function<void()>&& func)

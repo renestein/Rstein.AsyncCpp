@@ -24,10 +24,14 @@ namespace RStein::AsyncCpp::Schedulers
 
     using WorkItem = std::function<void()>;
     SimpleThreadPool();
-    SimpleThreadPool(int numberOfThreads);
-    SimpleThreadPool(const SimpleThreadPool&) = delete;
-    SimpleThreadPool& operator=(const SimpleThreadPool&) = delete;
+    SimpleThreadPool(int numberOfThreads);   
     virtual ~SimpleThreadPool();
+
+    SimpleThreadPool(const SimpleThreadPool& other) = delete;
+    SimpleThreadPool(SimpleThreadPool&& other) = delete;
+    SimpleThreadPool& operator=(const SimpleThreadPool& other) = delete;
+    SimpleThreadPool& operator=(SimpleThreadPool&& other) = delete;
+
     void Start();
     void Stop();
     

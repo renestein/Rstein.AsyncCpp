@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <experimental/coroutine>
 #include <future>
 #include <iostream>
 #include <thread>
@@ -187,7 +188,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
       return {};
     }
 
-    template<typename TU>
+    template <typename TU>
     void return_value(TU&& retValue)
     {
       _promise.set_value(std::forward<TU>(retValue));

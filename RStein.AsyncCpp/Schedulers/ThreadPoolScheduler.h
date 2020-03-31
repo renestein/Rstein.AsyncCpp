@@ -13,6 +13,12 @@ namespace RStein::AsyncCpp::Schedulers
 
     ThreadPoolScheduler(SimpleThreadPool& threadPool);
     virtual ~ThreadPoolScheduler();
+
+    ThreadPoolScheduler(const ThreadPoolScheduler& other) = delete;
+    ThreadPoolScheduler(ThreadPoolScheduler&& other) = delete;
+    ThreadPoolScheduler& operator=(const ThreadPoolScheduler& other) = delete;
+    ThreadPoolScheduler& operator=(ThreadPoolScheduler&& other) = delete;
+
     void Start() override;
     void Stop() override;
     void EnqueueItem(std::function<void()>&& originalFunction) override;
