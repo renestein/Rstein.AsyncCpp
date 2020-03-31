@@ -5,28 +5,30 @@
 #include <mutex>
 #include <atomic>
 
-class StrandSchedulerDecorator :
-	public Scheduler
+namespace RStein::AsyncCpp::Schedulers
 {
-public:
-	StrandSchedulerDecorator(const std::shared_ptr<Scheduler> &scheduler);
-	virtual ~StrandSchedulerDecorator();
-	void Start() override;
-	void Stop() override;
-	void EnqueueItem(std::function<void()> &&originalFunction) override;
-	bool IsMethodInvocationSerialized() override;
-	
-	
-private:
-	std::shared_ptr<Scheduler> m_scheduler;
-	std::queue<std::function<void()>> m_strandQueue;
-	std::mutex m_queueMutex;
-	std::atomic<bool> m_operationInProgress;
+  class StrandSchedulerDecorator :	public Scheduler
+  {
+  public:
+	  StrandSchedulerDecorator(const std::shared_ptr<Scheduler> &scheduler);
+	  virtual ~StrandSchedulerDecorator();
+	  void Start() override;
+	  void Stop() override;
+	  void EnqueueItem(std::function<void()> &&originalFunction) override;
+	  bool IsMethodInvocationSerialized() override;
+	  
+	  
+  private:
+	  std::shared_ptr<Scheduler> _scheduler;
+	  std::queue<std::function<void()>> _strandQueue;
+	  std::mutex _queueMutex;
+	  std::atomic<bool> _operationInProgress;
 
-	void markStrandOperationAsDone();
-	std::function<void()> wrapFunctionInStrand(std::function<void()> &&originalfunction);
-	void tryDequeItem();
-	void tryRunItem(std::function<void()> &&originalfunction);
-	void runOnOriginalScheduler(std::function<void()> &&originalfunction);
-};
+	  void markStrandOperationAsDone();
+	  std::function<void()> wrapFunctionInStrand(std::function<void()> &&originalfunction);
+	  void tryDequeItem();
+	  void tryRunItem(std::function<void()> &&originalfunction);
+	  void runOnOriginalScheduler(std::function<void()> &&originalfunction);
+  };
+}
 

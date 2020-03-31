@@ -1,21 +1,24 @@
 #pragma once
 #include "Scheduler.h"
 
-class SimpleThreadPool;
-class ThreadPoolScheduler :
-	public Scheduler
+namespace RStein::AsyncCpp::Schedulers
 {
-public:
-	static const int MAX_THREADS_IN_STRAND = 1;
+  class SimpleThreadPool;
 
-	ThreadPoolScheduler(SimpleThreadPool &threadPool);
-	virtual ~ThreadPoolScheduler();
-	void Start() override;
-	void Stop() override;
-	void EnqueueItem(std::function<void()> &&originalFunction) override;
-	bool IsMethodInvocationSerialized() override;
+  class ThreadPoolScheduler :
+      public Scheduler
+  {
+  public:
+    static const int MAX_THREADS_IN_STRAND = 1;
 
-private:
-	SimpleThreadPool &m_threadPool;
-};
+    ThreadPoolScheduler(SimpleThreadPool& threadPool);
+    virtual ~ThreadPoolScheduler();
+    void Start() override;
+    void Stop() override;
+    void EnqueueItem(std::function<void()>&& originalFunction) override;
+    bool IsMethodInvocationSerialized() override;
 
+  private:
+    SimpleThreadPool& _threadPool;
+  };
+}

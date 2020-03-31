@@ -7,43 +7,44 @@
 #include <thread>
 #include <atomic>
 
-//Predpoklada se, ze metody Start a Stop nebudou klientem volany ve stejnou dobu - konkurence neni osetrena
-
-class SimpleThreadPool
+namespace RStein::AsyncCpp::Schedulers
 {
-public:
-	
-	enum class ThreadPoolState
-	{
-		Created,
-		Started,
-		Stopped
-	};
+  //TODO: Start/Stop is not thread safe.
+  //TODO: Better Lock free + work setealing ThreadPool
+  class SimpleThreadPool
+  {
+  public:
 
-	using WorkItem = std::function < void() > ;
-	SimpleThreadPool();
-	SimpleThreadPool(int numberOfThreads);
-	SimpleThreadPool(const SimpleThreadPool&) = delete;
-	SimpleThreadPool& operator=(const SimpleThreadPool&) = delete;
-	virtual ~SimpleThreadPool();
-	void Start();
-	void Stop();
-	//Dopiste si metodu, ktera prijima LVAlue
-	void EnqueueItem(WorkItem &&originalFunction);
-	int GetNumberOfThreads() const;
-	SimpleThreadPool::ThreadPoolState GetThreadPoolState();
+    enum class ThreadPoolState
+    {
+      Created,
+      Started,
+      Stopped
+    };
 
-private:	
-	std::queue<WorkItem> m_innerQueue;
-	std::mutex m_lockRoot;
-	std::condition_variable m__queueConditionVariable;
-	ThreadPoolState m_threadPoolState;
-	int m_numberOfThreads;
+    using WorkItem = std::function<void()>;
+    SimpleThreadPool();
+    SimpleThreadPool(int numberOfThreads);
+    SimpleThreadPool(const SimpleThreadPool&) = delete;
+    SimpleThreadPool& operator=(const SimpleThreadPool&) = delete;
+    virtual ~SimpleThreadPool();
+    void Start();
+    void Stop();
+    
+    void EnqueueItem(WorkItem&& originalFunction);
+    int GetNumberOfThreads() const;
+    ThreadPoolState GetThreadPoolState();
 
-	std::vector<std::thread> m_threads;
-	std::atomic<bool> m_quitRequest;
+  private:
+    std::queue<WorkItem> _innerQueue;
+    std::mutex _lockRoot;
+    std::condition_variable _queueConditionVariable;
+    ThreadPoolState _threadPoolState;
+    int _numberOfThreads;
 
-	void throwInvalidThreadPoolState();
+    std::vector<std::thread> _threads;
+    std::atomic<bool> _quitRequest;
 
-};
-
+    void throwInvalidThreadPoolState();
+  };
+}

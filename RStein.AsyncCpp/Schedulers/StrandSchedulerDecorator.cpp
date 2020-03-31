@@ -2,96 +2,99 @@
 #include <stdexcept>
 
 using namespace std;
-StrandSchedulerDecorator::StrandSchedulerDecorator(const std::shared_ptr<Scheduler> &scheduler) :
-m_scheduler(scheduler),
-m_strandQueue(),
-m_queueMutex(),
-m_operationInProgress(false)
-																							
+
+namespace RStein::AsyncCpp::Schedulers
 {
-	if (!scheduler)
-	{
-		invalid_argument invalidSchedulerEx("scheduler");
-		throw invalidSchedulerEx;
-	}
-}
+  StrandSchedulerDecorator::StrandSchedulerDecorator(const std::shared_ptr<Scheduler>& scheduler) :
+    _scheduler(scheduler),
+    _strandQueue(),
+    _queueMutex(),
+    _operationInProgress(false)
+
+  {
+    if (!scheduler)
+    {
+      invalid_argument invalidSchedulerEx("scheduler");
+      throw invalidSchedulerEx;
+    }
+  }
 
 
-StrandSchedulerDecorator::~StrandSchedulerDecorator()
-{
-}
+  StrandSchedulerDecorator::~StrandSchedulerDecorator()
+  {
+  }
 
-void StrandSchedulerDecorator::Start()
-{
-	m_scheduler->Start();
-}
+  void StrandSchedulerDecorator::Start()
+  {
+    _scheduler->Start();
+  }
 
-void StrandSchedulerDecorator::Stop()
-{
-	m_scheduler->Stop();
-}
+  void StrandSchedulerDecorator::Stop()
+  {
+    _scheduler->Stop();
+  }
 
-void StrandSchedulerDecorator::EnqueueItem(std::function<void()> &&originalFunction)
-{
-	if (m_scheduler->IsMethodInvocationSerialized())
-	{
-		m_scheduler->EnqueueItem(move(originalFunction));
-		return;
-	}
+  void StrandSchedulerDecorator::EnqueueItem(std::function<void()>&& originalFunction)
+  {
+    if (_scheduler->IsMethodInvocationSerialized())
+    {
+      _scheduler->EnqueueItem(move(originalFunction));
+      return;
+    }
 
-	auto wrappedFunction = wrapFunctionInStrand(move(originalFunction));
-	lock_guard<mutex> lock(m_queueMutex);
-	
-	tryRunItem(move(wrappedFunction));
-}
+    auto wrappedFunction = wrapFunctionInStrand(move(originalFunction));
+    lock_guard<mutex> lock(_queueMutex);
 
-bool StrandSchedulerDecorator::IsMethodInvocationSerialized()
-{
-	return true;
-}
+    tryRunItem(move(wrappedFunction));
+  }
 
-std::function<void()> StrandSchedulerDecorator::wrapFunctionInStrand(std::function<void()> &&originalFunction)
-{
-	return [originalFunction, this]
-	{
-		originalFunction();
-		markStrandOperationAsDone();
-	};
-}
+  bool StrandSchedulerDecorator::IsMethodInvocationSerialized()
+  {
+    return true;
+  }
 
-void StrandSchedulerDecorator::markStrandOperationAsDone()
-{
-	lock_guard<mutex> lock(m_queueMutex);
-	m_operationInProgress.store(false);
-	tryDequeItem();
-}
+  std::function<void()> StrandSchedulerDecorator::wrapFunctionInStrand(std::function<void()>&& originalFunction)
+  {
+    return [originalFunction, this]
+    {
+      originalFunction();
+      markStrandOperationAsDone();
+    };
+  }
 
-void StrandSchedulerDecorator::tryDequeItem()
-{
-	if (m_strandQueue.empty())
-	{
-		return;
-	}
+  void StrandSchedulerDecorator::markStrandOperationAsDone()
+  {
+    lock_guard<mutex> lock(_queueMutex);
+    _operationInProgress.store(false);
+    tryDequeItem();
+  }
 
-	auto function = m_strandQueue.front();
-	m_strandQueue.pop();
-	tryRunItem(move(function));
-}
+  void StrandSchedulerDecorator::tryDequeItem()
+  {
+    if (_strandQueue.empty())
+    {
+      return;
+    }
 
-void StrandSchedulerDecorator::tryRunItem(std::function<void()> &&originalfunction)
-{
-	if (!m_operationInProgress.load())
-	{
-		m_operationInProgress.store(true);
-		runOnOriginalScheduler(move(originalfunction));
-		return;
-	}
+    auto function = _strandQueue.front();
+    _strandQueue.pop();
+    tryRunItem(move(function));
+  }
 
-	m_strandQueue.push(move(originalfunction));
+  void StrandSchedulerDecorator::tryRunItem(std::function<void()>&& originalfunction)
+  {
+    if (!_operationInProgress.load())
+    {
+      _operationInProgress.store(true);
+      runOnOriginalScheduler(move(originalfunction));
+      return;
+    }
 
-}
+    _strandQueue.push(move(originalfunction));
+  }
 
-void StrandSchedulerDecorator::runOnOriginalScheduler(std::function<void()> &&originalfunction)
-{
-	m_scheduler->EnqueueItem(move(originalfunction));
+  void StrandSchedulerDecorator::runOnOriginalScheduler(std::function<void()>&& originalfunction)
+  {
+    _scheduler->EnqueueItem(move(originalfunction));
+  }
 }

@@ -1,34 +1,30 @@
 #include "ThreadPoolScheduler.h"
 #include "SimpleThreadPool.h"
 
-
-
-ThreadPoolScheduler::ThreadPoolScheduler(SimpleThreadPool &threadPool) : m_threadPool(threadPool)
+namespace RStein::AsyncCpp::Schedulers
 {
+  ThreadPoolScheduler::ThreadPoolScheduler(SimpleThreadPool& threadPool) : _threadPool(threadPool)
+  {
+  }
 
-}
 
+  ThreadPoolScheduler::~ThreadPoolScheduler() = default;
 
-ThreadPoolScheduler::~ThreadPoolScheduler()
-{
-}
+  void ThreadPoolScheduler::Start()
+  {
+  }
 
-void ThreadPoolScheduler::Start()
-{
+  void ThreadPoolScheduler::Stop()
+  {
+  }
 
-}
+  void ThreadPoolScheduler::EnqueueItem(std::function<void()>&& originalFunction)
+  {
+    _threadPool.EnqueueItem(move(originalFunction));
+  }
 
-void ThreadPoolScheduler::Stop()
-{
-
-}
-
-void ThreadPoolScheduler::EnqueueItem(std::function<void()> &&originalFunction)
-{
-	m_threadPool.EnqueueItem(move(originalFunction));
-}
-
-bool ThreadPoolScheduler::IsMethodInvocationSerialized()
-{
-	return (m_threadPool.GetNumberOfThreads() == MAX_THREADS_IN_STRAND);
+  bool ThreadPoolScheduler::IsMethodInvocationSerialized()
+  {
+    return (_threadPool.GetNumberOfThreads() == MAX_THREADS_IN_STRAND);
+  }
 }
