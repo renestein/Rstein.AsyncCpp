@@ -23,7 +23,7 @@ namespace RStein::AsyncCpp::Schedulers
     _threadPool.EnqueueItem(move(originalFunction));
   }
 
-  bool ThreadPoolScheduler::IsMethodInvocationSerialized()
+  bool ThreadPoolScheduler::IsMethodInvocationSerialized() const
   {
     return (_threadPool.GetNumberOfThreads() == MAX_THREADS_IN_STRAND);
   }

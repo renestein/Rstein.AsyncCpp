@@ -16,7 +16,7 @@ namespace RStein::AsyncCpp::Schedulers
     void Start() override;
     void Stop() override;
     void EnqueueItem(std::function<void()>&& originalFunction) override;
-    bool IsMethodInvocationSerialized() override;
+    bool IsMethodInvocationSerialized() const override;
 
   private:
     SimpleThreadPool& _threadPool;

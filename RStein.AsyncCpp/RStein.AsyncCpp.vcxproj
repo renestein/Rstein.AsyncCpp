@@ -178,6 +178,7 @@
     <ClCompile Include="DataFlow\TransformBlock.cpp" />
     <ClCompile Include="RStein.AsyncCpp.cpp" />
     <ClCompile Include="Collections\ThreadSafeMinimalisticVector.cpp" />
+    <ClCompile Include="Schedulers\CurrentThreadScheduler.cpp" />
     <ClCompile Include="Schedulers\Scheduler.cpp" />
     <ClCompile Include="Schedulers\SimpleThreadPool.cpp" />
     <ClCompile Include="Schedulers\StrandSchedulerDecorator.cpp" />
@@ -204,6 +205,7 @@
     <ClInclude Include="DataFlow\IInputBlock.h" />
     <ClInclude Include="DataFlow\IInputOutputBlock.h" />
     <ClInclude Include="DataFlow\TransformBlock.h" />
+    <ClInclude Include="Schedulers\CurrentThreadScheduler.h" />
     <ClInclude Include="Schedulers\Scheduler.h" />
     <ClInclude Include="Schedulers\SimpleThreadPool.h" />
     <ClInclude Include="Schedulers\StrandSchedulerDecorator.h" />

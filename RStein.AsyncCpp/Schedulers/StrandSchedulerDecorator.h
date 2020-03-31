@@ -15,7 +15,7 @@ namespace RStein::AsyncCpp::Schedulers
 	  void Start() override;
 	  void Stop() override;
 	  void EnqueueItem(std::function<void()> &&originalFunction) override;
-	  bool IsMethodInvocationSerialized() override;
+	  bool IsMethodInvocationSerialized() const override;
 	  
 	  
   private:
@@ -25,10 +25,10 @@ namespace RStein::AsyncCpp::Schedulers
 	  std::atomic<bool> _operationInProgress;
 
 	  void markStrandOperationAsDone();
-	  std::function<void()> wrapFunctionInStrand(std::function<void()> &&originalfunction);
+	  std::function<void()> wrapFunctionInStrand(std::function<void()>&& originalFunction);
 	  void tryDequeItem();
-	  void tryRunItem(std::function<void()> &&originalfunction);
-	  void runOnOriginalScheduler(std::function<void()> &&originalfunction);
+	  void tryRunItem(std::function<void()>&& originalFunction);
+	  void runOnOriginalScheduler(std::function<void()>&& originalFunction);
   };
 }
 

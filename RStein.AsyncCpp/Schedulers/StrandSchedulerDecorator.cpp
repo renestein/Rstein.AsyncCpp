@@ -20,9 +20,7 @@ namespace RStein::AsyncCpp::Schedulers
   }
 
 
-  StrandSchedulerDecorator::~StrandSchedulerDecorator()
-  {
-  }
+  StrandSchedulerDecorator::~StrandSchedulerDecorator() = default;
 
   void StrandSchedulerDecorator::Start()
   {
@@ -48,7 +46,7 @@ namespace RStein::AsyncCpp::Schedulers
     tryRunItem(move(wrappedFunction));
   }
 
-  bool StrandSchedulerDecorator::IsMethodInvocationSerialized()
+  bool StrandSchedulerDecorator::IsMethodInvocationSerialized () const
   {
     return true;
   }
@@ -81,20 +79,20 @@ namespace RStein::AsyncCpp::Schedulers
     tryRunItem(move(function));
   }
 
-  void StrandSchedulerDecorator::tryRunItem(std::function<void()>&& originalfunction)
+  void StrandSchedulerDecorator::tryRunItem(std::function<void()>&& originalFunction)
   {
     if (!_operationInProgress.load())
     {
       _operationInProgress.store(true);
-      runOnOriginalScheduler(move(originalfunction));
+      runOnOriginalScheduler(move(originalFunction));
       return;
     }
 
-    _strandQueue.push(move(originalfunction));
+    _strandQueue.push(move(originalFunction));
   }
 
-  void StrandSchedulerDecorator::runOnOriginalScheduler(std::function<void()>&& originalfunction)
+  void StrandSchedulerDecorator::runOnOriginalScheduler(std::function<void()>&& originalFunction)
   {
-    _scheduler->EnqueueItem(move(originalfunction));
+    _scheduler->EnqueueItem(move(originalFunction));
   }
 }

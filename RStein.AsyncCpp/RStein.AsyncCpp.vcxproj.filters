@@ -99,6 +99,9 @@
     <ClCompile Include="DataFlow\DataFlowSyncFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Schedulers\CurrentThreadScheduler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h">
@@ -174,6 +177,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DataFlow\DataFlowSyncFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Schedulers\CurrentThreadScheduler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

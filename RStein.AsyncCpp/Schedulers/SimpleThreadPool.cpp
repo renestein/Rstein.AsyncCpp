@@ -29,10 +29,8 @@ namespace RStein::AsyncCpp::Schedulers
   {
     if (_threadPoolState != ThreadPoolState::Stopped)
     {
-      //Z destruktoru se nemaji vyvolavat vyjimky.
-      //Bezpecnejsi? Stop - viz kurz
       /*throwInvalidThreadPoolState();*/
-      //Log Invalid life cycle
+      //Log invalid life cycle
     }
   }
 
