@@ -105,7 +105,7 @@
     <ClCompile Include="SchedulerTest\SchedulerAwaiterTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Task.cpp">
+    <ClCompile Include="Tasks\Task.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -188,7 +188,7 @@
     <ClInclude Include="Schedulers\CurrentThreadScheduler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Task.h">
+    <ClInclude Include="Tasks\Task.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
