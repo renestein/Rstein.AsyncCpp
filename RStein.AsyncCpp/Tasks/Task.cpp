@@ -11,6 +11,7 @@
 #include <vector>
 #include <mutex>
 #include <condition_variable>
+#include <iostream>
 
 using namespace RStein::AsyncCpp::Collections;
 using namespace RStein::AsyncCpp::AsyncPrimitives;
@@ -43,6 +44,11 @@ namespace RStein::AsyncCpp::Tasks
           _retValue{},
           _hasRetValue{false}
       {
+        if (!_func)
+        {
+          throw std::invalid_argument{"func"};
+        }
+          
       }
 
       void Run()
@@ -131,23 +137,57 @@ namespace RStein::AsyncCpp::Tasks
     }
 
 
-    virtual ~TaskSharedState() = default;
+    virtual ~TaskSharedState()
+    {
+        lock_guard lock{_lockObject};
+        if (_state != TaskState::RunToCompletion &&
+            _state != TaskState::Faulted &&
+            _state != TaskState::Canceled)
+        {
+          throw std::logic_error("Broken Task shared state");
+        }
+    }
    
     void RunTaskFunc()
-    {
-      {
-
-        lock_guard lock{_lockObject};
-        if (_state != TaskState::Created)
+    {     
+        auto isCtCanceled = IsCtCanceled();
+        if (isCtCanceled)
         {
-          throw std::logic_error("Task already started.");
+          {
+            lock_guard lock{_lockObject};
+            _state = TaskState::Canceled;
+          }
+
+          _waitTaskCv.notify_all();
+          runContinuations();
+         
+          return;
         }
-        _state = TaskState::Scheduled;
-      }
+
+        {
+          lock_guard lock{_lockObject};
+          
+          if (_state != TaskState::Created)
+          {
+            throw std::logic_error("Task already started.");
+          }
+
+
+          _state = TaskState::Scheduled;
+        }
 
       _scheduler->EnqueueItem([this, sharedThis = shared_from_this()]{
 
-                  Utils::FinallyBlock finally{[this]{runContinuations();}};
+                  Utils::FinallyBlock finally
+                  {
+                    
+                    [this]
+                    {
+                     
+                       _waitTaskCv.notify_all();                      
+                      runContinuations();
+                    }
+                  };
                     try
                     {
                       CancellationToken()->ThrowIfCancellationRequested();
@@ -165,12 +205,16 @@ namespace RStein::AsyncCpp::Tasks
                   {
                       _exceptionPtr = current_exception();
                       lock_guard lock{_lockObject};
+                       if (_state == TaskState::Canceled)
+                       {
+                         __debugbreak();
+                       }
                       assert(_state == TaskState::Scheduled || _state == TaskState::Running);
                       _state = TaskState::Canceled;
                     }
                     catch (...)
                     {
-                      _exceptionPtr = std::current_exception();
+                      _exceptionPtr = current_exception();
                       lock_guard lock{_lockObject};
                       assert(_state == TaskState::Running);
                       _state = TaskState::Faulted;
@@ -178,26 +222,7 @@ namespace RStein::AsyncCpp::Tasks
                     }
             });
     }
-
-    virtual void SetScheduledState()
-    {
-      lock_guard lock{_lockObject};
-      assert(_state == TaskState::Created);
-      _state = TaskState::Scheduled;
-    }
-
-    virtual bool DetectTaskCanceled()
-    {
-      auto isCtCanceled = IsCtCanceled();
-
-      lock_guard lock{_lockObject};
-      if (isCtCanceled)
-      {
-        _state = TaskState::Canceled;
-      }
-      return isCtCanceled;
-    }
-
+ 
     void Wait() const
     {
        unique_lock lock{_lockObject};
@@ -210,7 +235,13 @@ namespace RStein::AsyncCpp::Tasks
 
       if (_state != TaskState::RunToCompletion)
       {
-        rethrow_exception(Exception());
+        auto exceptionPtr = Exception();
+        if (exceptionPtr == nullptr && _state == TaskState::Canceled)
+        {
+          exceptionPtr = make_exception_ptr(OperationCanceledException());
+        }
+
+        rethrow_exception(exceptionPtr);
       }
     }
 
@@ -223,6 +254,7 @@ namespace RStein::AsyncCpp::Tasks
             _state == TaskState::Canceled)
          {
            continuationTask.Start();
+           return;
          }
 
         _continuations.Add(continuationTask);
@@ -247,14 +279,18 @@ namespace RStein::AsyncCpp::Tasks
     exception_ptr _exceptionPtr;
     void runContinuations()
     {
+      vector<Task> continuations;
       {
          lock_guard lock{_lockObject};
         assert(_state ==  TaskState::RunToCompletion ||
               _state == TaskState::Faulted ||
               _state == TaskState::Canceled);
+
+        continuations = _continuations.GetSnapshot();
+        _continuations.Clear();
       }
 
-      for(auto& continuationTask : _continuations)
+      for(auto& continuationTask : continuations)
       {
         continuationTask.Start();
       }
@@ -320,40 +356,27 @@ namespace RStein::AsyncCpp::Tasks
                                                                                                                                        false,
                                                                                                                                        CancellationToken::None())}
   {
-    if (!action)
-    {
-      throw std::invalid_argument{"action"};
-    }
+
   }
 
   Task::Task(std::function<void()>&& action, const CancellationToken::CancellationTokenPtr& cancellationToken) : _sharedTaskState{std::make_shared<TypedTaskSharedState<std::function<void()>>>(std::move(action),
                                                                                                                                                                                                 false,
                                                                                                                                                                                                 cancellationToken)}
   {
-    if (!action)
-    {
-      throw std::invalid_argument{"action"};
-    }
+    
   }
 
   Task::Task(std::function<Task()>&& action): _sharedTaskState{std::make_shared<TypedTaskSharedState<std::function<void()>>>(std::move(action),
                                                                                                                                        true,
                                                                                                                                        CancellationToken::None())}
   {
-    if (!action)
-    {
-      throw std::invalid_argument{"action"};
-    }
+    
   }
 
   Task::Task(std::function<Task()>&& action, const CancellationToken::CancellationTokenPtr& cancellationToken) : _sharedTaskState{std::make_shared<TypedTaskSharedState<std::function<void()>>>(std::move(action),
                                                                                                                                                                                                 false,
                                                                                                                                                                                                 cancellationToken)}
   {
-    if (!action)
-    {
-      throw std::invalid_argument{"action"};
-    }
   }
 
 
@@ -398,8 +421,7 @@ namespace RStein::AsyncCpp::Tasks
 
   bool Task::IsCanceled() const
   {
-    return _sharedTaskState->State() == TaskState::Canceled ||
-            _sharedTaskState->DetectTaskCanceled();
+    return _sharedTaskState->State() == TaskState::Canceled;
   }
 
   bool Task::IsCompleted() const
@@ -433,7 +455,7 @@ namespace RStein::AsyncCpp::Tasks
       throw std::invalid_argument("continuation");
     }
 
-    auto continuationTask = Task{[continuation = std::move(continuation), thisCopy=*this]{continuation(thisCopy);}};
+    Task continuationTask{[continuation = std::move(continuation), thisCopy=*this]{continuation(thisCopy);}};
     addContinuation(continuationTask);  
     return continuationTask;
   }

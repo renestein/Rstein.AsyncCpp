@@ -108,7 +108,7 @@ namespace RStein::AsyncCpp::Tasks
       throw std::invalid_argument("continuation");
     }
 
-    auto continuationTask = TaskT<TCr>{[thisCopy = *this, continuation = std::move(continuation)]{continuation(thisCopy);}};
+    TaskT<TCr>continuationTask {[thisCopy = *this, continuation = std::move(continuation)]{continuation(thisCopy);}};
     addContinuation(continuationTask);
     return continuationTask;
   }

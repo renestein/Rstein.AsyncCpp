@@ -42,42 +42,51 @@ namespace RStein::AsyncCpp::Schedulers
     }
 
     for (int i = 0; i < _numberOfThreads; i++)
-    {
+  {
       _threads.emplace_back([this]
       {
-        do
-        {
-          WorkItem currentWorkItem;
-
+        try
+        {       
+          do
           {
-            unique_lock<mutex> lock(_lockRoot);
-            while (!_quitRequest.load() && _innerQueue.empty())
+            WorkItem currentWorkItem;
+
             {
-              _queueConditionVariable.wait(lock);
+              unique_lock<mutex> lock(_lockRoot);
+              while (!_quitRequest.load() && _innerQueue.empty())
+              {
+                _queueConditionVariable.wait(lock);
+              }
+
+              if (_quitRequest.load() && _innerQueue.empty())
+              {
+                break;
+              }
+
+              currentWorkItem = move(_innerQueue.front());
+              _innerQueue.pop();
             }
 
-            if (_quitRequest.load() && _innerQueue.empty())
+            try
             {
-              break;
+              currentWorkItem();
             }
-
-            currentWorkItem = move(_innerQueue.front());
-            _innerQueue.pop();
-          }
-
-          try
-          {
-            currentWorkItem();
-          }
-          catch (...)
-          {
-            __debugbreak();
-          }
-        } while (!_quitRequest.load());
-      });
-    }
+            catch (...)
+            {
+              __debugbreak();
+            }
+          } while (!_quitRequest.load());
+      }      
+      catch(...)
+      {
+          
+      }
+     
+    });
 
     _threadPoolState = ThreadPoolState::Started;
+
+    }
   }
 
   void SimpleThreadPool::Stop()

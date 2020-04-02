@@ -1,13 +1,15 @@
 // RStein.AsyncCpp.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#include "Schedulers/Scheduler.h"
 #include <gtest/gtest.h>
 #include <iostream>
 
 int main()
-{
+{   
   ::testing::InitGoogleTest();
     RUN_ALL_TESTS();
+    RStein::AsyncCpp::Schedulers::Scheduler::StopDefaultScheduler();
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

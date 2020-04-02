@@ -94,9 +94,9 @@ namespace RStein::AsyncCpp::SchedulersTest
       std::shared_ptr<Scheduler> Create()
       {
         if (!_threadPoolScheduler)
-        {
-          _simpleThreadPool.Start();
+        {         
           _threadPoolScheduler = std::make_shared<ThreadPoolScheduler>(_simpleThreadPool);
+          _threadPoolScheduler->Start();
         }
         return _threadPoolScheduler;
       }
@@ -105,7 +105,7 @@ namespace RStein::AsyncCpp::SchedulersTest
         if (_threadPoolScheduler)
         {
           _threadPoolScheduler->Stop();
-          _simpleThreadPool.Stop();
+         
         }
       }
   };

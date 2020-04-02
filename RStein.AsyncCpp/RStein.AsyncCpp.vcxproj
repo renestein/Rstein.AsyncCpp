@@ -188,6 +188,7 @@
     <ClCompile Include="Schedulers\SimpleThreadPool.cpp" />
     <ClCompile Include="Schedulers\StrandSchedulerDecorator.cpp" />
     <ClCompile Include="Schedulers\ThreadPoolScheduler.cpp" />
+    <ClCompile Include="TasksTest\TaskTest.cpp" />
     <ClCompile Include="Tasks\Task.cpp" />
     <ClCompile Include="Utils\Disposable.cpp" />
   </ItemGroup>

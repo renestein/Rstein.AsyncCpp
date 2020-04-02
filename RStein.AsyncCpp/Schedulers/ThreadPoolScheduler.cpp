@@ -12,10 +12,18 @@ namespace RStein::AsyncCpp::Schedulers
 
   void ThreadPoolScheduler::Start()
   {
+    if (_threadPool.GetThreadPoolState() != SimpleThreadPool::ThreadPoolState::Started)
+    {
+      _threadPool.Start();
+    }
   }
 
   void ThreadPoolScheduler::Stop()
   {
+    if (_threadPool.GetThreadPoolState() != SimpleThreadPool::ThreadPoolState::Stopped)
+    {
+      _threadPool.Stop();
+    }
   }
 
   void ThreadPoolScheduler::EnqueueItem(std::function<void()>&& originalFunction)

@@ -22,6 +22,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler>
     Scheduler& operator=(Scheduler&& other) = delete;
 
     static SchedulerPtr DefaultScheduler();
+    static void StopDefaultScheduler();
     static SchedulerPtr CurrentScheduler();
 	  virtual void Start() = 0;
 	  virtual void Stop() = 0;
@@ -37,6 +38,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler>
 
 private:
     static thread_local SchedulerPtr _currentScheduler;
-  };
+    static SchedulerPtr initDefaultScheduler(); 
+};
 }
 
