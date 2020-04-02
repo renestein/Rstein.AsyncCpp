@@ -38,22 +38,20 @@ namespace RStein::AsyncCpp::Collections
     template <typename TR, typename TMapFunc>
     auto MapSnapshot(TMapFunc&& mapFunc);
     void Clear(); 
-    
     reference operator [] (int index);
     const_reference operator [] (int index) const;
-
+    iterator begin() noexcept;
+    const_iterator cbegin() const noexcept;
+    iterator end() noexcept;
+    const_iterator cend() const noexcept;
+    iterator rbegin() noexcept;
+    const_iterator crbegin() const noexcept;
+    iterator rend() noexcept;
+    const_iterator crend() const noexcept;
   private:
     std::vector<T> _innerVector;
     mutable std::mutex _mutex;
-
-    iterator Begin() noexcept;
-    const_iterator CBegin() const noexcept;
-    iterator End() noexcept;
-    const_iterator CEnd() const noexcept;
-    iterator RBegin() noexcept;
-    const_iterator CRBegin() const noexcept;
-    iterator REnd() noexcept;
-    const_iterator CREnd() const noexcept;
+  
 
   };
 
@@ -138,56 +136,56 @@ namespace RStein::AsyncCpp::Collections
   }
 
   template <typename T>
-  typename ThreadSafeMinimalisticVector<T>::iterator ThreadSafeMinimalisticVector<T>::Begin() noexcept
+  typename ThreadSafeMinimalisticVector<T>::iterator ThreadSafeMinimalisticVector<T>::begin() noexcept
   {
     std::lock_guard lock{_mutex};
     return _innerVector.begin();
   }
 
   template <typename T>
-  typename ThreadSafeMinimalisticVector<T>::const_iterator ThreadSafeMinimalisticVector<T>::CBegin() const noexcept
+  typename ThreadSafeMinimalisticVector<T>::const_iterator ThreadSafeMinimalisticVector<T>::cbegin() const noexcept
   {
     std::lock_guard lock{_mutex};
     return  _innerVector.cbegin();
   }
 
   template <typename T>
-  typename ThreadSafeMinimalisticVector<T>::iterator ThreadSafeMinimalisticVector<T>::End() noexcept
+  typename ThreadSafeMinimalisticVector<T>::iterator ThreadSafeMinimalisticVector<T>::end() noexcept
   {
     std::lock_guard lock{_mutex};
     return _innerVector.end();
   }
 
   template <typename T>
-  typename ThreadSafeMinimalisticVector<T>::const_iterator ThreadSafeMinimalisticVector<T>::CEnd() const noexcept
+  typename ThreadSafeMinimalisticVector<T>::const_iterator ThreadSafeMinimalisticVector<T>::cend() const noexcept
   {
     std::lock_guard lock{_mutex};
     return _innerVector.cend();
   }
 
   template <typename T>
-  typename ThreadSafeMinimalisticVector<T>::iterator ThreadSafeMinimalisticVector<T>::RBegin() noexcept
+  typename ThreadSafeMinimalisticVector<T>::iterator ThreadSafeMinimalisticVector<T>::rbegin() noexcept
   {
     std::lock_guard lock{_mutex};
     return _innerVector.rbegin();
   }
 
   template <typename T>
-  typename ThreadSafeMinimalisticVector<T>::const_iterator ThreadSafeMinimalisticVector<T>::CRBegin() const noexcept
+  typename ThreadSafeMinimalisticVector<T>::const_iterator ThreadSafeMinimalisticVector<T>::crbegin() const noexcept
   {
     std::lock_guard lock{_mutex};
     return _innerVector.crbegin();
   }
 
   template <typename T>
-  typename ThreadSafeMinimalisticVector<T>::iterator ThreadSafeMinimalisticVector<T>::REnd() noexcept
+  typename ThreadSafeMinimalisticVector<T>::iterator ThreadSafeMinimalisticVector<T>::rend() noexcept
   {
     std::lock_guard lock{_mutex};
     return _innerVector.rend();
   }
 
   template <typename T>
-  typename ThreadSafeMinimalisticVector<T>::const_iterator ThreadSafeMinimalisticVector<T>::CREnd() const noexcept
+  typename ThreadSafeMinimalisticVector<T>::const_iterator ThreadSafeMinimalisticVector<T>::crend() const noexcept
   {
     std::lock_guard lock{_mutex};
     return _innerVector.crend();
