@@ -1,33 +1,20 @@
 #pragma once
 #include "../AsyncPrimitives/CancellationToken.h"
+#include "TaskState.h"
+#include "Detail/TaskHelpers.h"
 #include <any>
-#include <atomic>
 #include <exception>
 #include <memory>
 #include <functional>
 
-namespace my_namespace
-{
-  
-}
+
 namespace RStein::AsyncCpp::Tasks
 {
-  enum class TaskState
-  {
-    Created,
-    Scheduled,
-    Running,
-    Faulted,
-    Canceled,
-    RunToCompletion
-  };
-
-   template<typename TFunc>
-   struct TypedTaskSharedState;
 
   template<typename TResult>
   class TaskT;
 
+ 
   class Task
   {
 
@@ -56,7 +43,16 @@ namespace RStein::AsyncCpp::Tasks
       TaskState State() const;
 
       static Task Run(std::function<void()>&& action);
+    
       static Task Run(std::function<void()>&& action, const AsyncPrimitives::CancellationToken::CancellationTokenPtr& cancellationToken);
+
+      template<typename TResult>
+      static TaskT<TResult> Run(std::function<TResult()>&& func)
+      {
+        TaskT<TResult> task{std::move(func)};
+        task.Start();
+        return task;
+      }
       //TODO: Enable when Task is coroutine promise
 
     /*  static Task Run (std::function<Task()>&& action);
@@ -73,26 +69,10 @@ namespace RStein::AsyncCpp::Tasks
       std::exception_ptr Exception() const;
 
     protected:
-      template<typename TR>
-      explicit Task(std::function<TR()>&& func);
-
-      template<typename TR>
-      Task(std::function<TR()>&& func, AsyncPrimitives::CancellationToken::CancellationTokenPtr);
-
-      template<typename TR>
-      explicit Task(std::function<TaskT<TR>>&& func);
-
-      template<typename TR>
-      explicit Task(std::function<TaskT<TR>>&& func, AsyncPrimitives::CancellationToken::CancellationTokenPtr);
-     
-
-      template<typename TFunc>
-      friend struct TypedTaskSharedState;
+      Task();
 
       std::any GetTaskResult() const;
-    
-      struct TaskSharedState;
-      using TaskSharedStatePtr = std::shared_ptr<TaskSharedState>;
+      using TaskSharedStatePtr = std::shared_ptr<Detail::TaskSharedState>;
       TaskSharedStatePtr _sharedTaskState;
 
     private:
@@ -114,22 +94,26 @@ namespace RStein::AsyncCpp::Tasks
   }
 
   template<typename TResult>
-  class TaskT : Task
+  class TaskT : public Task
   {
 
   public:
+
        //TODO: Avoid function, use template
-       explicit TaskT(std::function<TResult()>&& action) : Task{action}
+       explicit TaskT(std::function<TResult()>&& func) : Task{}
+                                                        
+       {
+         _sharedTaskState = std::make_shared<Detail::TypedTaskSharedState<std::function<TResult()>>>(std::move(func),
+                                                                                                  false,
+                                                                                                  CancellationToken::None());
+       }
+
+       TaskT(std::function<TResult()>&& func, const AsyncPrimitives::CancellationToken::CancellationTokenPtr& cancellationToken) : Task{func, cancellationToken}
        {
          
        }
 
-       TaskT(std::function<TResult()>&& action, const AsyncPrimitives::CancellationToken::CancellationTokenPtr& cancellationToken) : Task{action, cancellationToken}
-       {
-         
-       }
-
-      explicit TaskT(std::function<TaskT<TResult>()>&& action) : Task{action}
+      explicit TaskT(std::function<TaskT<TResult>()>&& func) : Task{func}
       {
          
       }
@@ -143,10 +127,9 @@ namespace RStein::AsyncCpp::Tasks
       TaskT(TaskT&& other) noexcept = default;
       TaskT& operator=(const TaskT& other) = default;
       TaskT& operator=(TaskT&& other) noexcept = default;
-      TResult GetResult()
-      {
-        Wait();
-        return std::any_cast<TResult>(GetTaskResult());
+      TResult Result()
+      {        
+        return static_pointer_cast<Detail::TypedTaskSharedState<std::function<TResult()>>>(_sharedTaskState)->GetResult();
       }
   };
 

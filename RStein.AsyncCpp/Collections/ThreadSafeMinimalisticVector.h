@@ -30,9 +30,7 @@ namespace RStein::AsyncCpp::Collections
     void Add(T&& item);
     void Remove(const T& item);
     template <class TPredicate>
-    void RemoveIf(TPredicate&& predicate);
-    size_type Count;
-    size_type Capacity;
+    void RemoveIf(TPredicate&& predicate);  
     void Reserve(size_type newCapacity);
     std::vector<T> GetSnapshot();
     template <typename TR, typename TMapFunc>

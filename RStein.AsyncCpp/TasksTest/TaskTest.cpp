@@ -138,3 +138,14 @@ TEST(TaskTest, ContinueWithWhenAntecedentTaskAlreadyCompletedThenContinuationSee
   ASSERT_THROW(continuationTask.Wait(), invalid_argument);
 }
 
+
+TEST(TaskTest, ResultWhenTaskCompletedThenReturnExpectedValue)
+{
+  const int EXPECTED_VALUE = 42;
+
+  auto task = Task::Run<int>([EXPECTED_VALUE](){return EXPECTED_VALUE;});
+  auto result = task.Result();
+
+  
+  ASSERT_EQ(EXPECTED_VALUE, result);
+}

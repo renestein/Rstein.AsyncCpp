@@ -111,6 +111,9 @@
     <ClCompile Include="TasksTest\TaskTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Tasks\Detail\TaskHelpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h">
@@ -192,6 +195,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Tasks\Task.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tasks\Detail\TaskHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tasks\TaskState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
