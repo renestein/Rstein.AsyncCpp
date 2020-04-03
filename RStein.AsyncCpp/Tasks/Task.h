@@ -16,13 +16,13 @@ namespace RStein::AsyncCpp::Tasks
   public:
 
     using Func_Type = TFunc;
-    using TypedTaskSharedState = Detail::TypedTaskSharedState<TFunc>;
+    using TypedTaskSharedState = Detail::TaskSharedState<TFunc>;
     using Ret_Type = typename TypedTaskSharedState::Function_Ret_Type;
 
     explicit Task(TFunc func) : _sharedTaskState{
         std::make_shared<TypedTaskSharedState>(std::move(func),
                                                false,
-                                               CancellationToken::None())
+                                               AsyncPrimitives::CancellationToken::None())
     }
     {
     }
@@ -49,23 +49,17 @@ namespace RStein::AsyncCpp::Tasks
     bool IsCompleted() const;
     bool IsFaulted() const;
     TaskState State() const;
-
-
     void Wait() const;
-
     template <typename TResultCopy = Ret_Type>
-    typename std::enable_if<!is_same<TResultCopy, void>::value, Ret_Type>::type Result() const
+    typename std::enable_if<!std::is_same<TResultCopy, void>::value, Ret_Type>::type Result() const
     {
       return _sharedTaskState->GetResult();
     }
 
-
-    //TODO: Add Scheduler overloads
-    //TODO: Use template instead of the func
+    //TODO: Add Scheduler overloads   
     
     template<typename TContinuation>
     auto ContinueWith(TContinuation continuation);
-
     std::exception_ptr Exception() const;
 
   protected:
@@ -165,11 +159,11 @@ namespace RStein::AsyncCpp::Tasks
     template <typename TFunc>
     static auto Run(TFunc&& func)
     {
-      return Run(std::forward<TFunc>(func), CancellationToken::None());
+      return Run(std::forward<TFunc>(func), AsyncPrimitives::CancellationToken::None());
     }
 
     template <typename TFunc>
-    static auto Run(TFunc&& func, const CancellationToken::CancellationTokenPtr& cancellationToken)
+    static auto Run(TFunc&& func, const AsyncPrimitives::CancellationToken::CancellationTokenPtr& cancellationToken)
     {
       Task<TFunc> task{std::forward<TFunc>(func), cancellationToken};
       task.Start();

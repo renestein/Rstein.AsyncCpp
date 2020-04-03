@@ -10,11 +10,6 @@
 #include <mutex>
 #include <condition_variable>
 
-using namespace RStein::AsyncCpp::Collections;
-using namespace RStein::AsyncCpp::AsyncPrimitives;
-using namespace RStein::AsyncCpp::Schedulers;
-using namespace std;
-
 namespace RStein::AsyncCpp::Tasks::Detail
 {
   struct NONE_RESULT
@@ -26,20 +21,19 @@ namespace RStein::AsyncCpp::Tasks::Detail
   {
   public:
 
-    using Function_Ret_Type = decltype(declval<TFunc>()());
-    using Is_Void_Return_Function = is_same<Function_Ret_Type, void>;
-    using Ret_Type = conditional_t<Is_Void_Return_Function::value, NONE_RESULT, Function_Ret_Type>;
+    using Function_Ret_Type = decltype(std::declval<TFunc>()());
+    using Is_Void_Return_Function = std::is_same<Function_Ret_Type, void>;
+    using Ret_Type = std::conditional_t<Is_Void_Return_Function::value, NONE_RESULT, Function_Ret_Type>;
 
     FunctionWrapper(TFunc&& func,
                     bool isTaskReturnFunc,
-                    CancellationToken::CancellationTokenPtr cancellationToken)
+                    AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken)
       : _func(std::move(func)),
         _isTaskReturnFunc(isTaskReturnFunc),
         _cancellationToken(std::move(cancellationToken)),
         _retValue{},
         _hasRetValue{false}
     {
-
     }
 
     void Run()
@@ -72,7 +66,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       return _retValue;
     }
 
-    CancellationToken::CancellationTokenPtr CancellationToken() const
+    AsyncPrimitives::CancellationToken::CancellationTokenPtr CancellationToken() const
     {
       return _cancellationToken;
     }
@@ -86,25 +80,31 @@ namespace RStein::AsyncCpp::Tasks::Detail
   private:
     TFunc _func;
     bool _isTaskReturnFunc;
-    CancellationToken::CancellationTokenPtr _cancellationToken;
+    AsyncPrimitives::CancellationToken::CancellationTokenPtr _cancellationToken;
     Ret_Type _retValue;
     bool _hasRetValue;
   };
 
-  struct TaskSharedState : public std::enable_shared_from_this<TaskSharedState>
+  template <typename TFunc>
+  struct TaskSharedState : public std::enable_shared_from_this<TaskSharedState<TFunc>>
   {
   public:
-
     using ContinuationFunc = std::function<void()>;
-    TaskSharedState() : enable_shared_from_this<TaskSharedState>{},
-                        _lockObject{},
-                        _waitTaskCv{},
-                        _scheduler{Scheduler::DefaultScheduler()},
-                        _taskId{_idGenerator++},
-                        _state{TaskState::Created},
-                        _continuations{vector<ContinuationFunc>{}},
-                        _exceptionPtr{nullptr}
+    using Ret_Type = typename FunctionWrapper<TFunc>::Ret_Type;
+    using Function_Ret_Type = typename FunctionWrapper<TFunc>::Function_Ret_Type;
 
+    TaskSharedState(TFunc func, bool isTaskReturnFunc, AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken):
+       std::enable_shared_from_this<TaskSharedState<TFunc>>(),
+      _func(std::move(func),
+            isTaskReturnFunc,
+            cancellationToken),
+      _lockObject{},
+      _waitTaskCv{},
+      _scheduler{Schedulers::Scheduler::DefaultScheduler()},
+      _taskId{_idGenerator++},
+      _state{TaskState::Created},
+      _continuations{std::vector<ContinuationFunc>{}},
+      _exceptionPtr{nullptr}
     {
     }
 
@@ -115,7 +115,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
 
     TaskState State()
     {
-      lock_guard lock{_lockObject};
+      std::lock_guard lock{_lockObject};
       return _state;
     }
 
@@ -129,17 +129,27 @@ namespace RStein::AsyncCpp::Tasks::Detail
       return _exceptionPtr;
     }
 
-
-    virtual ~TaskSharedState()
+    bool IsTaskBasedReturnFunc()
     {
-      lock_guard lock{_lockObject};
-      if (_state != TaskState::RunToCompletion &&
-          _state != TaskState::Faulted &&
-          _state != TaskState::Canceled)
-      {
-        throw std::logic_error("Broken Task shared state");
-      }
+      return _func.IsTaskBasedReturnFunc();
     }
+
+    AsyncPrimitives::CancellationToken::CancellationTokenPtr CancellationToken()
+    {
+      return _func.CancellationToken();
+    }
+
+    typename FunctionWrapper<TFunc>::Ret_Type GetResult() const
+    {
+      Wait();
+      return _func.ReturnValue();
+    }
+
+    bool IsCtCanceled()
+    {
+      return _func.IsCancellationRequested();
+    }
+
 
     void RunTaskFunc()
     {
@@ -147,7 +157,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       if (isCtCanceled)
       {
         {
-          lock_guard lock{_lockObject};
+          std::lock_guard lock{_lockObject};
           _state = TaskState::Canceled;
         }
 
@@ -158,7 +168,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       }
 
       {
-        lock_guard lock{_lockObject};
+        std::lock_guard lock{_lockObject};
 
         if (_state != TaskState::Created)
         {
@@ -169,7 +179,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
         _state = TaskState::Scheduled;
       }
 
-      _scheduler->EnqueueItem([this, sharedThis = shared_from_this()]
+      _scheduler->EnqueueItem([this, sharedThis = this->shared_from_this()]
       {
         Utils::FinallyBlock finally
         {
@@ -185,7 +195,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
           CancellationToken()->ThrowIfCancellationRequested();
 
           {
-            lock_guard lock{_lockObject};
+            std::lock_guard lock{_lockObject};
             assert(_state == TaskState::Scheduled);
             _state = TaskState::Running;
           }
@@ -195,8 +205,8 @@ namespace RStein::AsyncCpp::Tasks::Detail
         }
         catch (const AsyncPrimitives::OperationCanceledException&)
         {
-          _exceptionPtr = current_exception();
-          lock_guard lock{_lockObject};
+          _exceptionPtr = std::current_exception();
+          std::lock_guard lock{_lockObject};
           if (_state == TaskState::Canceled)
           {
             __debugbreak();
@@ -206,8 +216,8 @@ namespace RStein::AsyncCpp::Tasks::Detail
         }
         catch (...)
         {
-          _exceptionPtr = current_exception();
-          lock_guard lock{_lockObject};
+          _exceptionPtr = std::current_exception();
+          std::lock_guard lock{_lockObject};
           assert(_state == TaskState::Running);
           _state = TaskState::Faulted;
         }
@@ -216,7 +226,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
 
     void Wait() const
     {
-      unique_lock lock{_lockObject};
+      std::unique_lock lock{_lockObject};
       while (_state != TaskState::RunToCompletion &&
              _state != TaskState::Faulted &&
              _state != TaskState::Canceled)
@@ -239,7 +249,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
     void AddContinuation(ContinuationFunc&& continuationFunc)
     {
       //TODO inline task if possible
-      lock_guard lock{_lockObject};
+      std::lock_guard lock{_lockObject};
       if (_state == TaskState::RunToCompletion ||
           _state == TaskState::Faulted ||
           _state == TaskState::Canceled)
@@ -251,28 +261,39 @@ namespace RStein::AsyncCpp::Tasks::Detail
       _continuations.Add(continuationFunc);
     }
 
-    virtual bool IsTaskBasedReturnFunc() = 0;
-    virtual CancellationToken::CancellationTokenPtr CancellationToken() = 0;
-    virtual bool IsCtCanceled() = 0;   
+    ~TaskSharedState()
+    {
+      std::lock_guard lock{_lockObject};
+      if (_state != TaskState::RunToCompletion &&
+          _state != TaskState::Faulted &&
+          _state != TaskState::Canceled)
+      {
+        assert(false);
+      }
+    }
 
-  protected:
-    mutable mutex _lockObject;
-    mutable condition_variable _waitTaskCv;
-    Scheduler::SchedulerPtr _scheduler;
-    virtual void DoRunTaskNow() = 0;
+
   private:
-    //TODO Check overflow.
+    FunctionWrapper<TFunc> _func;
+    mutable std::mutex _lockObject;
+    mutable std::condition_variable _waitTaskCv;
+    Schedulers::Scheduler::SchedulerPtr _scheduler;
     inline static std::atomic<unsigned long> _idGenerator{};
     unsigned long _taskId;
     TaskState _state;
-    ThreadSafeMinimalisticVector<ContinuationFunc> _continuations;
-    exception_ptr _exceptionPtr;
+    Collections::ThreadSafeMinimalisticVector<ContinuationFunc> _continuations;
+    std::exception_ptr _exceptionPtr;
+
+    void DoRunTaskNow()
+    {
+      _func.Run();
+    }
 
     void runContinuations()
     {
-      vector<ContinuationFunc> continuations;
+      std::vector<ContinuationFunc> continuations;
       {
-        lock_guard lock{_lockObject};
+        std::lock_guard lock{_lockObject};
         assert(_state == TaskState::RunToCompletion ||
                _state == TaskState::Faulted ||
                _state == TaskState::Canceled);
@@ -281,60 +302,10 @@ namespace RStein::AsyncCpp::Tasks::Detail
         _continuations.Clear();
       }
 
-      for (auto& continuation: continuations)
+      for (auto& continuation : continuations)
       {
         continuation();
       }
     }
-  };
-
-  template <typename TFunc>
-  struct TypedTaskSharedState : TaskSharedState
-  {
-  public:
-
-    using Ret_Type = typename FunctionWrapper<TFunc>::Ret_Type;
-    using Function_Ret_Type = typename FunctionWrapper<TFunc>::Function_Ret_Type;
-
-    TypedTaskSharedState(TFunc func, bool isTaskReturnFunc, CancellationToken::CancellationTokenPtr cancellationToken):
-      TaskSharedState{},
-      _func(std::move(func),
-            isTaskReturnFunc,
-            cancellationToken)
-    {
-    }
-
-    bool IsTaskBasedReturnFunc() override
-    {
-      return _func.IsTaskBasedReturnFunc();
-    }
-
-    CancellationToken::CancellationTokenPtr CancellationToken() override
-    {
-      return _func.CancellationToken();
-    }
-
-    typename FunctionWrapper<TFunc>::Ret_Type GetResult() const
-    {
-      Wait();
-      return _func.ReturnValue();
-    }
-
-    bool IsCtCanceled() override
-    {
-      return _func.IsCancellationRequested();
-    }
-
-    virtual ~TypedTaskSharedState() = default;
-
-  protected:
-
-    void DoRunTaskNow() override
-    {
-      _func.Run();
-    }
-
-  private:
-    FunctionWrapper<TFunc> _func;
   };
 }
