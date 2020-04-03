@@ -39,10 +39,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
         _retValue{},
         _hasRetValue{false}
     {
-      if (!_func)
-      {
-        throw std::invalid_argument{"func"};
-      }
+
     }
 
     void Run()
@@ -296,6 +293,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
   {
   public:
 
+    using Ret_Type = typename FunctionWrapper<TFunc>::Ret_Type;
     TypedTaskSharedState(TFunc func, bool isTaskReturnFunc, CancellationToken::CancellationTokenPtr cancellationToken):
       TaskSharedState{},
       _func(std::move(func),
