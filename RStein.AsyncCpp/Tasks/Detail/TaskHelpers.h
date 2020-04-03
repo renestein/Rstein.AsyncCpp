@@ -108,6 +108,15 @@ namespace RStein::AsyncCpp::Tasks::Detail
     {
     }
 
+
+    TaskSharedState(const TaskSharedState& other) = delete;
+
+    TaskSharedState(TaskSharedState&& other) noexcept = delete;
+
+    TaskSharedState& operator=(const TaskSharedState& other) = delete;
+
+    TaskSharedState& operator=(TaskSharedState&& other) noexcept = delete;
+
     unsigned long Id() const
     {
       return _taskId;

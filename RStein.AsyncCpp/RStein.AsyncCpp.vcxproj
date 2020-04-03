@@ -191,6 +191,7 @@
     <ClCompile Include="Tasks\Detail\TaskHelpers.cpp" />
     <ClCompile Include="TasksTest\TaskTest.cpp" />
     <ClCompile Include="Tasks\Task.cpp" />
+    <ClCompile Include="Tasks\TaskFactory.cpp" />
     <ClCompile Include="Utils\Disposable.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -220,6 +221,7 @@
     <ClInclude Include="Schedulers\ThreadPoolScheduler.h" />
     <ClInclude Include="Tasks\Detail\TaskHelpers.h" />
     <ClInclude Include="Tasks\Task.h" />
+    <ClInclude Include="Tasks\TaskFactory.h" />
     <ClInclude Include="Tasks\TaskState.h" />
     <ClInclude Include="Utils\Disposable.h" />
     <ClInclude Include="Utils\FinallyBlock.h" />

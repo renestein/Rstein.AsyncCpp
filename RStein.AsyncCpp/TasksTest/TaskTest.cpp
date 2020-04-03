@@ -1,6 +1,7 @@
 #include "../AsyncPrimitives/CancellationTokenSource.h"
 #include "../AsyncPrimitives/OperationCanceledException.h"
 #include "../Tasks/Task.h"
+#include "../Tasks/TaskFactory.h"
 #include <gtest/gtest.h>
 #include <future>
 
@@ -9,7 +10,24 @@ using namespace RStein::AsyncCpp::Tasks;
 using namespace RStein::AsyncCpp::AsyncPrimitives;
 using namespace std;
 
-TEST(TaskTest, RunWhenHotTaskCreatedThenTaskIsCompleted)
+class TaskTest : public Test
+{
+public:
+
+  future<void> ContinueWithWhenUsingAwaiterThenTaskIsResumedImpl()
+  {
+    auto func = []
+    {
+      this_thread::sleep_for(10ms);
+    };
+
+    auto task = TaskFactory::Run(func);
+
+    co_await task;
+  }
+};
+
+TEST_F(TaskTest, RunWhenHotTaskCreatedThenTaskIsCompleted)
 {
   bool taskRun = false;
 
@@ -21,7 +39,8 @@ TEST(TaskTest, RunWhenHotTaskCreatedThenTaskIsCompleted)
   ASSERT_EQ(TaskState::RunToCompletion, taskState);
 }
 
-TEST(TaskTest, ContinueWithWhenAntecedentTaskCompletedThenContinuationRun)
+
+TEST_F(TaskTest, ContinueWithWhenAntecedentTaskCompletedThenContinuationRun)
 {
 
   std::promise<void> startTaskPromise;
@@ -44,7 +63,8 @@ TEST(TaskTest, ContinueWithWhenAntecedentTaskCompletedThenContinuationRun)
 }
 
 
-TEST(TaskTest, ContinueWithWhenAntecedentTaskAlreadyCompletedThenContinuationRun)
+
+TEST_F(TaskTest, ContinueWithWhenAntecedentTaskAlreadyCompletedThenContinuationRun)
 {
 
   bool continuationRun = false;
@@ -64,7 +84,8 @@ TEST(TaskTest, ContinueWithWhenAntecedentTaskAlreadyCompletedThenContinuationRun
 }
 
 
-TEST(TaskTest, IsFaultedWhenTaskThrowsExceptionThenReturnsTrue)
+
+TEST_F(TaskTest, IsFaultedWhenTaskThrowsExceptionThenReturnsTrue)
 {
   auto task = TaskFactory::Run([]
   {
@@ -86,7 +107,8 @@ TEST(TaskTest, IsFaultedWhenTaskThrowsExceptionThenReturnsTrue)
   ASSERT_EQ(TaskState::Faulted, taskState);
 }
 
-TEST(TaskTest, WaitWhenTaskThrowsExceptionThenRethrowsException)
+
+TEST_F(TaskTest, WaitWhenTaskThrowsExceptionThenRethrowsException)
 {
   auto task = TaskFactory::Run([]
   {
@@ -97,7 +119,8 @@ TEST(TaskTest, WaitWhenTaskThrowsExceptionThenRethrowsException)
   
 }
 
-TEST(TaskTest, WaitWhenTaskCanceledThenThrowsOperationCanceledException)
+
+TEST_F(TaskTest, WaitWhenTaskCanceledThenThrowsOperationCanceledException)
 {
   auto cts = CancellationTokenSource::Create();
   cts->Cancel();
@@ -110,7 +133,8 @@ TEST(TaskTest, WaitWhenTaskCanceledThenThrowsOperationCanceledException)
   
 }
 
-TEST(TaskTest, IsCanceledWhenTaskCanceledThenReturnsTrue)
+
+TEST_F(TaskTest, IsCanceledWhenTaskCanceledThenReturnsTrue)
 {
   auto cts = CancellationTokenSource::Create();
   cts->Cancel();
@@ -126,7 +150,8 @@ TEST(TaskTest, IsCanceledWhenTaskCanceledThenReturnsTrue)
   
 }
 
-TEST(TaskTest, ContinueWithWhenAntecedentTaskAlreadyCompletedThenContinuationSeesExpectedException)
+
+TEST_F(TaskTest, ContinueWithWhenAntecedentTaskAlreadyCompletedThenContinuationSeesExpectedException)
 {
 
   auto task = TaskFactory::Run([]{throw invalid_argument{"invalid arg in test"};});
@@ -140,7 +165,7 @@ TEST(TaskTest, ContinueWithWhenAntecedentTaskAlreadyCompletedThenContinuationSee
 }
 
 
-TEST(TaskTest, ResultWhenTaskTCompletedThenReturnExpectedValue)
+TEST_F(TaskTest, ResultWhenTaskTCompletedThenReturnExpectedValue)
 {
   const int EXPECTED_VALUE = 42;
 
@@ -151,7 +176,8 @@ TEST(TaskTest, ResultWhenTaskTCompletedThenReturnExpectedValue)
   ASSERT_EQ(EXPECTED_VALUE, result);
 }
 
-TEST(TaskTest, ResultWhenTaskTCompletedThenContinuationSeesExpectedValue)
+
+TEST_F(TaskTest, ResultWhenTaskTCompletedThenContinuationSeesExpectedValue)
 {
   const int EXPECTED_VALUE = 42;
 
@@ -162,4 +188,13 @@ TEST(TaskTest, ResultWhenTaskTCompletedThenContinuationSeesExpectedValue)
 
   
   ASSERT_EQ(EXPECTED_VALUE, result);
+}
+
+
+
+
+TEST_F(TaskTest, ContinueWithWhenUsingAwaiterThenTaskIsResumed)
+{
+  ContinueWithWhenUsingAwaiterThenTaskIsResumedImpl().get();
+  SUCCEED();
 }

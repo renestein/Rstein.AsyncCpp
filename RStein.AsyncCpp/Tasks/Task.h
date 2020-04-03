@@ -62,6 +62,51 @@ namespace RStein::AsyncCpp::Tasks
     auto ContinueWith(TContinuation continuation);
     std::exception_ptr Exception() const;
 
+    auto operator co_await() const
+    {
+
+      struct TaskAwaiter
+      {
+         Task<TFunc> _task;
+
+         TaskAwaiter(Task<TFunc> task): _task(task)
+         {
+           
+         }
+
+         [[nodiscard]] bool await_ready() const
+         {
+           return _task.IsCompleted();
+         }
+
+        [[nodiscard]] bool await_suspend(std::experimental::coroutine_handle<> continuation)
+        {
+          if (_task.IsCompleted())
+          {
+            return false;
+          }
+          _task.ContinueWith([continuation=std::move(continuation)](const auto& _) {continuation();});
+           return true;
+        }
+
+        [[nodiscard]] Ret_Type await_resume() const
+        {
+          if constexpr(std::is_same<Ret_Type, void>::value)
+          {
+            return;
+          }
+          else
+          {
+             return _task.Result();
+          }
+        }
+      };
+
+      TaskAwaiter awaiter{*this};
+      return awaiter;
+
+    }
+
   protected:
     Task();
 
@@ -152,22 +197,4 @@ namespace RStein::AsyncCpp::Tasks
       continuationTask.Start();
     });
   }
-
-  class TaskFactory
-  {
-  public:
-    template <typename TFunc>
-    static auto Run(TFunc&& func)
-    {
-      return Run(std::forward<TFunc>(func), AsyncPrimitives::CancellationToken::None());
-    }
-
-    template <typename TFunc>
-    static auto Run(TFunc&& func, const AsyncPrimitives::CancellationToken::CancellationTokenPtr& cancellationToken)
-    {
-      Task<TFunc> task{std::forward<TFunc>(func), cancellationToken};
-      task.Start();
-      return task;
-    }
-  };
 }
