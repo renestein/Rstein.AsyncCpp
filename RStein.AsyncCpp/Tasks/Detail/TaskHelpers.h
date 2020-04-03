@@ -294,6 +294,8 @@ namespace RStein::AsyncCpp::Tasks::Detail
   public:
 
     using Ret_Type = typename FunctionWrapper<TFunc>::Ret_Type;
+    using Function_Ret_Type = typename FunctionWrapper<TFunc>::Function_Ret_Type;
+
     TypedTaskSharedState(TFunc func, bool isTaskReturnFunc, CancellationToken::CancellationTokenPtr cancellationToken):
       TaskSharedState{},
       _func(std::move(func),
