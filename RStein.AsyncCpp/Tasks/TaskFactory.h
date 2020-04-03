@@ -17,7 +17,8 @@ namespace RStein::AsyncCpp::Tasks
     static auto Run(TFunc&& func,
                     const RStein::AsyncCpp::AsyncPrimitives::CancellationToken::CancellationTokenPtr& cancellationToken)
     {
-      Task task{std::forward<TFunc>(func), cancellationToken};
+      using Ret_Task_Type = decltype(func());
+      Task<Ret_Task_Type> task{std::forward<TFunc>(func), cancellationToken};
       task.Start();
       return task;
     }

@@ -12,92 +12,20 @@
 
 namespace RStein::AsyncCpp::Tasks::Detail
 {
-  struct NONE_RESULT
-  {
-  };
+ 
 
-  template <typename TFunc>
-  struct FunctionWrapper
-  {
-  public:
-
-    using Function_Ret_Type = decltype(std::declval<TFunc>()());
-    using Is_Void_Return_Function = std::is_same<Function_Ret_Type, void>;
-    using Ret_Type = std::conditional_t<Is_Void_Return_Function::value, NONE_RESULT, Function_Ret_Type>;
-
-    FunctionWrapper(TFunc&& func,
-                    bool isTaskReturnFunc,
-                    AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken)
-      : _func(std::move(func)),
-        _isTaskReturnFunc(isTaskReturnFunc),
-        _cancellationToken(std::move(cancellationToken)),
-        _retValue{},
-        _hasRetValue{false}
-    {
-    }
-
-    void Run()
-    {
-      assert(!_hasRetValue);
-      if constexpr (Is_Void_Return_Function::value)
-      {
-        _func();
-      }
-      else
-      {
-        _retValue = _func();
-      }
-      _hasRetValue = true;
-    }
-
-    bool IsTaskBasedReturnFunc() const
-    {
-      return _isTaskReturnFunc;
-    }
-
-    constexpr bool IsVoidFunc()
-    {
-      return Is_Void_Return_Function::value;
-    }
-
-    Ret_Type ReturnValue() const
-    {
-      assert(_hasRetValue);
-      return _retValue;
-    }
-
-    AsyncPrimitives::CancellationToken::CancellationTokenPtr CancellationToken() const
-    {
-      return _cancellationToken;
-    }
-
-    bool IsCancellationRequested() const
-    {
-      return _cancellationToken->IsCancellationRequested();
-    }
-
-
-  private:
-    TFunc _func;
-    bool _isTaskReturnFunc;
-    AsyncPrimitives::CancellationToken::CancellationTokenPtr _cancellationToken;
-    Ret_Type _retValue;
-    bool _hasRetValue;
-  };
-
-  template <typename TFunc>
-  struct TaskSharedState : public std::enable_shared_from_this<TaskSharedState<TFunc>>
+  template <typename TResult>
+  struct TaskSharedState : public std::enable_shared_from_this<TaskSharedState<TResult>>
   {
   public:
     using ContinuationFunc = std::function<void()>;
-    using Ret_Type = typename FunctionWrapper<TFunc>::Ret_Type;
-    using Function_Ret_Type = typename FunctionWrapper<TFunc>::Function_Ret_Type;
+    using Function_Ret_Type = TResult;
 
-    TaskSharedState(TFunc func, bool isTaskReturnFunc, AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken):
-       std::enable_shared_from_this<TaskSharedState<TFunc>>(),
-      _func(std::move(func),
-            isTaskReturnFunc,
-            cancellationToken),
+    TaskSharedState(std::function<TResult()> func, bool isTaskReturnFunc, AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken):
+       std::enable_shared_from_this<TaskSharedState<TResult>>(),
+      _func(std::move(func)),
+       _isTaskReturnFunc(isTaskReturnFunc),
+       _cancellationToken(cancellationToken),
       _lockObject{},
       _waitTaskCv{},
       _scheduler{Schedulers::Scheduler::DefaultScheduler()},
@@ -122,7 +50,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       return _taskId;
     }
 
-    TaskState State()
+    TaskState State() const
     {
       std::lock_guard lock{_lockObject};
       return _state;
@@ -138,25 +66,25 @@ namespace RStein::AsyncCpp::Tasks::Detail
       return _exceptionPtr;
     }
 
-    bool IsTaskBasedReturnFunc()
+    bool IsTaskBasedReturnFunc() const
     {
-      return _func.IsTaskBasedReturnFunc();
+      return _isTaskReturnFunc;
     }
 
-    AsyncPrimitives::CancellationToken::CancellationTokenPtr CancellationToken()
+    AsyncPrimitives::CancellationToken::CancellationTokenPtr CancellationToken() const
     {
-      return _func.CancellationToken();
+      return _cancellationToken;
     }
 
-    typename FunctionWrapper<TFunc>::Ret_Type GetResult() const
+    TResult GetResult() const
     {
       Wait();
-      return _func.ReturnValue();
+      return _func();
     }
 
-    bool IsCtCanceled()
+    bool IsCtCanceled() const
     {
-      return _func.IsCancellationRequested();
+      return _cancellationToken->IsCancellationRequested();
     }
 
 
@@ -283,7 +211,9 @@ namespace RStein::AsyncCpp::Tasks::Detail
 
 
   private:
-    FunctionWrapper<TFunc> _func;
+    std::function<TResult()> _func;
+    bool _isTaskReturnFunc;
+    AsyncPrimitives::CancellationToken::CancellationTokenPtr _cancellationToken;
     mutable std::mutex _lockObject;
     mutable std::condition_variable _waitTaskCv;
     Schedulers::Scheduler::SchedulerPtr _scheduler;
@@ -295,7 +225,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
 
     void DoRunTaskNow()
     {
-      _func.Run();
+      _func();
     }
 
     void runContinuations()

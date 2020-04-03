@@ -10,15 +10,16 @@
 
 namespace RStein::AsyncCpp::Tasks
 {
-  template <typename TFunc>
+  template <typename TResult = void>
   class Task
   {
   public:
 
-    using Func_Type = TFunc;
-    using TypedTaskSharedState = Detail::TaskSharedState<TFunc>;
-    using Ret_Type = typename TypedTaskSharedState::Function_Ret_Type;
+    
+    using TypedTaskSharedState = Detail::TaskSharedState<TResult>;
+    using Ret_Type = TResult;
 
+    template<typename TFunc>
     explicit Task(TFunc func) : _sharedTaskState{
         std::make_shared<TypedTaskSharedState>(std::move(func),
                                                false,
@@ -27,6 +28,7 @@ namespace RStein::AsyncCpp::Tasks
     {
     }
 
+    template<typename TFunc>
     Task(TFunc func, const AsyncPrimitives::CancellationToken::CancellationTokenPtr& cancellationToken) :
       _sharedTaskState{
           std::make_shared<TypedTaskSharedState>(std::move(func),
@@ -64,12 +66,11 @@ namespace RStein::AsyncCpp::Tasks
 
     auto operator co_await() const
     {
-
       struct TaskAwaiter
       {
-         Task<TFunc> _task;
+         Task<TResult> _task;
 
-         TaskAwaiter(Task<TFunc> task): _task(task)
+         TaskAwaiter(Task<TResult> task): _task(task)
          {
            
          }
@@ -122,26 +123,26 @@ namespace RStein::AsyncCpp::Tasks
     void addContinuation(Task<TContinuationFunc>& continuationTask) const;
   };
 
-  template <typename TFunc>
-  unsigned long Task<TFunc>::Id() const
+  template <typename TResult>
+  unsigned long Task<TResult>::Id() const
   {
     return _sharedTaskState->Id();
   }
 
-  template <typename TFunc>
-  void Task<TFunc>::Start()
+  template <typename TResult>
+  void Task<TResult>::Start()
   {
     _sharedTaskState->RunTaskFunc();
   }
 
-  template <typename TFunc>
-  bool Task<TFunc>::IsCanceled() const
+  template <typename TResult>
+  bool Task<TResult>::IsCanceled() const
   {
     return _sharedTaskState->State() == TaskState::Canceled;
   }
 
-  template <typename TFunc>
-  bool Task<TFunc>::IsCompleted() const
+  template <typename TResult>
+  bool Task<TResult>::IsCompleted() const
   {
     auto taskState = _sharedTaskState->State();
     return taskState == TaskState::RunToCompletion ||
@@ -149,48 +150,49 @@ namespace RStein::AsyncCpp::Tasks
            taskState == TaskState::Canceled;
   }
 
-  template <typename TFunc>
-  bool Task<TFunc>::IsFaulted() const
+  template <typename TResult>
+  bool Task<TResult>::IsFaulted() const
   {
     return _sharedTaskState->State() == TaskState::Faulted;
   }
 
-  template <typename TFunc>
-  TaskState Task<TFunc>::State() const
+  template <typename TResult>
+  TaskState Task<TResult>::State() const
   {
     return _sharedTaskState->State();
   }
 
-  template <typename TFunc>
-  void Task<TFunc>::Wait() const
+  template <typename TResult>
+  void Task<TResult>::Wait() const
   {
     return _sharedTaskState->Wait();
   }
 
-  template<typename TFunc>
+  template<typename TResult>
   template<typename TContinuation>
-  auto Task<TFunc>::ContinueWith(TContinuation continuation)
+  auto Task<TResult>::ContinueWith(TContinuation continuation)
   {
+    using Continuation_Return_Type = decltype(continuation(*this));
     auto continuationFunc = [continuation = std::move(continuation), thisCopy=*this]{return continuation(thisCopy);};
-    Task<decltype(continuationFunc)> continuationTask{continuationFunc};
+    Task<Continuation_Return_Type> continuationTask{continuationFunc};
     addContinuation(continuationTask);  
     return continuationTask;
   }
 
-  template <typename TFunc>
-  std::exception_ptr Task<TFunc>::Exception() const
+  template <typename TResult>
+  std::exception_ptr Task<TResult>::Exception() const
   {
     return _sharedTaskState->Exception();
   }
 
-  template <typename TFunc>
-  Task<TFunc>::Task() : _sharedTaskState{}
+  template <typename TResult>
+  Task<TResult>::Task() : _sharedTaskState{}
   {
   }
 
-  template <typename TFunc>
-  template <typename TContinuationFunc>
-  void Task<TFunc>::addContinuation(Task<TContinuationFunc>& continuationTask) const
+  template <typename TResult>
+  template <typename TContinuationResult>
+  void Task<TResult>::addContinuation(Task<TContinuationResult>& continuationTask) const
   {
     _sharedTaskState->AddContinuation([continuationTask]() mutable
     {

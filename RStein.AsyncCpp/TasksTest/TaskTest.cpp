@@ -4,6 +4,7 @@
 #include "../Tasks/TaskFactory.h"
 #include <gtest/gtest.h>
 #include <future>
+#include <string>
 
 using namespace testing;
 using namespace RStein::AsyncCpp::Tasks;
@@ -18,12 +19,18 @@ public:
   {
     auto func = []
     {
-      this_thread::sleep_for(10ms);
+      this_thread::sleep_for(100ms);
     };
 
     auto task = TaskFactory::Run(func);
 
     co_await task;
+  }
+
+  future<string> ContinueWithWhenUsingTaskTAwaiterThenTaskIsCompletedWithExpectedValueImpl(string expectedValue)
+  {
+    auto result = co_await TaskFactory::Run([expectedValue] {return expectedValue;});
+    co_return result;
   }
 };
 
@@ -101,7 +108,7 @@ TEST_F(TaskTest, IsFaultedWhenTaskThrowsExceptionThenReturnsTrue)
     
   }
 
-  auto isFaulted = task.IsFaulted();
+  auto isFaulted = task.IsFaulted();   
   ASSERT_TRUE(isFaulted);
   auto taskState = task.State();
   ASSERT_EQ(TaskState::Faulted, taskState);
@@ -190,11 +197,17 @@ TEST_F(TaskTest, ResultWhenTaskTCompletedThenContinuationSeesExpectedValue)
   ASSERT_EQ(EXPECTED_VALUE, result);
 }
 
-
-
-
 TEST_F(TaskTest, ContinueWithWhenUsingAwaiterThenTaskIsResumed)
 {
   ContinueWithWhenUsingAwaiterThenTaskIsResumedImpl().get();
   SUCCEED();
+}
+
+TEST_F(TaskTest, ContinueWithWhenUsingTaskTAwaiterThenTaskIsCompletedWithExpectedValue)
+{
+  const string EXPECTED_VALUE = "Test String Awaiter";
+
+  auto result = ContinueWithWhenUsingTaskTAwaiterThenTaskIsCompletedWithExpectedValueImpl(EXPECTED_VALUE).get();
+
+  ASSERT_EQ(EXPECTED_VALUE, result);
 }
