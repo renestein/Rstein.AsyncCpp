@@ -209,5 +209,8 @@
     <ClInclude Include="Tasks\TaskFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Functional\F.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

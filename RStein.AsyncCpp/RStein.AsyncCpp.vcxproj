@@ -214,6 +214,7 @@
     <ClInclude Include="DataFlow\IInputBlock.h" />
     <ClInclude Include="DataFlow\IInputOutputBlock.h" />
     <ClInclude Include="DataFlow\TransformBlock.h" />
+    <ClInclude Include="Functional\F.h" />
     <ClInclude Include="Schedulers\CurrentThreadScheduler.h" />
     <ClInclude Include="Schedulers\Scheduler.h" />
     <ClInclude Include="Schedulers\SimpleThreadPool.h" />
