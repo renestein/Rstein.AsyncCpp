@@ -3,16 +3,20 @@
 #include <functional>
 namespace RStein::Functional
 {
+  //Not thread safe
   template<typename TCallable>
-  auto Memoize(TCallable&& originalFunc)
+  auto Memoize0(TCallable&& originalFunc)
   {
     assert(originalFunc != nullptr);
-
-    return [originalFunc = std::forward<TCallable>(originalFunc)]
+    using Ret_Type = decltype(originalFunc());
+    return [originalFunc = std::forward<TCallable>(originalFunc), retTaskType = Ret_Type(), wasMethodCalled = false]() mutable
     {
-         using Ret_Task_Type = decltype(originalFunc());
-         static Ret_Task_Type retValue = originalFunc();
-         return retValue;
+      if (!wasMethodCalled)
+      {
+        retTaskType = originalFunc();
+        wasMethodCalled = true;
+      }
+      return retTaskType;
     };
   }
 }

@@ -2,6 +2,7 @@
 #include "Task.h"
 
 #include <exception>
+#include <experimental/coroutine>
 
 namespace RStein::AsyncCpp::Tasks
 {
@@ -75,7 +76,98 @@ namespace RStein::AsyncCpp::Tasks
 
     private:
     Task<TResult> _task;
+
   };
 
- 
+  template<typename TResult>
+  struct TaskPromise
+  {    
+
+    TaskPromise() : _tcs()
+    {
+
+    }
+
+    [[nodiscard]] Task<TResult> get_return_object() const
+    {
+      return _tcs.GetTask();
+    }
+
+    [[nodiscard]] std::experimental::suspend_never initial_suspend() const noexcept
+    {
+      return {};
+    }
+
+    template <typename TU>
+    void return_value(TU&& retValue)
+    {
+      _tcs.SetResult(std::forward<TU>(retValue));
+    }
+
+    [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
+    {
+      return {};
+    }
+
+    void unhandled_exception()
+    {
+      _tcs.SetException(std::current_exception());
+    }
+
+    private:
+      TaskCompletionSource<TResult> _tcs;  
+  };
+
+  struct TaskVoidPromise
+  {    
+
+    TaskVoidPromise() : _tcs()
+    {
+
+    }
+
+    [[nodiscard]] Task<void> get_return_object() const
+    {
+      return _tcs.GetTask();
+    }
+
+    [[nodiscard]] std::experimental::suspend_never initial_suspend() const noexcept
+    {
+      return {};
+    }
+
+
+    void return_void()
+    {
+      _tcs.SetResult();
+    }
+
+    [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
+    {
+      return {};
+    }
+
+    void unhandled_exception()
+    {
+      _tcs.SetException(std::current_exception());
+    }
+
+    private:
+      TaskCompletionSource<void> _tcs;  
+  };
+}
+
+ namespace std::experimental
+{
+  template <typename... ARGS>
+  struct coroutine_traits<RStein::AsyncCpp::Tasks::Task<void>, ARGS...>
+  {
+    using promise_type = RStein::AsyncCpp::Tasks::TaskVoidPromise;
+  };
+
+  template <typename TR, typename... ARGS>
+  struct coroutine_traits<RStein::AsyncCpp::Tasks::Task<TR>, ARGS...>
+  {
+    using promise_type = RStein::AsyncCpp::Tasks::TaskPromise<TR>;
+  };
 }

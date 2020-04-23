@@ -189,6 +189,7 @@
     <ClCompile Include="Schedulers\StrandSchedulerDecorator.cpp" />
     <ClCompile Include="Schedulers\ThreadPoolScheduler.cpp" />
     <ClCompile Include="TasksTest\TaskCompletionSourceTest.cpp" />
+    <ClCompile Include="TasksTest\TaskPromiseTest.cpp" />
     <ClCompile Include="Tasks\Detail\TaskHelpers.cpp" />
     <ClCompile Include="TasksTest\TaskTest.cpp" />
     <ClCompile Include="Tasks\Task.cpp" />

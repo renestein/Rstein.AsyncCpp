@@ -110,8 +110,9 @@ namespace RStein::AsyncCpp::Tasks
       return awaiter;
 
     }
+  
 
-  protected:    
+  protected:
 
     using TaskSharedStatePtr = std::shared_ptr<TypedTaskSharedState>;
     TaskSharedStatePtr _sharedTaskState;

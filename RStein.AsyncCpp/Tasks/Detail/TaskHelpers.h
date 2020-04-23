@@ -40,7 +40,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       {
         if (_func != nullptr)
         {
-          _func = Functional::Memoize(std::move(_func));
+          _func = Functional::Memoize0(std::move(_func));
         }
       }
     }
@@ -353,7 +353,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
     mutable std::mutex _lockObject;
     mutable std::condition_variable _waitTaskCv;
     Schedulers::Scheduler::SchedulerPtr _scheduler;
-    inline static std::atomic<unsigned long> _idGenerator{};
+    static std::atomic<unsigned long> _idGenerator;
     unsigned long _taskId;
     TaskState _state;
     Collections::ThreadSafeMinimalisticVector<ContinuationFunc> _continuations;
@@ -391,4 +391,8 @@ namespace RStein::AsyncCpp::Tasks::Detail
       }
     }
   };
+
+  template <typename TResult>
+  std::atomic<unsigned long> TaskSharedState<TResult>::_idGenerator{};
+  
 }
