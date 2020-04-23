@@ -267,8 +267,8 @@ namespace RStein::AsyncCpp::Tasks::Detail
       return true;
     }
 
-    template<typename TUResult>
-    void SetResult(TUResult&& result)
+    template <typename TUResult, typename TResultCopy = TResult>    
+    void SetResult(typename std::enable_if<!std::is_same<TResultCopy, void>::value, TUResult>::type&& result)
     {
       {
         std::lock_guard lock{ _lockObject };
@@ -282,8 +282,8 @@ namespace RStein::AsyncCpp::Tasks::Detail
     }
 
     
-    template<typename TUResult>
-    bool TrySetResult(TUResult&& result)
+    template <typename TUResult, typename TResultCopy = TResult>
+    bool TrySetResult(typename std::enable_if<!std::is_same<TResultCopy, void>::value, TUResult>::type&& result)
     {
       {
         std::lock_guard lock{ _lockObject };
@@ -292,6 +292,40 @@ namespace RStein::AsyncCpp::Tasks::Detail
           return false;
         }
         _func = [result = std::forward<TUResult>(result)]{ return result; };
+        _state = TaskState::RunToCompletion;
+      }
+
+      _waitTaskCv.notify_all();
+      runContinuations();
+      return true;
+    }
+
+    
+    template <typename TResultCopy = TResult>
+    typename std::enable_if<std::is_same<TResultCopy, void>::value, void>::type
+    SetResult()
+    {
+      {
+        std::lock_guard lock{ _lockObject };
+        throwIfTaskCompleted();
+        _state = TaskState::RunToCompletion;
+      }
+
+      _waitTaskCv.notify_all();
+      runContinuations();
+    }
+
+    template <typename TResultCopy = TResult>
+    typename std::enable_if<!std::is_same<TResultCopy, void>::value, bool>::type
+    TrySetResult()
+    {
+      {
+        std::lock_guard lock{ _lockObject };
+        if (_state != TaskState::Created)
+        {
+          return false;
+        }
+
         _state = TaskState::RunToCompletion;
       }
 

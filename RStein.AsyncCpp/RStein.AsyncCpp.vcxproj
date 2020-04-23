@@ -188,9 +188,11 @@
     <ClCompile Include="Schedulers\SimpleThreadPool.cpp" />
     <ClCompile Include="Schedulers\StrandSchedulerDecorator.cpp" />
     <ClCompile Include="Schedulers\ThreadPoolScheduler.cpp" />
+    <ClCompile Include="TasksTest\TaskCompletionSourceTest.cpp" />
     <ClCompile Include="Tasks\Detail\TaskHelpers.cpp" />
     <ClCompile Include="TasksTest\TaskTest.cpp" />
     <ClCompile Include="Tasks\Task.cpp" />
+    <ClCompile Include="Tasks\TaskCompletionSource.cpp" />
     <ClCompile Include="Tasks\TaskFactory.cpp" />
     <ClCompile Include="Utils\Disposable.cpp" />
   </ItemGroup>
@@ -222,6 +224,7 @@
     <ClInclude Include="Schedulers\ThreadPoolScheduler.h" />
     <ClInclude Include="Tasks\Detail\TaskHelpers.h" />
     <ClInclude Include="Tasks\Task.h" />
+    <ClInclude Include="Tasks\TaskCompletionSource.h" />
     <ClInclude Include="Tasks\TaskFactory.h" />
     <ClInclude Include="Tasks\TaskState.h" />
     <ClInclude Include="Utils\Disposable.h" />

@@ -10,6 +10,9 @@
 
 namespace RStein::AsyncCpp::Tasks
 {
+  template<typename TResult>
+  class TaskCompletionSource;
+
   template <typename TResult = void>
   class Task
   {
@@ -108,14 +111,17 @@ namespace RStein::AsyncCpp::Tasks
 
     }
 
-  protected:
-    Task();
+  protected:    
 
     using TaskSharedStatePtr = std::shared_ptr<TypedTaskSharedState>;
     TaskSharedStatePtr _sharedTaskState;
 
   private:
-    Task(TaskSharedStatePtr taskSharedState) : _sharedTaskState(taskSharedState)
+    
+    friend class TaskCompletionSource<TResult>;
+
+    //TaskCompletionSource uses this ctor
+    Task() : _sharedTaskState(std::make_shared<TypedTaskSharedState>())
     {
     }
 
@@ -183,11 +189,6 @@ namespace RStein::AsyncCpp::Tasks
   std::exception_ptr Task<TResult>::Exception() const
   {
     return _sharedTaskState->Exception();
-  }
-
-  template <typename TResult>
-  Task<TResult>::Task() : _sharedTaskState{}
-  {
   }
 
   template <typename TResult>
