@@ -162,6 +162,7 @@
       <FileType>CppCode</FileType>
     </ClCompile>
     <ClCompile Include="AsyncPrimitivesTest\FutureExTest.cpp" />
+    <ClCompile Include="AsyncPrimitives\AggregateException.cpp" />
     <ClCompile Include="AsyncPrimitives\AsyncSemaphore.cpp" />
     <ClCompile Include="AsyncPrimitivesTest\AsyncSemaphoreTest.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationRegistration.cpp" />
@@ -198,6 +199,7 @@
     <ClCompile Include="Utils\Disposable.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AsyncPrimitives\AggregateException.h" />
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h" />
     <ClInclude Include="AsyncPrimitives\CancellationRegistration.h" />
     <ClInclude Include="AsyncPrimitives\CancellationToken.h" />

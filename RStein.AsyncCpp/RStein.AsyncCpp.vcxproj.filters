@@ -126,6 +126,9 @@
     <ClCompile Include="TasksTest\TaskPromiseTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AsyncPrimitives\AggregateException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h">
@@ -222,6 +225,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Tasks\TaskCompletionSource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncPrimitives\AggregateException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
