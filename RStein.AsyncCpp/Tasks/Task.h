@@ -76,10 +76,11 @@ namespace RStein::AsyncCpp::Tasks
       return _sharedTaskState->GetResult();
     }
 
-    //TODO: Add Scheduler overloads   
     
     template<typename TContinuation>
     auto ContinueWith(TContinuation continuation);
+    template <class TContinuation>
+    auto ContinueWith(TContinuation continuation, const Schedulers::Scheduler::SchedulerPtr& continuationScheduler);
     std::exception_ptr Exception() const;
 
     auto operator co_await() const
@@ -194,9 +195,16 @@ namespace RStein::AsyncCpp::Tasks
   template<typename TContinuation>
   auto Task<TResult>::ContinueWith(TContinuation continuation)
   {
+    return ContinueWith(continuation, Schedulers::Scheduler::DefaultScheduler());
+  }
+
+  template<typename TResult>
+  template<typename TContinuation>
+  auto Task<TResult>::ContinueWith(TContinuation continuation, const Schedulers::Scheduler::SchedulerPtr& continuationScheduler)
+  {
     using Continuation_Return_Type = decltype(continuation(*this));
     auto continuationFunc = [continuation = std::move(continuation), thisCopy=*this]{return continuation(thisCopy);};
-    Task<Continuation_Return_Type> continuationTask{continuationFunc};
+    Task<Continuation_Return_Type> continuationTask{continuationFunc, continuationScheduler};
     addContinuation(continuationTask);  
     return continuationTask;
   }
