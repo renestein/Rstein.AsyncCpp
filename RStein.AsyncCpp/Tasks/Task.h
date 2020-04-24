@@ -23,24 +23,39 @@ namespace RStein::AsyncCpp::Tasks
     using Ret_Type = TResult;
 
     template<typename TFunc>
-    explicit Task(TFunc func) : _sharedTaskState{
-        std::make_shared<TypedTaskSharedState>(std::move(func),
-                                               false,
-                                               AsyncPrimitives::CancellationToken::None())
-    }
+    explicit Task(TFunc func) : Task{std::move(func),
+                                     Schedulers::Scheduler::DefaultScheduler(),
+                                     AsyncPrimitives::CancellationToken::None()}
     {
     }
 
     template<typename TFunc>
-    Task(TFunc func, const AsyncPrimitives::CancellationToken::CancellationTokenPtr& cancellationToken) :
-      _sharedTaskState{
-          std::make_shared<TypedTaskSharedState>(std::move(func),
-                                                 false,
-                                                 cancellationToken)
-      }
+    Task(TFunc func, const AsyncPrimitives::CancellationToken::CancellationTokenPtr& cancellationToken) : Task
+                                                                                                        {
+                                                                                                          std::move(func),
+                                                                                                          Schedulers::Scheduler::DefaultScheduler(),
+                                                                                                          cancellationToken,
+                                                                                                        }
+  
     {
     }
 
+    template<typename TFunc>
+    Task(TFunc func, Schedulers::Scheduler::SchedulerPtr scheduler) : Task{std::move(func),
+                                                                          std::move(scheduler),
+                                                                          AsyncPrimitives::CancellationToken::None()}
+    {
+      
+    }
+
+    template<typename TFunc>
+    Task(TFunc func, const Schedulers::Scheduler::SchedulerPtr& scheduler, const AsyncPrimitives::CancellationToken::CancellationTokenPtr& cancellationToken) :
+      _sharedTaskState{std::make_shared<TypedTaskSharedState>(std::move(func),
+                                                              scheduler,
+                                                              false,
+                                                              cancellationToken)}
+    {
+    }
 
     Task(const Task& other) = default;
     Task(Task&& other) noexcept = default;

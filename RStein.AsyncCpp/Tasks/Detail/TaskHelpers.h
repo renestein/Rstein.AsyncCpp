@@ -23,7 +23,10 @@ namespace RStein::AsyncCpp::Tasks::Detail
     using ContinuationFunc = std::function<void()>;
     using Function_Ret_Type = TResult;
 
-    TaskSharedState(std::function<TResult()> func, bool isTaskReturnFunc, AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken) :
+    TaskSharedState(std::function<TResult()> func,
+                    Schedulers::Scheduler::SchedulerPtr scheduler,
+                    bool isTaskReturnFunc,
+                    AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken) :
       std::enable_shared_from_this<TaskSharedState<TResult>>(),
       _func(std::move(func)),
       _isTaskReturnFunc(isTaskReturnFunc),
@@ -43,9 +46,16 @@ namespace RStein::AsyncCpp::Tasks::Detail
           _func = Functional::Memoize0(std::move(_func));
         }
       }
+      if (!_scheduler)
+      {
+        _scheduler = Schedulers::Scheduler::DefaultScheduler();
+      }
     }
 
-    TaskSharedState() : TaskSharedState(nullptr, false, AsyncPrimitives::CancellationToken::CancellationToken::None())
+    TaskSharedState() : TaskSharedState(nullptr,
+                                        Schedulers::Scheduler::SchedulerPtr{},
+                                        false,
+                                        AsyncPrimitives::CancellationToken::CancellationToken::None())
     {
 
     }
