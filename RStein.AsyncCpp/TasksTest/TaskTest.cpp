@@ -49,6 +49,32 @@ TEST_F(TaskTest, RunWhenHotTaskCreatedThenTaskIsCompleted)
   ASSERT_EQ(TaskState::RunToCompletion, taskState);
 }
 
+TEST_F(TaskTest, RunWhenUsingExplicitSchedulerThenExplicitSchedulerRunTaskFunc)
+{
+  SimpleThreadPool threadPool{1};
+  auto explicitTaskScheduler{make_shared<ThreadPoolScheduler>(threadPool)};
+  explicitTaskScheduler->Start();
+  Scheduler::SchedulerPtr taskScheduler{};
+
+  auto task = TaskFactory::Run([&taskScheduler]{taskScheduler = Scheduler::CurrentScheduler();}, explicitTaskScheduler);
+
+  task.Wait();
+  explicitTaskScheduler->Stop();
+  ASSERT_EQ(taskScheduler.get(), explicitTaskScheduler.get());
+}
+
+
+TEST_F(TaskTest, RunWhenUnspecifiedSchedulerThenDefaultSchedulerRunTaskFunc)
+{
+  
+  Scheduler::SchedulerPtr taskScheduler{};
+
+  auto task = TaskFactory::Run([&taskScheduler]{taskScheduler = Scheduler::CurrentScheduler();});
+
+  task.Wait();  
+  ASSERT_EQ(taskScheduler.get(), Scheduler::DefaultScheduler().get());
+}
+
 
 TEST_F(TaskTest, ContinueWithWhenAntecedentTaskCompletedThenContinuationRun)
 {
