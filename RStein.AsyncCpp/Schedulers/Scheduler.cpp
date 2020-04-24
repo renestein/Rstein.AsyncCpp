@@ -23,7 +23,7 @@ namespace RStein::AsyncCpp::Schedulers
     static unsigned int HW_THREADS = std::thread::hardware_concurrency() * 2;
     const int THREADS_COUNT = max(MIN_THREADS, HW_THREADS);
 
-    static SimpleThreadPool threadPool{1};
+    static SimpleThreadPool threadPool{THREADS_COUNT};
     static SchedulerPtr defaultScheduler = std::make_shared<ThreadPoolScheduler>(threadPool);
     defaultScheduler->Start();
     return defaultScheduler;

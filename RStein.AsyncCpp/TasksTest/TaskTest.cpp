@@ -1,5 +1,7 @@
 #include "../AsyncPrimitives/CancellationTokenSource.h"
 #include "../AsyncPrimitives/OperationCanceledException.h"
+#include "../Schedulers/SimpleThreadPool.h"
+#include "../Schedulers/ThreadPoolScheduler.h"
 #include "../Tasks/Task.h"
 #include "../Tasks/TaskFactory.h"
 #include <gtest/gtest.h>
@@ -9,6 +11,7 @@
 using namespace testing;
 using namespace RStein::AsyncCpp::Tasks;
 using namespace RStein::AsyncCpp::AsyncPrimitives;
+using namespace RStein::AsyncCpp::Schedulers;
 using namespace std;
 
 class TaskTest : public Test
@@ -210,4 +213,30 @@ TEST_F(TaskTest, ContinueWithWhenUsingTaskTAwaiterThenTaskIsCompletedWithExpecte
   auto result = ContinueWithWhenUsingTaskTAwaiterThenTaskIsCompletedWithExpectedValueImpl(EXPECTED_VALUE).get();
 
   ASSERT_EQ(EXPECTED_VALUE, result);
+}
+
+TEST_F(TaskTest, ContinueWithWhenUsingExplicitSchedulerThenContinuationRunOnExplicitScheduler)
+{
+  auto task = TaskFactory::Run([]{return 10;});
+  auto capturedContinuationScheduler = Scheduler::SchedulerPtr{};
+  SimpleThreadPool threadPool{1};
+  auto continuationScheduler = make_shared<ThreadPoolScheduler>(threadPool);
+  continuationScheduler->Start();
+  task.ContinueWith([&capturedContinuationScheduler](auto _){capturedContinuationScheduler = Scheduler::CurrentScheduler();}, continuationScheduler)
+       .Wait();
+
+  continuationScheduler->Stop();
+
+  ASSERT_EQ(continuationScheduler.get(), capturedContinuationScheduler.get());
+}
+
+
+TEST_F(TaskTest, ContinueWithWhenSchedulerNotSetThenContinuationRunOnDefaultScheduler)
+{
+  auto task = TaskFactory::Run([]{return 10;});
+  auto capturedContinuationScheduler = Scheduler::SchedulerPtr{}; 
+  task.ContinueWith([&capturedContinuationScheduler](auto _){capturedContinuationScheduler = Scheduler::CurrentScheduler();})
+       .Wait();
+
+  ASSERT_EQ(Scheduler::DefaultScheduler().get(), capturedContinuationScheduler.get());
 }

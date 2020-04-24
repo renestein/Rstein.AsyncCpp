@@ -4,18 +4,31 @@
 #include "Schedulers/Scheduler.h"
 #include <gtest/gtest.h>
 #include <iostream>
+class Environment : public ::testing::Environment {
+ public:
+  ~Environment() override {}
+
+  void SetUp() override {}
+
+  void TearDown() override
+  {
+    RStein::AsyncCpp::Schedulers::Scheduler::StopDefaultScheduler();
+  }
+};
 
 int main()
-{   
-  ::testing::InitGoogleTest();
+{
+     auto environment = new Environment;
+     ::testing::AddGlobalTestEnvironment(environment);
+     ::testing::InitGoogleTest();
     RUN_ALL_TESTS();
-    RStein::AsyncCpp::Schedulers::Scheduler::StopDefaultScheduler();
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
 // Debug program: F5 or Debug > Start Debugging menu
 
-// Tips for Getting Started: 
+// Tips for Getting Started:
+//
 //   1. Use the Solution Explorer window to add/manage files
 //   2. Use the Team Explorer window to connect to source control
 //   3. Use the Output window to see build output and other messages
