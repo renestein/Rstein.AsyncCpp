@@ -230,5 +230,8 @@
     <ClInclude Include="AsyncPrimitives\AggregateException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Tasks\TaskCombinators.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

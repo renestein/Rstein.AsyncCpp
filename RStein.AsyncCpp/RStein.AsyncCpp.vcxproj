@@ -227,6 +227,7 @@
     <ClInclude Include="Schedulers\ThreadPoolScheduler.h" />
     <ClInclude Include="Tasks\Detail\TaskHelpers.h" />
     <ClInclude Include="Tasks\Task.h" />
+    <ClInclude Include="Tasks\TaskCombinators.h" />
     <ClInclude Include="Tasks\TaskCompletionSource.h" />
     <ClInclude Include="Tasks\TaskFactory.h" />
     <ClInclude Include="Tasks\TaskState.h" />
