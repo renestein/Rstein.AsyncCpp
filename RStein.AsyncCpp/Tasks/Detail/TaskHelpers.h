@@ -316,7 +316,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
     }
 
     template <typename TResultCopy = TResult>
-    typename std::enable_if<!std::is_same<TResultCopy, void>::value, bool>::type
+    typename std::enable_if<std::is_same<TResultCopy, void>::value, bool>::type
     TrySetResult()
     {
       {

@@ -87,6 +87,27 @@ TEST(TaskCompletionSourceTest, SetResultWhenCalledThenTaskStateIsRunToCompletion
   ASSERT_EQ(taskState, TaskState::RunToCompletion);
 }
 
+
+TEST(TaskCompletionSourceTest, TrySetResultVoidWhenCalledThenTaskStateIsRunToCompletion)
+{
+  TaskCompletionSource<void> tcs{};
+
+  tcs.TrySetResult();
+  auto taskState = tcs.GetTask().State();
+  ASSERT_EQ(taskState, TaskState::RunToCompletion);
+}
+
+TEST(TaskCompletionSourceTest, SetResultVoidWhenCalledThenTaskStateIsRunToCompletion)
+{
+  const int EXPECTED_TASK_VALUE = 1000;
+  TaskCompletionSource<void> tcs{};
+
+  tcs.SetResult();
+  auto taskState = tcs.GetTask().State();
+  ASSERT_EQ(taskState, TaskState::RunToCompletion);
+}
+
+
 TEST(TaskCompletionSourceTest, SetResultWhenCalledThenTaskHasExpectedResult)
 {
   const int EXPECTED_TASK_VALUE = 1000;
@@ -138,6 +159,17 @@ TEST(TaskCompletionSourceTest, TrySetResultWhenTaskAlreadyCompletedThenReturnsFa
   ASSERT_FALSE(trySetResult);
 }
 
+
+TEST(TaskCompletionSourceTest, TrySetResultVoidWhenTaskAlreadyCompletedThenReturnsFalse)
+{
+  TaskCompletionSource<void> tcs{};
+  tcs.SetResult();
+
+  auto trySetResult = tcs.TrySetResult();
+
+  ASSERT_FALSE(trySetResult);
+}
+
 TEST(TaskCompletionSourceTest, SetCanceledWhenTaskAlreadyCompletedThenThrowsLogicError)
 {
   TaskCompletionSource<int> tcs{};
@@ -164,4 +196,13 @@ TEST(TaskCompletionSourceTest, SetResultWhenTaskAlreadyCompletedThenThrowsLogicE
 
 
   ASSERT_THROW(tcs.SetResult(0), logic_error);
+}
+
+
+TEST(TaskCompletionSourceTest, SetResultVoidWhenTaskAlreadyCompletedThenThrowsLogicError)
+{
+  TaskCompletionSource<void> tcs{};
+  tcs.SetResult();
+
+  ASSERT_THROW(tcs.SetResult(), logic_error);
 }
