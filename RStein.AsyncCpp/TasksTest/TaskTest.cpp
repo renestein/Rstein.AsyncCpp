@@ -58,7 +58,7 @@ public:
     {
       co_await WhenAll(task1, task2);
     }
-    catch (AggregateException& ex)
+    catch (AggregateException&)
     {
     }
 
@@ -413,7 +413,7 @@ TEST_F(TaskTest, WaitAllWhenTaskThrowsExceptionThenAllTasksCompleted)
   {
     WaitAll(task1, task2);
   }
-  catch (const AggregateException& exception)
+  catch (const AggregateException&)
   {
   }
 
