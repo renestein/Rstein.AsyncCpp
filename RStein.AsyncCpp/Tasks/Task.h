@@ -97,7 +97,7 @@ namespace RStein::AsyncCpp::Tasks
         {
           if constexpr(std::is_same<Ret_Type, void>::value)
           {
-            return;
+            _task.Wait(); //Propagate exception
           }
           else
           {

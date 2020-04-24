@@ -10,7 +10,7 @@
 namespace RStein::AsyncCpp::Schedulers
 {
   //TODO: Start/Stop is not thread safe.
-  //TODO: Better Lock free + work setealing ThreadPool
+  //TODO: Better Lock free + work stealing ThreadPool
   class SimpleThreadPool
   {
   public:

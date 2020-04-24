@@ -213,7 +213,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
     {
       {
         std::lock_guard lock{ _lockObject };
-        throwIfTaskCompleted();
+        throwIfTaskCompleted();        
         _exceptionPtr = exception;
         _state = TaskState::Faulted;
       }

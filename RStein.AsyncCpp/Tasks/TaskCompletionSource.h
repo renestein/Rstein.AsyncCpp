@@ -148,7 +148,7 @@ namespace RStein::AsyncCpp::Tasks
     }
 
     void unhandled_exception()
-    {
+    {      
       _tcs.SetException(std::current_exception());
     }
 
