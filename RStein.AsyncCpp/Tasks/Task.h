@@ -1,6 +1,7 @@
 #pragma once
 #include "../AsyncPrimitives/CancellationToken.h"
 #include "TaskState.h"
+#include "../AsyncPrimitives/AggregateException.h"
 #include "Detail/TaskHelpers.h"
 #include <any>
 #include <exception>
@@ -224,4 +225,33 @@ namespace RStein::AsyncCpp::Tasks
       continuationTask.Start();
     });
   }
+
+  namespace Detail
+  {
+    template<typename TTask>
+    void waitForTask(const TTask& task, std::vector<std::exception_ptr>& exceptions)
+    {
+      try
+      {
+        task.Wait();
+      }
+      catch(...)
+      {
+        exceptions.push_back(std::current_exception());
+      }
+    }
+  }
+
+  template<typename... TTask>
+  void WaitAll(const TTask&... tasks)
+  {
+    std::vector<std::exception_ptr> exceptions;
+    (Detail::waitForTask(tasks, exceptions),...);
+    if (!exceptions.empty())
+    {
+      throw AggregateException{exceptions};
+    }
+  }
+  
+
 }

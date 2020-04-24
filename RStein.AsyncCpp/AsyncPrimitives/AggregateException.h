@@ -21,7 +21,12 @@ public:
   {
     return _exceptions;
   }
-
+  std::exception_ptr FirstExceptionPtr() const
+  {
+    return !_exceptions.empty()
+             ? _exceptions[0]
+             : nullptr;
+  }
 private:
   std::vector<std::exception_ptr> _exceptions;
 };

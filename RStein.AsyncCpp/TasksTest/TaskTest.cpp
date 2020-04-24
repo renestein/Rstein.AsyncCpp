@@ -258,7 +258,6 @@ TEST_F(TaskTest, ContinueWithWhenUsingExplicitSchedulerThenContinuationRunOnExpl
 
 }
 
-
 TEST_F(TaskTest, ContinueWithWhenSchedulerNotSetThenContinuationRunOnDefaultScheduler)
 {
   auto task = TaskFactory::Run([]{return 10;});
@@ -267,4 +266,86 @@ TEST_F(TaskTest, ContinueWithWhenSchedulerNotSetThenContinuationRunOnDefaultSche
        .Wait();
 
   ASSERT_EQ(Scheduler::DefaultScheduler().get(), capturedContinuationScheduler.get());
+}
+
+TEST_F(TaskTest, WaitAllWhenReturnsThenAllTasksAreCompleted)
+{
+    auto task1 = TaskFactory::Run([]
+    {
+      this_thread::sleep_for(100ms);
+      return 10;
+    });
+
+  auto task2 = TaskFactory::Run([]
+  {
+      this_thread::sleep_for(50ms);
+  });
+
+  WaitAll(task1, task2);
+  ASSERT_TRUE(task1.State() == TaskState::RunToCompletion);
+  ASSERT_TRUE(task2.State() == TaskState::RunToCompletion);
+}
+
+
+TEST_F(TaskTest, WaitAllWhenTaskThrowsExceptionThenThrowsAggregateException)
+{
+    auto task1 = TaskFactory::Run([]
+    {
+      this_thread::sleep_for(100ms);
+      return 10;
+    });
+
+  auto task2 = TaskFactory::Run([]
+  {
+      this_thread::sleep_for(50ms);
+      throw std::invalid_argument{""};
+  });
+
+  try
+  {
+    WaitAll(task1, task2);
+  }
+  catch(const AggregateException& exception)
+  {
+    try
+    {
+      ASSERT_EQ(exception.Exceptions().size(), 1);
+      rethrow_exception(exception.FirstExceptionPtr());
+    }
+    catch(const invalid_argument&)
+    {
+      SUCCEED();
+      return;
+    }
+
+    FAIL();
+  }
+
+  FAIL();
+}
+
+TEST_F(TaskTest, WaitAllWhenTaskThrowsExceptionThenAllTasksCompleted)
+{
+    auto task1 = TaskFactory::Run([]
+    {
+      this_thread::sleep_for(100ms);
+      return 10;
+    });
+
+  auto task2 = TaskFactory::Run([]
+  {
+      this_thread::sleep_for(50ms);
+      throw std::invalid_argument{""};
+  });
+
+  try
+  {
+    WaitAll(task1, task2);
+  }
+  catch(const AggregateException& exception)
+  {    
+  }
+
+  ASSERT_TRUE(task1.IsCompleted());
+  ASSERT_TRUE(task2.IsCompleted());
 }
