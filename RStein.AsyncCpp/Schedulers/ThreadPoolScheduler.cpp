@@ -26,7 +26,7 @@ namespace RStein::AsyncCpp::Schedulers
     }
   }
 
-  void ThreadPoolScheduler::EnqueueItem(std::function<void()>&& originalFunction)
+  void ThreadPoolScheduler::OnEnqueueItem(std::function<void()>&& originalFunction)
   {
     _threadPool.EnqueueItem(move(originalFunction));
   }

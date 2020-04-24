@@ -33,7 +33,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       _cancellationToken(cancellationToken),
       _lockObject{},
       _waitTaskCv{},
-      _scheduler{ Schedulers::Scheduler::DefaultScheduler() },
+      _scheduler{scheduler},
       _taskId{ _idGenerator++ },
       _state{ TaskState::Created },
       _continuations{ std::vector<ContinuationFunc>{} },

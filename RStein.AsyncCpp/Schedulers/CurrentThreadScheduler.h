@@ -18,9 +18,10 @@ namespace RStein::AsyncCpp::Schedulers
     void Start() override;
     void Stop() override;
     
-    void EnqueueItem(std::function<void()>&& func) override;
+    
     bool IsMethodInvocationSerialized() const override;
 
-
+  protected:
+    void OnEnqueueItem(std::function<void()>&& func) override;
   };
 }

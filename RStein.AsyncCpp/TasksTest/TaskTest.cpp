@@ -222,12 +222,14 @@ TEST_F(TaskTest, ContinueWithWhenUsingExplicitSchedulerThenContinuationRunOnExpl
   SimpleThreadPool threadPool{1};
   auto continuationScheduler = make_shared<ThreadPoolScheduler>(threadPool);
   continuationScheduler->Start();
+
   task.ContinueWith([&capturedContinuationScheduler](auto _){capturedContinuationScheduler = Scheduler::CurrentScheduler();}, continuationScheduler)
        .Wait();
 
+  ASSERT_EQ(continuationScheduler.get(), capturedContinuationScheduler.get());
+
   continuationScheduler->Stop();
 
-  ASSERT_EQ(continuationScheduler.get(), capturedContinuationScheduler.get());
 }
 
 

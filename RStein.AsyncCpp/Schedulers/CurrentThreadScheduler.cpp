@@ -18,8 +18,7 @@ namespace RStein::AsyncCpp::Schedulers
   {
   }
 
-
-  void CurrentThreadScheduler::EnqueueItem(std::function<void()>&& func)
+  void CurrentThreadScheduler::OnEnqueueItem(std::function<void()>&& func)
   {
     if (!func)
     {

@@ -41,9 +41,9 @@ namespace RStein::AsyncCpp::Tasks
     }
 
     template<typename TFunc>
-    Task(TFunc func, Schedulers::Scheduler::SchedulerPtr scheduler) : Task{std::move(func),
-                                                                          std::move(scheduler),
-                                                                          AsyncPrimitives::CancellationToken::None()}
+    Task(TFunc func, const Schedulers::Scheduler::SchedulerPtr& scheduler) : Task{std::move(func),
+                                                                            scheduler,                                                                           
+                                                                            AsyncPrimitives::CancellationToken::None()}
     {
       
     }

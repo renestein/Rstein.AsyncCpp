@@ -20,10 +20,10 @@ namespace RStein::AsyncCpp::Schedulers
 
 	  void Start() override;
 	  void Stop() override;
-	  void EnqueueItem(std::function<void()> &&originalFunction) override;
 	  bool IsMethodInvocationSerialized() const override;
 	  
-	  
+  protected:
+    void OnEnqueueItem(std::function<void()> &&originalFunction) override;
   private:
 	  std::shared_ptr<Scheduler> _scheduler;
 	  std::queue<std::function<void()>> _strandQueue;

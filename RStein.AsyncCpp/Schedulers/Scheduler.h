@@ -26,7 +26,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler>
     static SchedulerPtr CurrentScheduler();
 	  virtual void Start() = 0;
 	  virtual void Stop() = 0;
-	  virtual void EnqueueItem(std::function<void()>&& originalFunction) = 0;
+	  virtual void EnqueueItem(std::function<void()>&& originalFunction);
 	  virtual bool IsMethodInvocationSerialized() const = 0 ;
     
 
@@ -35,7 +35,8 @@ class Scheduler : public std::enable_shared_from_this<Scheduler>
     bool await_suspend(std::experimental::coroutine_handle<> coroutine);
     void await_resume() const;   
     //end awaiter members
-
+protected:
+    virtual void OnEnqueueItem(std::function<void()>&& originalFunction) = 0;
 private:
     static thread_local SchedulerPtr _currentScheduler;
     static SchedulerPtr initDefaultScheduler(); 

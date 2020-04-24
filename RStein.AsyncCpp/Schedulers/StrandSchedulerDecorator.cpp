@@ -32,7 +32,7 @@ namespace RStein::AsyncCpp::Schedulers
     _scheduler->Stop();
   }
 
-  void StrandSchedulerDecorator::EnqueueItem(std::function<void()>&& originalFunction)
+  void StrandSchedulerDecorator::OnEnqueueItem(std::function<void()>&& originalFunction)
   {
     if (_scheduler->IsMethodInvocationSerialized())
     {
