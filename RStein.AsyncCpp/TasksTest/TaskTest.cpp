@@ -569,13 +569,56 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_EQ(EXPECTED_TASK_INDEX, taskIndex);
   }
 
-  TEST_F(TaskTest, AsTaskWhenWrappingValueThenTaskContainsWrappedValue)
+  TEST_F(TaskTest, TaskFromResultWhenWrappingValueThenTaskContainsWrappedValue)
   {
     const int EXPECTED_TASK_VALUE = 1234;
 
-    auto task  = AsTask(1234);
+    auto task  = TaskFromResult(1234);
 
     auto taskValue = task.Result();
     ASSERT_EQ(EXPECTED_TASK_VALUE, taskValue);
   }
+
+  TEST_F(TaskTest, GetCompletedWhenCalledThenReturnCompletedTask)
+  {
+    auto task = GetCompletedTask();
+    ASSERT_TRUE(task.IsCompleted());
+  }
+
+  TEST_F(TaskTest, TaskFromExceptionWhenWaitingForTaskThenThrowsExpectedException)
+  {
+    auto task = TaskFromException<string>(make_exception_ptr(logic_error("")));
+
+    try
+    {
+      task.Wait();
+    }
+    catch(const logic_error&)
+    {
+      SUCCEED();
+      return;
+    }
+
+    FAIL();
+  }
+
+  
+  TEST_F(TaskTest, TaskFromCanceledWhenWaitingForTaskThenThrowsOperationCanceledException)
+  {
+    auto task = TaskFromCanceled<string>();
+
+    try
+    {
+      task.Wait();
+    }
+    catch(const OperationCanceledException&)
+    {
+      SUCCEED();
+      return;
+    }
+
+    FAIL();
+  }
+
+  
 }

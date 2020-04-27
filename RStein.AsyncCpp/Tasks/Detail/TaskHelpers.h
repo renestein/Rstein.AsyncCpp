@@ -221,9 +221,14 @@ namespace RStein::AsyncCpp::Tasks::Detail
 
     void SetException(std::exception_ptr exception)
     {
+       if(exception == nullptr)
+       {
+         throw std::invalid_argument("exception");
+       }
+
       {
         std::lock_guard lock{ _lockObject };
-        throwIfTaskCompleted();        
+        throwIfTaskCompleted();
         _exceptionPtr = exception;
         _state = TaskState::Faulted;
       }
@@ -232,7 +237,12 @@ namespace RStein::AsyncCpp::Tasks::Detail
     }
 
     bool TrySetException(std::exception_ptr exception)
-    {
+    {      
+       if(exception == nullptr)
+       {
+         throw std::invalid_argument("exception");
+       }
+
       {
         std::lock_guard lock{ _lockObject };
         if (_state != TaskState::Created)

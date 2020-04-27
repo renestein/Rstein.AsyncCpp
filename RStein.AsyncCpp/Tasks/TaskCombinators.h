@@ -97,7 +97,7 @@ namespace RStein::AsyncCpp::Tasks
 
   //Identity method.
   template<typename TResult>
-  Task<TResult> AsTask(TResult&& taskResult)
+  Task<TResult> TaskFromResult(TResult&& taskResult)
   {
     //TODO: Detect invalid values.
     TaskCompletionSource<TResult> tcs;
@@ -105,12 +105,46 @@ namespace RStein::AsyncCpp::Tasks
     return tcs.GetTask();
   }
    //Identity method.
+
   template<typename TResult>
-  Task<TResult> AsTask(const TResult& taskResult)
+  Task<TResult> TaskFromResult(const TResult& taskResult)
   {
     //TODO: Detect invalid values.
     TaskCompletionSource<TResult> tcs;
     tcs.SetResult(taskResult);
     return tcs.GetTask();
   }
+
+  namespace Detail
+  {
+    Task<void> getCompletedTask()
+    {
+      TaskCompletionSource<void> _tcs;
+      _tcs.SetResult();
+      return _tcs.GetTask();
+    }
+  }
+
+  Task<void> GetCompletedTask()
+  {
+    static Task<void> _completedTask = Detail::getCompletedTask();    
+    return _completedTask;
+  }
+
+  template<typename TResult>
+  Task<TResult> TaskFromException(std::exception_ptr exception)
+  {
+    TaskCompletionSource<TResult> tcs;
+    tcs.SetException(exception);
+    return tcs.GetTask();
+  }
+
+  template<typename TResult>
+  Task<TResult> TaskFromCanceled()
+  {
+    TaskCompletionSource<TResult> tcs;
+    tcs.SetCanceled();
+    return tcs.GetTask();
+  }
+
 }
