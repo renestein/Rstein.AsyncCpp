@@ -196,7 +196,7 @@ namespace RStein::AsyncCpp::Tasks
   template<typename TContinuation>
   auto Task<TResult>::ContinueWith(TContinuation continuation)
   {
-    return ContinueWith(continuation, Schedulers::Scheduler::DefaultScheduler());
+    return ContinueWith(std::move(continuation), Schedulers::Scheduler::DefaultScheduler());
   }
 
   template<typename TResult>
@@ -204,7 +204,7 @@ namespace RStein::AsyncCpp::Tasks
   auto Task<TResult>::ContinueWith(TContinuation continuation, const Schedulers::Scheduler::SchedulerPtr& continuationScheduler)
   {
     using Continuation_Return_Type = decltype(continuation(*this));
-    auto continuationFunc = [continuation = std::move(continuation), thisCopy=*this]{return continuation(thisCopy);};
+    auto continuationFunc = [continuation = std::move(continuation), thisCopy=*this] () mutable {return continuation(thisCopy);};
     Task<Continuation_Return_Type> continuationTask{continuationFunc, continuationScheduler};
     addContinuation(continuationTask);  
     return continuationTask;

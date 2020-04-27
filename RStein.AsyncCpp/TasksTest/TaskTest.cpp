@@ -469,3 +469,46 @@ TEST_F(TaskTest, WhenAllWhenTaskThrowsExceptionThenThrowsAggregateException)
   }
   FAIL();
 }
+
+
+TEST_F(TaskTest, WhenAnyWhenFirstTaskCompletedThenRetunsIndex0)
+{
+  const int EXPECTED_TASK_INDEX = 0;
+  TaskCompletionSource<void> waitSecondTaskTcs;
+  auto task1 = TaskFactory::Run([]
+  {
+    this_thread::sleep_for(1ms);
+    return 10;
+  });
+
+  auto task2 = TaskFactory::Run([waitSecondTaskTcs]
+  {
+    waitSecondTaskTcs.GetTask().Wait();
+  });
+
+  auto taskIndex = WaitAny(task1, task2);
+  waitSecondTaskTcs.TrySetResult();
+
+  ASSERT_EQ(EXPECTED_TASK_INDEX, taskIndex);
+}
+
+
+TEST_F(TaskTest, WhenAnyWhenSecondTaskCompletedThenReturnsIndex1)
+{
+  const int EXPECTED_TASK_INDEX = 1;
+  TaskCompletionSource<void> waitFirstTaskTcs;
+  auto task1 = TaskFactory::Run([waitFirstTaskTcs]
+  {
+    waitFirstTaskTcs.GetTask().Wait();
+    return 10;
+  });
+
+  auto task2 = TaskFactory::Run([]
+  {
+     this_thread::sleep_for(1ms);      
+  });
+
+  auto taskIndex = WaitAny(task1, task2);
+  waitFirstTaskTcs.TrySetResult();
+  ASSERT_EQ(EXPECTED_TASK_INDEX, taskIndex);
+}

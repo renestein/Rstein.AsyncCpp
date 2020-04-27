@@ -15,9 +15,9 @@ namespace RStein::AsyncCpp::Tasks
     {
    
     }
-    TaskCompletionSource(const TaskCompletionSource& other) = delete;
+    TaskCompletionSource(const TaskCompletionSource& other) = default;
     TaskCompletionSource(TaskCompletionSource&& other) noexcept = default;
-    TaskCompletionSource& operator=(const TaskCompletionSource& other) = delete;
+    TaskCompletionSource& operator=(const TaskCompletionSource& other) = default;
     TaskCompletionSource& operator=(TaskCompletionSource&& other) noexcept = default;
     ~TaskCompletionSource() = default;
 

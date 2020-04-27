@@ -42,6 +42,13 @@ namespace RStein::AsyncCpp::Tasks
       co_await awaitTask(exceptions, task2, std::forward<TTaskRest>(tasksRest)...);
     }
 
+    template <typename TTask>
+    void waitAnyTask(TTask&& task, TaskCompletionSource<int>& tcs, int taskIndex) 
+    {
+      auto continuation = [tcs, taskIndex](auto& previous) mutable {tcs.TrySetResult(taskIndex);};
+      task.ContinueWith(continuation);      
+    }
+
   }
 
     
@@ -69,4 +76,15 @@ namespace RStein::AsyncCpp::Tasks
       throw AggregateException{exceptions};
     }
   }
+
+  
+  template <typename... TTask>
+  int WaitAny(TTask&... tasks)
+  {
+    TaskCompletionSource<int> anyTcs;
+    auto taskIndex = 0;
+    (Detail::waitAnyTask(tasks, anyTcs, taskIndex++), ...);
+    return anyTcs.GetTask().Result();   
+  }
+
 }
