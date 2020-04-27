@@ -6,6 +6,7 @@
 #include <exception>
 #include <memory>
 #include <functional>
+#include <ostream>
 
 
 namespace RStein::AsyncCpp::Tasks
@@ -126,7 +127,44 @@ namespace RStein::AsyncCpp::Tasks
       return awaiter;
 
     }
-  
+
+
+    friend bool operator==(const Task& lhs, const Task& rhs)
+    {
+      return lhs._sharedTaskState == rhs._sharedTaskState;
+    }
+
+    friend bool operator!=(const Task& lhs, const Task& rhs)
+    {
+      return !(lhs == rhs);
+    }
+
+    friend bool operator<(const Task& lhs, const Task& rhs)
+    {
+      return lhs._sharedTaskState < rhs._sharedTaskState;
+    }
+
+    friend bool operator<=(const Task& lhs, const Task& rhs)
+    {
+      return !(rhs < lhs);
+    }
+
+    friend bool operator>(const Task& lhs, const Task& rhs)
+    {
+      return rhs < lhs;
+    }
+
+    friend bool operator>=(const Task& lhs, const Task& rhs)
+    {
+      return !(lhs < rhs);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Task& obj)
+    {
+      return os << "Task Id: " << obj.Id 
+                << " State: " << obj.State()
+                << " IsCompleted: " << obj.IsCompleted();
+    }
 
   protected:
 
