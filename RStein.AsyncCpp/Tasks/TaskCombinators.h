@@ -1,6 +1,7 @@
 #pragma once
 #include "Task.h"
 #include "TaskCompletionSource.h"
+#include "../AsyncPrimitives/AggregateException.h"
 
 namespace RStein::AsyncCpp::Tasks
 {

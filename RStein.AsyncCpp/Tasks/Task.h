@@ -1,7 +1,6 @@
 #pragma once
 #include "../AsyncPrimitives/CancellationToken.h"
 #include "TaskState.h"
-#include "../AsyncPrimitives/AggregateException.h"
 #include "Detail/TaskHelpers.h"
 #include <any>
 #include <exception>

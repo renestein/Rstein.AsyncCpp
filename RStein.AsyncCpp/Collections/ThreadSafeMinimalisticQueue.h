@@ -62,7 +62,7 @@ namespace RStein::AsyncCpp::Collections
   void ThreadSafeMinimalisticQueue<T>::Push(T&& item)
   {
     std::lock_guard lock{_mutex};
-    _innerQueue.push(std::move(item));
+    _innerQueue.push(std::forward<T>(item));
   }
 
 

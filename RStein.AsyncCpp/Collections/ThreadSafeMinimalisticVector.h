@@ -79,7 +79,7 @@ namespace RStein::AsyncCpp::Collections
   void ThreadSafeMinimalisticVector<T>::Add(T&& item)
   {
     std::lock_guard lock{_mutex};
-    _innerVector.push_back(std::move(item));
+    _innerVector.push_back(std::forward<T>(item));
   }
 
   template <typename T>

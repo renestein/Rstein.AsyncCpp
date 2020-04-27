@@ -53,7 +53,7 @@ void RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TI
 template <typename TItem>
 void RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::Add(TItem&& item)
 {
-  _innerCollection.Push(std::move(item));
+  _innerCollection.Push(std::forward<TItem>(item));
   _asyncSemaphore.Release();
 }
 
@@ -67,7 +67,7 @@ std::future<void> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumer
 template <typename TItem>
 std::future<void> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::AddAsync(TItem&& item)
 {
-  Add(std::move(item));
+  Add(std::forward<TItem>(item));
   return GetCompletedFuture();
 }
 
