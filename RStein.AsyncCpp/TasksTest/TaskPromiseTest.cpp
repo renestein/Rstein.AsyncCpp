@@ -11,54 +11,62 @@ using namespace RStein::AsyncCpp::Tasks;
 using namespace RStein::AsyncCpp::AsyncPrimitives;
 using namespace std;
 
-
-class TaskPromiseTest : public Test
+namespace RStein::AsyncCpp::TasksTest
 {
-public:
-
-  Task<void> TaskPromiseVoidWhenCalledThenReturnsCompletedPromiseTaskImpl() const
+  class TaskPromiseTest : public Test
   {
-    auto func = []
+  public:
+
+    Task<void> TaskPromiseVoidWhenCalledThenReturnsCompletedPromiseTaskImpl() const
     {
-      this_thread::sleep_for(100ms);
-    };
+      auto func = []
+      {
+        this_thread::sleep_for(100ms);
+      };
 
-    auto task = TaskFactory::Run(func);
+      auto task = TaskFactory::Run(func);
 
-    co_await task;
-  }
+      co_await task;
+    }
 
-  Task<string> TaskPromiseStringWhenCalledThenReturnsExpectedValueImpl(string expectedValue) const
+    Task<string> TaskPromiseStringWhenCalledThenReturnsExpectedValueImpl(string expectedValue) const
+    {
+      auto result = co_await TaskFactory::Run([expectedValue]
+      {
+        return expectedValue;
+      });
+      co_return result;
+    }
+
+    Task<string> TaskPromiseStringWhenMethodThrowsThenRethrowExceptionImpl() const
+    {
+      auto task = TaskFactory::Run([]
+      {
+        throw invalid_argument{""};
+      });
+      co_await task;
+      co_return "";
+    }
+  };
+
+  TEST_F(TaskPromiseTest, TaskPromiseVoidWhenCalledThenReturnsCompletedPromiseTask)
   {
-    auto result = co_await TaskFactory::Run([expectedValue] {return expectedValue; });
-    co_return result;
+    auto task = TaskPromiseVoidWhenCalledThenReturnsCompletedPromiseTaskImpl();
+    task.Wait();
   }
 
-   Task<string> TaskPromiseStringWhenMethodThrowsThenRethrowExceptionImpl() const
+  TEST_F(TaskPromiseTest, TaskPromiseStringWhenCalledThenReturnsExpectedValue)
   {
-     auto task = TaskFactory::Run([] {throw invalid_argument{""};});
-     co_await task;
-     co_return "";
+    auto expectedValue = "Hello from task promise";
+    auto retPromiseValue = TaskPromiseStringWhenCalledThenReturnsExpectedValueImpl(expectedValue).Result();
+
+    ASSERT_EQ(expectedValue, retPromiseValue);
   }
-};
 
-TEST_F(TaskPromiseTest, TaskPromiseVoidWhenCalledThenReturnsCompletedPromiseTask)
-{
-  auto task = TaskPromiseVoidWhenCalledThenReturnsCompletedPromiseTaskImpl();
-  task.Wait();
-}
+  TEST_F(TaskPromiseTest, TaskPromiseStringWhenMethodThrowsThenRethrowException)
+  {
+    auto retPromiseValue = TaskPromiseStringWhenMethodThrowsThenRethrowExceptionImpl();
 
-TEST_F(TaskPromiseTest, TaskPromiseStringWhenCalledThenReturnsExpectedValue)
-{
-  auto expectedValue = "Hello from task promise";
-  auto retPromiseValue = TaskPromiseStringWhenCalledThenReturnsExpectedValueImpl(expectedValue).Result();
-
-  ASSERT_EQ(expectedValue, retPromiseValue);
-}
-
-TEST_F(TaskPromiseTest, TaskPromiseStringWhenMethodThrowsThenRethrowException)
-{
-  auto retPromiseValue = TaskPromiseStringWhenMethodThrowsThenRethrowExceptionImpl();
-
-  ASSERT_THROW(retPromiseValue.Result(), invalid_argument);
+    ASSERT_THROW(retPromiseValue.Result(), invalid_argument);
+  }
 }
