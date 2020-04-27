@@ -81,6 +81,44 @@ public:
 
     co_await WhenAll(task1, task2);
   }
+
+  Task<int> WhenAnyWhenFirstTaskCompletedThenRetunsIndex0Impl()
+  {
+    TaskCompletionSource<void> waitSecondTaskTcs;
+    auto task1 = TaskFactory::Run([]
+    {
+      this_thread::sleep_for(1ms);
+      return 10;
+    });
+
+    auto task2 = TaskFactory::Run([waitSecondTaskTcs]
+    {
+      waitSecondTaskTcs.GetTask().Wait();
+    });
+
+    auto taskIndex = co_await WhenAny(task1, task2);
+    waitSecondTaskTcs.TrySetResult();
+    co_return taskIndex;
+  }
+
+  Task<int> WhenAnyWhenSecondTaskCompletedThenReturnsIndex1Impl()
+  {
+    TaskCompletionSource<void> waitFirstTaskTcs;
+    auto task1 = TaskFactory::Run([waitFirstTaskTcs]
+    {
+      waitFirstTaskTcs.GetTask().Wait();
+      return 10;
+    });
+
+    auto task2 = TaskFactory::Run([]
+    {
+      this_thread::sleep_for(1ms);
+    });
+
+    auto taskIndex = co_await WhenAny(task1, task2);
+    waitFirstTaskTcs.TrySetResult();
+    co_return taskIndex;
+  }
 };
 
 TEST_F(TaskTest, RunWhenHotTaskCreatedThenTaskIsCompleted)
@@ -471,7 +509,7 @@ TEST_F(TaskTest, WhenAllWhenTaskThrowsExceptionThenThrowsAggregateException)
 }
 
 
-TEST_F(TaskTest, WhenAnyWhenFirstTaskCompletedThenRetunsIndex0)
+TEST_F(TaskTest, WaitAnyWhenFirstTaskCompletedThenRetunsIndex0)
 {
   const int EXPECTED_TASK_INDEX = 0;
   TaskCompletionSource<void> waitSecondTaskTcs;
@@ -493,7 +531,7 @@ TEST_F(TaskTest, WhenAnyWhenFirstTaskCompletedThenRetunsIndex0)
 }
 
 
-TEST_F(TaskTest, WhenAnyWhenSecondTaskCompletedThenReturnsIndex1)
+TEST_F(TaskTest, WaitAnyWhenSecondTaskCompletedThenReturnsIndex1)
 {
   const int EXPECTED_TASK_INDEX = 1;
   TaskCompletionSource<void> waitFirstTaskTcs;
@@ -505,10 +543,27 @@ TEST_F(TaskTest, WhenAnyWhenSecondTaskCompletedThenReturnsIndex1)
 
   auto task2 = TaskFactory::Run([]
   {
-     this_thread::sleep_for(1ms);      
+    this_thread::sleep_for(1ms);
   });
 
   auto taskIndex = WaitAny(task1, task2);
   waitFirstTaskTcs.TrySetResult();
   ASSERT_EQ(EXPECTED_TASK_INDEX, taskIndex);
 }
+
+TEST_F(TaskTest, WhenAnyWhenFirstTaskCompletedThenRetunsIndex0)
+{
+  const int EXPECTED_TASK_INDEX = 0;
+
+  auto taskIndex = WhenAnyWhenFirstTaskCompletedThenRetunsIndex0Impl().Result();
+  ASSERT_EQ(EXPECTED_TASK_INDEX, taskIndex);
+}
+
+
+TEST_F(TaskTest, WhenAnyWhenSecondTaskCompletedThenReturnsIndex1)
+{
+    const int EXPECTED_TASK_INDEX = 1;
+  auto taskIndex = WhenAnyWhenSecondTaskCompletedThenReturnsIndex1Impl().Result();
+  ASSERT_EQ(EXPECTED_TASK_INDEX, taskIndex);
+}
+

@@ -50,9 +50,7 @@ namespace RStein::AsyncCpp::Tasks
     }
 
   }
-
-    
-   
+     
   template <typename... TTask>
   void WaitAll(const TTask&... tasks)
   {
@@ -87,4 +85,12 @@ namespace RStein::AsyncCpp::Tasks
     return anyTcs.GetTask().Result();   
   }
 
+  template <typename... TTask>
+  Task<int> WhenAny(TTask&... tasks)
+  {
+    TaskCompletionSource<int> anyTcs;
+    auto taskIndex = 0;
+    (Detail::waitAnyTask(tasks, anyTcs, taskIndex++), ...);
+    return anyTcs.GetTask();   
+  }
 }
