@@ -568,4 +568,14 @@ namespace RStein::AsyncCpp::TasksTest
     auto taskIndex = WhenAnyWhenSecondTaskCompletedThenReturnsIndex1Impl().Result();
     ASSERT_EQ(EXPECTED_TASK_INDEX, taskIndex);
   }
+
+  TEST_F(TaskTest, AsTaskWhenWrappingValueThenTaskContainsWrappedValue)
+  {
+    const int EXPECTED_TASK_VALUE = 1234;
+
+    auto task  = AsTask(1234);
+
+    auto taskValue = task.Result();
+    ASSERT_EQ(EXPECTED_TASK_VALUE, taskValue);
+  }
 }

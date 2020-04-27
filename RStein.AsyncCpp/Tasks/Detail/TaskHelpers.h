@@ -278,12 +278,12 @@ namespace RStein::AsyncCpp::Tasks::Detail
     }
 
     template <typename TUResult, typename TResultCopy = TResult>    
-    void SetResult(typename std::enable_if<!std::is_same<TResultCopy, void>::value, TUResult>::type&& result)
+    void SetResult(typename std::enable_if<!std::is_same<TResultCopy, void>::value, TUResult>::type result)
     {
       {
         std::lock_guard lock{ _lockObject };
         throwIfTaskCompleted();
-        _func = [result = std::forward<TUResult>(result)]{ return result; };
+        _func = [result = std::move(result)]{ return result; };
         _state = TaskState::RunToCompletion;
       }
 
@@ -293,7 +293,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
 
     
     template <typename TUResult, typename TResultCopy = TResult>
-    bool TrySetResult(typename std::enable_if<!std::is_same<TResultCopy, void>::value, TUResult>::type&& result)
+    bool TrySetResult(typename std::enable_if<!std::is_same<TResultCopy, void>::value, TUResult>::type result)
     {
       {
         std::lock_guard lock{ _lockObject };
@@ -301,7 +301,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
         {
           return false;
         }
-        _func = [result = std::forward<TUResult>(result)]{ return result; };
+        _func = [result = std::move(result)]{ return result; };
         _state = TaskState::RunToCompletion;
       }
 

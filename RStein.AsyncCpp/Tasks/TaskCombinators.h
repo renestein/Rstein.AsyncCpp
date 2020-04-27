@@ -93,4 +93,23 @@ namespace RStein::AsyncCpp::Tasks
     (Detail::waitAnyTask(tasks, anyTcs, taskIndex++), ...);
     return anyTcs.GetTask();   
   }
+
+  //Identity method.
+  template<typename TResult>
+  Task<TResult> AsTask(TResult&& taskResult)
+  {
+    //TODO: Detect invalid values.
+    TaskCompletionSource<TResult> tcs;
+    tcs.SetResult(std::forward<TResult>(taskResult));
+    return tcs.GetTask();
+  }
+   //Identity method.
+  template<typename TResult>
+  Task<TResult> AsTask(const TResult& taskResult)
+  {
+    //TODO: Detect invalid values.
+    TaskCompletionSource<TResult> tcs;
+    tcs.SetResult(taskResult);
+    return tcs.GetTask();
+  }
 }
