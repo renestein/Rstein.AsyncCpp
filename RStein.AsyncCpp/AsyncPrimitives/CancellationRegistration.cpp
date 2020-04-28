@@ -20,7 +20,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     return *this;
   }
 
-  void CancellationRegistration::Dispose() const
+  void CancellationRegistration::Dispose()
   {  
     if (_disposeAction)
     {

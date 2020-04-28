@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Detail/DataFlowBlockCommon.h"
+#include "../Detail/DataFlow/DataFlowBlockCommon.h"
 #include <memory>
 
 namespace RStein::AsyncCpp::DataFlow

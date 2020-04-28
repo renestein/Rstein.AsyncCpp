@@ -147,13 +147,13 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       const auto maxCount{100};
       const auto initialCount{0};
       AsyncSemaphore semaphore{maxCount, initialCount};
-      auto cts = CancellationTokenSource::Create();
-      auto cts2 = CancellationTokenSource::Create();
+      auto cts = CancellationTokenSource{};
+      auto cts2 = CancellationTokenSource{};
 
-      auto firstWaiter = semaphore.WaitAsync(cts->Token());
-      auto secondWaiter = semaphore.WaitAsync(cts2->Token());
+      auto firstWaiter = semaphore.WaitAsync(cts.Token());
+      auto secondWaiter = semaphore.WaitAsync(cts2.Token());
 
-      cts->Cancel();
+      cts.Cancel();
       try
       {
         co_await firstWaiter;

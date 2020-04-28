@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "ActionBlock.h"
-#include "Detail/DataFlowBlockCommon.h"
 #include "TransformBlock.h"
 
 namespace RStein::AsyncCpp::DataFlow

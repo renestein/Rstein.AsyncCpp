@@ -34,10 +34,10 @@ namespace RStein::AsyncCpp::AsyncPrimitives
 
   future<void> AsyncSemaphore::WaitAsync()
   {
-    return WaitAsync(CancellationToken::CancellationTokenPtr());
+    return WaitAsync(CancellationToken::None());
   }
 
-  future<void> AsyncSemaphore::WaitAsync(const CancellationToken::CancellationTokenPtr& cancellationToken)
+  future<void> AsyncSemaphore::WaitAsync(CancellationToken cancellationToken)
   {
     lock_guard lock{ _waitersLock };
 
@@ -55,9 +55,9 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     }
 
     optional<CancellationRegistration> cancelRegistration;
-    if (cancellationToken && cancellationToken->CanBeCanceled())
+    if (cancellationToken.CanBeCanceled())
     {
-      cancelRegistration = cancellationToken->Register([newWaitingPromise, cancellationToken]
+      cancelRegistration = cancellationToken.Register([newWaitingPromise]
         {
 
           OperationCanceledException oce{};

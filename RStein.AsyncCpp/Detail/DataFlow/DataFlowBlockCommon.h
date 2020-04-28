@@ -1,17 +1,16 @@
 ﻿#pragma once
-#include "../IInputOutputBlock.h"
-#include "../../AsyncPrimitives/CancellationTokenSource.h"
+#include "../../DataFlow/IInputOutputBlock.h"
 #include "../../AsyncPrimitives/IAsyncProducerConsumerCollection.h"
 #include "../../AsyncPrimitives/OperationCanceledException.h"
 #include "../../AsyncPrimitives/SimpleAsyncProducerConsumerCollection.h"
 #include "../../Collections/ThreadSafeMinimalisticVector.h"
-#include "../../Utils/FinallyBlock.h"
 #include "../../AsyncPrimitives/FutureEx.h"
+#include "../../Utils/FinallyBlock.h"
 #include <thread>
 #include <memory>
 #include <functional>
 
-namespace RStein::AsyncCpp::DataFlow::Detail
+namespace Detail
 {
   struct NoState
   {
@@ -26,16 +25,16 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     }
   };
   template<typename TInputItem, typename TOutputItem, typename TState = NoState>
-  class DataFlowBlockCommon : public IInputOutputBlock<TInputItem, TOutputItem>,
+  class DataFlowBlockCommon : public RStein::AsyncCpp::DataFlow::IInputOutputBlock<TInputItem, TOutputItem>,
     public std::enable_shared_from_this<DataFlowBlockCommon<TInputItem, TOutputItem, TState>>
   {
   public:
 
     //TODO: Detect awaitable
     using ActionFuncType = std::function<void(const TInputItem& inputItem, TState*& state)>;
-    using AsyncActionFuncType = std::function<typename IInputBlock<TInputItem>::TaskVoidType(const TInputItem& inputItem, TState*& state)>;
+    using AsyncActionFuncType = std::function<typename RStein::AsyncCpp::DataFlow::IInputBlock<TInputItem>::TaskVoidType(const TInputItem& inputItem, TState*& state)>;
     using TransformFuncType = std::function<TOutputItem(const TInputItem& inputItem, TState*& state)>;
-    using AsyncTransformFuncType= std::function<typename IInputOutputBlock<TInputItem, TOutputItem>::TaskOutputItemType(const TInputItem& inputItem, TState*& state)>;
+    using AsyncTransformFuncType= std::function<typename RStein::AsyncCpp::DataFlow::IInputOutputBlock<TInputItem, TOutputItem>::TaskOutputItemType(const TInputItem& inputItem, TState*& state)>;
 
     using CanAcceptFuncType = std::function<bool(const TInputItem& item)>;
 
@@ -49,14 +48,14 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     DataFlowBlockCommon& operator=(DataFlowBlockCommon&& other) = delete;
     [[nodiscard]] std::string Name() const override;
     void Name(std::string name);
-    [[nodiscard]] typename IDataFlowBlock::TaskVoidType Completion() const override;
+    [[nodiscard]] RStein::AsyncCpp::DataFlow::IDataFlowBlock::TaskVoidType Completion() const override;
     void Start() override;
     void Complete() override;
     void SetFaulted(std::exception_ptr exception) override;
     bool CanAcceptInput(const TInputItem& item) override;
-    typename IDataFlowBlock::TaskVoidType AcceptInputAsync(const TInputItem& item) override;
-    typename IDataFlowBlock::TaskVoidType AcceptInputAsync(TInputItem&& item) override;
-    void ConnectTo(const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock) override;
+    RStein::AsyncCpp::DataFlow::IDataFlowBlock::TaskVoidType AcceptInputAsync(const TInputItem& item) override;
+    RStein::AsyncCpp::DataFlow::IDataFlowBlock::TaskVoidType AcceptInputAsync(TInputItem&& item) override;
+    void ConnectTo(const typename RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>::InputBlockPtr& nextBlock) override;
     virtual ~DataFlowBlockCommon();
     void removeDeadOutputNodes();
     std::future<void> propagateOutput(TOutputItem outputItem);
@@ -82,14 +81,14 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     typename DataFlowBlockCommon::TaskVoidType _processingTask;
     BlockState _state;
     std::mutex _stateMutex;
-    AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TInputItem> _inputItems;
-    AsyncPrimitives::CancellationTokenSource::CancellationTokenSourcePtr _processingCts;
-    Collections::ThreadSafeMinimalisticVector<std::weak_ptr<IInputBlock<TOutputItem>>> _outputNodes;
+    RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TInputItem> _inputItems;
+    RStein::AsyncCpp::AsyncPrimitives::CancellationTokenSource _processingCts;
+    RStein::AsyncCpp::Collections::ThreadSafeMinimalisticVector<std::weak_ptr<RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>>> _outputNodes;
     int _startCallsCount;
 
-    DataFlowBlockCommon(CanAcceptFuncType canAcceptFunc);
+    explicit DataFlowBlockCommon(CanAcceptFuncType canAcceptFunc);
     std::shared_future<void> runProcessingTask(
-      AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken);
+        RStein::AsyncCpp::AsyncPrimitives::CancellationToken cancellationToken);
     void completeCommon(std::exception_ptr exceptionPtr);
     void throwIfNotStarted();
 
@@ -129,7 +128,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   
   template <typename TInputItem, typename TOutputItem, typename TState>
   DataFlowBlockCommon<TInputItem, TOutputItem, TState>::DataFlowBlockCommon(CanAcceptFuncType canAcceptFunc) :
-                                                                            IInputOutputBlock<TInputItem, TOutputItem>{},
+                                                                            RStein::AsyncCpp::DataFlow::IInputOutputBlock<TInputItem, TOutputItem>{},
                                                                             std::enable_shared_from_this<DataFlowBlockCommon<TInputItem, TOutputItem, TState>>{},
                                                                             _isAsyncNode(),
                                                                             _transformSyncFunc{},
@@ -143,8 +142,8 @@ namespace RStein::AsyncCpp::DataFlow::Detail
                                                                             _state{ BlockState::Created },
                                                                             _stateMutex{},
                                                                             _inputItems{},
-                                                                            _processingCts{ AsyncPrimitives::CancellationTokenSource::Create() },
-                                                                            _outputNodes{ std::vector<std::weak_ptr<IInputBlock<TOutputItem>>>{}},
+                                                                            _processingCts{RStein::AsyncCpp::AsyncPrimitives::CancellationTokenSource{}},
+                                                                            _outputNodes{ std::vector<std::weak_ptr<RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>>>{}},
                                                                             _startCallsCount{}
   {
     if (!_canAcceptFunc)
@@ -167,7 +166,8 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
-  IDataFlowBlock::TaskVoidType DataFlowBlockCommon<TInputItem, TOutputItem, TState>::Completion() const
+  RStein::AsyncCpp::DataFlow::IDataFlowBlock::TaskVoidType DataFlowBlockCommon<
+    TInputItem, TOutputItem, TState>::Completion() const
   {
     return _completedTask;
   }
@@ -188,9 +188,9 @@ namespace RStein::AsyncCpp::DataFlow::Detail
       throw std::logic_error("Could not start node!");
     }
 
-    _processingTask = runProcessingTask(_processingCts->Token());
+    _processingTask = runProcessingTask(_processingCts.Token());
 
-    for (auto& nextBlock : _outputNodes.MapSnapshot<IInputBlock<TOutputItem>::InputBlockPtr>([](auto &weakPtr){return weakPtr.lock();}))
+    for (auto& nextBlock : _outputNodes.MapSnapshot<RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>::InputBlockPtr>([](auto &weakPtr){return weakPtr.lock();}))
     {
       
       if (!nextBlock)
@@ -248,7 +248,8 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
-  typename IDataFlowBlock::TaskVoidType DataFlowBlockCommon<TInputItem, TOutputItem, TState>::AcceptInputAsync(const TInputItem& item)
+  RStein::AsyncCpp::DataFlow::IDataFlowBlock::TaskVoidType DataFlowBlockCommon<
+    TInputItem, TOutputItem, TState>::AcceptInputAsync(const TInputItem& item)
   {
     //TODO: Avoid lock
     throwIfNotStarted();
@@ -256,8 +257,9 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
-  typename IDataFlowBlock::TaskVoidType DataFlowBlockCommon<TInputItem,
-    TOutputItem, TState>::AcceptInputAsync(TInputItem&& item)
+  RStein::AsyncCpp::DataFlow::IDataFlowBlock::TaskVoidType DataFlowBlockCommon<TInputItem,
+                                                                               TOutputItem, TState>::AcceptInputAsync(
+      TInputItem&& item)
   {
     //TODO: Avoid lock
     throwIfNotStarted();
@@ -266,7 +268,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
 
   template <typename TInputItem, typename TOutputItem, typename TState>
   void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::ConnectTo(
-      const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock)
+      const typename RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>::InputBlockPtr& nextBlock)
   {
     if (!nextBlock)
     {
@@ -284,13 +286,13 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   template <typename TInputItem, typename TOutputItem, typename TState>
   void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::removeDeadOutputNodes()
   {
-    _outputNodes.RemoveIf([](std::weak_ptr<IInputBlock<TOutputItem>> weakPtr){return !weakPtr.lock();});
+    _outputNodes.RemoveIf([](std::weak_ptr<RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>> weakPtr){return !weakPtr.lock();});
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
   std::future<void> DataFlowBlockCommon<TInputItem, TOutputItem, TState>::propagateOutput(TOutputItem outputItem)
   {
-    auto outputNodesSnapshot = _outputNodes.MapSnapshot<IInputBlock<TOutputItem>::InputBlockPtr>([](auto& weakPtr){return weakPtr.lock();});
+    auto outputNodesSnapshot = _outputNodes.MapSnapshot<RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>::InputBlockPtr>([](auto& weakPtr){return weakPtr.lock();});
     
     //Todo: Do not copy nodes
     //TODO: Optimize cycle
@@ -308,7 +310,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
       if (!inputNodePtr->CanAcceptInput(outputItem))
       {
 
-        *nodeIterator = IInputBlock<TOutputItem>::InputBlockPtr();
+        *nodeIterator = RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>::InputBlockPtr();
       }
     }
 
@@ -329,7 +331,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
   template <typename TInputItem, typename TOutputItem, typename TState>
   std::shared_future<void> DataFlowBlockCommon<
     TInputItem, TOutputItem, TState>::runProcessingTask(
-      AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken)
+      RStein::AsyncCpp::AsyncPrimitives::CancellationToken cancellationToken)
   {
     //TODO: Use Scheduler   
     try
@@ -337,10 +339,10 @@ namespace RStein::AsyncCpp::DataFlow::Detail
       TState state{};
       auto statePtr = &state;
       //For co_await operator
-      using namespace AsyncPrimitives;
+      using namespace RStein::AsyncCpp::AsyncPrimitives;
       co_await _startTask;
       TInputItem inputItem;
-      while (!cancellationToken->IsCancellationRequested())
+      while (!cancellationToken.IsCancellationRequested())
       {
         try
         {
@@ -406,13 +408,13 @@ namespace RStein::AsyncCpp::DataFlow::Detail
     }
 
     _state = BlockState::Stopping;
-    Utils::FinallyBlock finally
+    RStein::Utils::FinallyBlock finally
     {
         [this, isExceptional = exceptionPtr != nullptr, exceptionPtr = exceptionPtr]
         {
           _state = BlockState::Stopped;
 
-          for (auto& nextBlock : _outputNodes.MapSnapshot<IInputBlock<TOutputItem>::InputBlockPtr>([](auto &weakPtr){return weakPtr.lock();}))
+          for (auto& nextBlock : _outputNodes.MapSnapshot<RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>::InputBlockPtr>([](auto &weakPtr){return weakPtr.lock();}))
           {
             //TODO: Handle failing output node;
             if (!nextBlock)
@@ -435,7 +437,7 @@ namespace RStein::AsyncCpp::DataFlow::Detail
 
     try
     {
-      _processingCts->Cancel();
+      _processingCts.Cancel();
       _processingTask.get();
       if (exceptionPtr != nullptr)
       {

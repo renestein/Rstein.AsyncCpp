@@ -34,10 +34,10 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
     {
       Collection collection{};
   
-      auto cts = CancellationTokenSource::Create();
-      auto futureValue = collection.TakeAsync(cts->Token());
+      auto cts = CancellationTokenSource{};
+      auto futureValue = collection.TakeAsync(cts.Token());
       
-      cts->Cancel();
+      cts.Cancel();
       try
       {       
         co_await futureValue;

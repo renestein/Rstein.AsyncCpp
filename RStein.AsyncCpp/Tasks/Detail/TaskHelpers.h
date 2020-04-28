@@ -26,11 +26,11 @@ namespace RStein::AsyncCpp::Tasks::Detail
     TaskSharedState(std::function<TResult()> func,
                     Schedulers::Scheduler::SchedulerPtr scheduler,
                     bool isTaskReturnFunc,
-                    AsyncPrimitives::CancellationToken::CancellationTokenPtr cancellationToken) :
+                    AsyncPrimitives::CancellationToken cancellationToken) :
       std::enable_shared_from_this<TaskSharedState<TResult>>(),
       _func(std::move(func)),
       _isTaskReturnFunc(isTaskReturnFunc),
-      _cancellationToken(cancellationToken),
+      _cancellationToken(std::move(cancellationToken)),
       _lockObject{},
       _waitTaskCv{},
       _scheduler{scheduler},
@@ -94,7 +94,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       return _isTaskReturnFunc;
     }
 
-    AsyncPrimitives::CancellationToken::CancellationTokenPtr CancellationToken() const
+    AsyncPrimitives::CancellationToken CancellationToken() const
     {
       return _cancellationToken;
     }
@@ -108,7 +108,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
 
     bool IsCtCanceled() const
     {
-      return _cancellationToken->IsCancellationRequested();
+      return _cancellationToken.IsCancellationRequested();
     }
 
 
@@ -154,7 +154,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
           };
           try
           {
-            CancellationToken()->ThrowIfCancellationRequested();
+            CancellationToken().ThrowIfCancellationRequested();
 
             {
               std::lock_guard lock{_lockObject};
@@ -369,7 +369,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
   private:
     std::function<TResult()> _func;
     bool _isTaskReturnFunc;
-    AsyncPrimitives::CancellationToken::CancellationTokenPtr _cancellationToken;
+    AsyncPrimitives::CancellationToken _cancellationToken;
     mutable std::mutex _lockObject;
     mutable std::condition_variable _waitTaskCv;
     Schedulers::Scheduler::SchedulerPtr _scheduler;

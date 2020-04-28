@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "IInputOutputBlock.h"
-#include "Detail/DataFlowBlockCommon.h"
+#include "../Detail/DataFlow/DataFlowBlockCommon.h"
 #include <memory>
 
 namespace RStein::AsyncCpp::DataFlow
@@ -25,14 +25,14 @@ namespace RStein::AsyncCpp::DataFlow
 
       [[nodiscard]] std::string Name() const override;
       void Name(std::string name);  
-      [[nodiscard]] typename IDataFlowBlock::TaskVoidType Completion() const override;
+      [[nodiscard]] RStein::AsyncCpp::DataFlow::IDataFlowBlock::TaskVoidType Completion() const override;
       void Start() override;
       void Complete() override;
       void SetFaulted(std::exception_ptr exception) override;
       bool CanAcceptInput(const TInputItem& item) override;
-      typename IDataFlowBlock::TaskVoidType AcceptInputAsync(const TInputItem& item) override;
+    RStein::AsyncCpp::DataFlow::IDataFlowBlock::TaskVoidType AcceptInputAsync(const TInputItem& item) override;
       typename IDataFlowBlock::TaskVoidType AcceptInputAsync(TInputItem&& item) override;
-      void ConnectTo(const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock) override;
+      void ConnectTo(const typename RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>::InputBlockPtr& nextBlock) override;
       virtual ~TransformBlock() = default;
  
   private:
@@ -73,7 +73,8 @@ namespace RStein::AsyncCpp::DataFlow
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
-  IDataFlowBlock::TaskVoidType TransformBlock<TInputItem, TOutputItem, TState>::Completion() const
+  RStein::AsyncCpp::DataFlow::IDataFlowBlock::TaskVoidType TransformBlock<
+    TInputItem, TOutputItem, TState>::Completion() const
   {
     return _innerBlock->Completion();
   }
@@ -103,7 +104,8 @@ namespace RStein::AsyncCpp::DataFlow
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
-  IDataFlowBlock::TaskVoidType TransformBlock<TInputItem, TOutputItem, TState>::AcceptInputAsync(const TInputItem& item)
+  RStein::AsyncCpp::DataFlow::IDataFlowBlock::TaskVoidType TransformBlock<
+    TInputItem, TOutputItem, TState>::AcceptInputAsync(const TInputItem& item)
   {
     return _innerBlock->AcceptInputAsync(item);
   }
@@ -116,7 +118,7 @@ namespace RStein::AsyncCpp::DataFlow
 
   template <typename TInputItem, typename TOutputItem, typename TState>
   void TransformBlock<TInputItem, TOutputItem, TState>::ConnectTo(
-      const typename IInputBlock<TOutputItem>::InputBlockPtr& nextBlock)
+      const typename RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>::InputBlockPtr& nextBlock)
   {
     _innerBlock->Then(nextBlock);
   }

@@ -5,14 +5,19 @@ namespace RStein
 {
   namespace Utils
   {
-    class Disposable
+    class IDisposable
     {
     public:
-      Disposable();
+      IDisposable() = default;
+
+      IDisposable(const IDisposable& other) = default;
+      IDisposable(IDisposable&& other) noexcept = default;
+      IDisposable& operator=(const IDisposable& other) = default;
+      IDisposable& operator=(IDisposable&& other) noexcept = default;
+      virtual ~IDisposable() = default;
       virtual void Dispose() = 0;
-      virtual ~Disposable() = default;
     };
 
-    typedef std::shared_ptr<Disposable> DisposablePtr;
+    typedef std::shared_ptr<IDisposable> DisposablePtr;
   }
 }

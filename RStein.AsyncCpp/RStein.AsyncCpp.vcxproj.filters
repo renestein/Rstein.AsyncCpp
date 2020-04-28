@@ -75,9 +75,6 @@
     <ClCompile Include="DataFlow\IDataFlowBlock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DataFlow\Detail\DataFlowBlockCommon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DataFlow\IInputOutputBlock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -127,6 +124,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AsyncPrimitives\AggregateException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Detail\AsyncPrimitives\CtsSharedState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Detail\DataFlow\DataFlowBlockCommon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -182,9 +185,6 @@
     <ClInclude Include="DataFlow\IDataFlowBlock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataFlow\Detail\DataFlowBlockCommon.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DataFlow\IInputOutputBlock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -231,6 +231,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Tasks\TaskCombinators.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Detail\AsyncPrimitives\CtsSharedState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Detail\DataFlow\DataFlowBlockCommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

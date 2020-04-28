@@ -19,7 +19,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     ~AsyncSemaphore();
 
     [[nodiscard]] std::future<void> WaitAsync();
-    [[nodiscard]] std::future<void> WaitAsync(const CancellationToken::CancellationTokenPtr& cancellationToken);
+    [[nodiscard]] std::future<void> WaitAsync(CancellationToken cancellationToken);
     void Release();
         
   private:

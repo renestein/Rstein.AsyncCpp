@@ -251,12 +251,12 @@ namespace RStein::AsyncCpp::TasksTest
 
   TEST_F(TaskTest, WaitWhenTaskCanceledThenThrowsOperationCanceledException)
   {
-    auto cts = CancellationTokenSource::Create();
-    cts->Cancel();
+    auto cts = CancellationTokenSource{};
+    cts.Cancel();
     auto task = TaskFactory::Run([]
     {
       throw invalid_argument{"bad arg"};
-    }, cts->Token());
+    }, cts.Token());
 
     ASSERT_THROW(task.Wait(), OperationCanceledException);
   }
@@ -264,12 +264,12 @@ namespace RStein::AsyncCpp::TasksTest
 
   TEST_F(TaskTest, IsCanceledWhenTaskCanceledThenReturnsTrue)
   {
-    auto cts = CancellationTokenSource::Create();
-    cts->Cancel();
+    auto cts = CancellationTokenSource{};
+    cts.Cancel();
     auto task = TaskFactory::Run([]
     {
       throw invalid_argument{"bad arg"};
-    }, cts->Token());
+    }, cts.Token());
 
     auto isCanceled = task.IsCanceled();
     ASSERT_TRUE(isCanceled);
@@ -662,12 +662,12 @@ namespace RStein::AsyncCpp::TasksTest
   {
     const string EXPECTED_VALUE = "100";
     auto srcTask = TaskFromResult(10);
-    auto cts = CancellationTokenSource::Create();
-    cts->Cancel();
+    auto cts = CancellationTokenSource{};
+    cts.Cancel();
     auto mappedTask = Fmap(
-                           Fmap(srcTask, [ct=cts->Token()](int value)
+                           Fmap(srcTask, [ct=cts.Token()](int value)
                            {
-                             ct->ThrowIfCancellationRequested();
+                             ct.ThrowIfCancellationRequested();
                              return value * 10;
                            }),
                            [](int value)

@@ -1,35 +1,27 @@
 ﻿#include "CancellationTokenSource.h"
 
 using namespace std;
+using namespace Detail;
 namespace RStein::AsyncCpp::AsyncPrimitives
-{
-  CancellationTokenSource::CancellationTokenSourcePtr CancellationTokenSource::Create()
-  {
-    auto cts = std::shared_ptr<CancellationTokenSource>(new CancellationTokenSource);
-    cts->Token()->_parent = cts->shared_from_this();
-    return cts;
-  }
-
-  CancellationTokenSource::CancellationTokenSource() : enable_shared_from_this<CancellationTokenSource>(),
-                                                       _token(CancellationToken::New()),
-                                                       _isCancellationRequested(false)
+{ 
+  CancellationTokenSource::CancellationTokenSource() : _sharedState(CtsSharedState::New()),
+                                                       _token(_sharedState)
   {
     
   }
                                                        
 
-  void CancellationTokenSource::Cancel()
+  void CancellationTokenSource::Cancel() const
   {
-    _isCancellationRequested = true;
-    _token->notifyCanceled();
+    _sharedState->NotifyCanceled();
   }
 
   bool CancellationTokenSource::IsCancellationRequested() const
   {
-    return _isCancellationRequested;
+    return _sharedState->IsCancellationRequested();
   }
 
-  CancellationToken::CancellationTokenPtr CancellationTokenSource::Token() const
+  CancellationToken CancellationTokenSource::Token() const
   {
     return _token;
   }

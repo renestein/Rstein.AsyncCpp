@@ -23,7 +23,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     virtual std::future<void> AddAsync(const TItem& item) = 0;
     virtual std::future<void> AddAsync(TItem&& item) = 0;
     virtual std::future<TItem> TakeAsync()  = 0;
-    virtual std::future<TItem> TakeAsync(CancellationToken::CancellationTokenPtr cancellationToken) = 0;
+    virtual std::future<TItem> TakeAsync(CancellationToken cancellationToken) = 0;
     virtual std::vector<TItem> TryTakeAll() = 0;
 
   };

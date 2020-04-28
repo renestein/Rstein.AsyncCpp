@@ -5,7 +5,6 @@
 #include <any>
 #include <exception>
 #include <memory>
-#include <functional>
 #include <ostream>
 
 
@@ -31,11 +30,11 @@ namespace RStein::AsyncCpp::Tasks
     }
 
     template<typename TFunc>
-    Task(TFunc func, const AsyncPrimitives::CancellationToken::CancellationTokenPtr& cancellationToken) : Task
+    Task(TFunc func, AsyncPrimitives::CancellationToken cancellationToken) : Task
                                                                                                         {
                                                                                                           std::move(func),
                                                                                                           Schedulers::Scheduler::DefaultScheduler(),
-                                                                                                          cancellationToken,
+                                                                                                          std::move(cancellationToken),
                                                                                                         }
   
     {
@@ -50,11 +49,11 @@ namespace RStein::AsyncCpp::Tasks
     }
 
     template<typename TFunc>
-    Task(TFunc func, const Schedulers::Scheduler::SchedulerPtr& scheduler, const AsyncPrimitives::CancellationToken::CancellationTokenPtr& cancellationToken) :
+    Task(TFunc func, const Schedulers::Scheduler::SchedulerPtr& scheduler, AsyncPrimitives::CancellationToken cancellationToken) :
       _sharedTaskState{std::make_shared<TypedTaskSharedState>(std::move(func),
                                                               scheduler,
                                                               false,
-                                                              cancellationToken)}
+                                                              std::move(cancellationToken))}
     {
       static_assert(!std::is_reference_v<TResult>, "Task result should not be a reference!");
     }

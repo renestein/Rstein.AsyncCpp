@@ -24,7 +24,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     std::future<void> AddAsync(const TItem& item) override;
     std::future<void> AddAsync(TItem&& item) override;
     std::future<TItem> TakeAsync() override;
-    std::future<TItem> TakeAsync(CancellationToken::CancellationTokenPtr cancellationToken) override;
+    std::future<TItem> TakeAsync(CancellationToken cancellationToken) override;
     std::vector<TItem> TryTakeAll() override;
   private:
 
@@ -85,7 +85,7 @@ std::future<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsume
 }
 
 template <typename TItem>
-std::future<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::TakeAsync(CancellationToken::CancellationTokenPtr cancellationToken)
+std::future<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::TakeAsync(CancellationToken cancellationToken)
 {
   co_await _asyncSemaphore.WaitAsync(cancellationToken);
   auto retValue = _innerCollection.TryPop();
