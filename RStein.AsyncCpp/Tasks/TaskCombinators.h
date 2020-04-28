@@ -115,6 +115,28 @@ namespace RStein::AsyncCpp::Tasks
       _tcs.SetResult();
       return _tcs.GetTask();
     }
+
+    template<typename TFunc>
+    struct BindFuncHolder
+    {
+      TFunc _func;
+
+      BindFuncHolder(TFunc func)
+      {
+        _func = func;
+      }
+    };
+    
+    template<typename TFunc>
+    struct MapFuncHolder
+    {
+      TFunc _func;
+
+      MapFuncHolder(TFunc func)
+      {
+        _func = func;
+      }
+    };
   }
 
   Task<void> GetCompletedTask()
@@ -151,4 +173,31 @@ namespace RStein::AsyncCpp::Tasks
     co_return co_await mapFunc(co_await srcTask);
     
   }
+
+  template<typename TMapFunc>
+  Detail::BindFuncHolder<TMapFunc> Fbind(TMapFunc mapFunc)
+  {
+    return {mapFunc};
+  }
+
+  
+  template<typename TMapFunc>
+  Detail::MapFuncHolder<TMapFunc> Fmap(TMapFunc mapFunc)
+  {
+    return {mapFunc};
+  }
+
+  template<typename TSource, typename TMapFunc>
+  auto operator |(Task<TSource> srcTask, Detail::BindFuncHolder<TMapFunc> mapFunc)->decltype(Fbind(srcTask, mapFunc._func))
+  {
+    return Fbind(srcTask, mapFunc._func);
+  }
+
+  
+  template<typename TSource, typename TMapFunc>
+  auto operator |(Task<TSource> srcTask, Detail::MapFuncHolder<TMapFunc> mapFunc)->decltype(Fmap(srcTask, mapFunc._func))
+  {
+    return Fmap(srcTask, mapFunc._func);
+  }
+
 }

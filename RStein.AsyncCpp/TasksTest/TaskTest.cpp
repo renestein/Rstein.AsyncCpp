@@ -734,4 +734,55 @@ namespace RStein::AsyncCpp::TasksTest
     cout << "Result: " << leftMonad.Result();
     ASSERT_EQ(leftMonad.Result(), rightMonad.Result());
   }
+
+  TEST_F(TaskTest, FMapPipeOperatorWhenComposingThenReturnsExpectedResult)
+  {
+    const int initialValue= 10;
+    const int EXPECTED_VALUE  = 5;
+
+    auto mappedTask = TaskFromResult(initialValue)
+                        | Fmap([](auto value) {return value * 2;}) 
+                        | Fmap([](auto value) {return value / 4;});
+
+    ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
+  }
+
+  TEST_F(TaskTest, FBindPipeOperatorWhenComposingThenReturnsExpectedResult)
+  {
+    const int initialValue= 10;
+    const string EXPECTED_VALUE  = "5";
+    auto initialTask = TaskFromResult(initialValue);
+    auto mappedTask = initialTask 
+                       | Fbind([](auto value) {return TaskFromResult(value * 2);})
+                       | Fbind([](auto value) {return TaskFromResult(value / 4);})
+                       | Fbind([](auto value) {return TaskFromResult(to_string(value));});
+
+    ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
+  }
+
+  TEST_F(TaskTest, PipeOperatorWhenMixedComposingThenReturnsExpectedResult)
+  {
+    const int initialValue= 10;
+    const string EXPECTED_VALUE  = "5";
+    auto initialTask = TaskFromResult(initialValue);
+    auto mappedTask = initialTask 
+                       | Fbind([](auto value) {return TaskFromResult(value * 2);})
+                       | Fmap([](auto value) {return value / 4;})
+                       | Fbind([](auto value) {return TaskFromResult(to_string(value));});
+
+    ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
+  }
+
+  TEST_F(TaskTest, PipeOperatorWhenMixedComposingAndThrowsExceptionThenReturnsExpectedResult)
+  {
+    const int initialValue= 10;
+    const string EXPECTED_VALUE  = "5";
+    auto initialTask = TaskFromResult(initialValue);
+    auto mappedTask = initialTask 
+      | Fbind([](auto value) {throw std::invalid_argument{""}; return TaskFromResult(value * 2);})
+                       | Fmap([](auto value) {return value / 4;})
+                       | Fbind([](auto value) {return TaskFromResult(to_string(value));});
+
+    ASSERT_THROW(mappedTask.Result(), invalid_argument);
+  }
 }
