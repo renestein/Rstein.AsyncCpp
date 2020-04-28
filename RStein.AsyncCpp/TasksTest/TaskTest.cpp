@@ -620,5 +620,42 @@ namespace RStein::AsyncCpp::TasksTest
     FAIL();
   }
 
+  TEST_F(TaskTest, FmapWhenMappingTaskThenMappedTaskHasExpectedResult)
+  {
+    const string EXPECTED_VALUE = "100";
+    auto srcTask  = TaskFromResult(10);
+
+    auto mappedTask = Fmap(
+                    Fmap(srcTask, [](int value){return value * 10;}),
+                    [](int  value){return to_string(value);});
+
+    ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
+  }
+
   
+  TEST_F(TaskTest, FmapWhenMappingTaskAndThrowsExceptionThenMappedTaskHasCorectException)
+  {
+    const string EXPECTED_VALUE = "100";
+    auto srcTask  = TaskFromResult(10);
+
+    auto mappedTask = Fmap(
+                    Fmap(srcTask, [](int value){throw std::invalid_argument{""}; return value * 10;}),
+                    [](int  value){return to_string(value);});
+
+    ASSERT_THROW(mappedTask.Result(), invalid_argument);
+  }
+
+  TEST_F(TaskTest, FmapWhenMappingAndTaskIsCanceledThenMappedTaskIsCanceled)
+  {
+    const string EXPECTED_VALUE = "100";
+    auto srcTask  = TaskFromResult(10);
+    auto cts = CancellationTokenSource::Create();
+    cts->Cancel();
+    auto mappedTask = Fmap(
+                    Fmap(srcTask, [ct=cts->Token()](int value){ct->ThrowIfCancellationRequested(); return value * 10;}),
+                    [](int  value){return to_string(value);});
+
+    ASSERT_TRUE(mappedTask.IsCanceled());
+    ASSERT_THROW(mappedTask.Result(), OperationCanceledException);
+  }
 }

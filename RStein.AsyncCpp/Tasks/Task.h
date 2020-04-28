@@ -106,7 +106,7 @@ namespace RStein::AsyncCpp::Tasks
           {
             return false;
           }
-          _task.ContinueWith([continuation=std::move(continuation)](const auto& _) {continuation();});
+          _task.ContinueWith([continuation=continuation](const auto& _) {continuation();});
            return true;
         }
 
@@ -115,6 +115,7 @@ namespace RStein::AsyncCpp::Tasks
           if constexpr(std::is_same<Ret_Type, void>::value)
           {
             _task.Wait(); //Propagate exception
+            return (void) 0;
           }
           else
           {
