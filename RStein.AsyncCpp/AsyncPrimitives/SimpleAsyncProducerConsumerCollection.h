@@ -3,6 +3,8 @@
 #include "../Collections/ThreadSafeMinimalisticQueue.h"
 #include "AsyncSemaphore.h"
 #include "FutureEx.h"
+#include "../Tasks/TaskCombinators.h"
+
 
 #include <stdexcept>
 
@@ -21,10 +23,10 @@ namespace RStein::AsyncCpp::AsyncPrimitives
 
     void Add(TItem&& item) override;
     void Add(const TItem& item) override;
-    std::future<void> AddAsync(const TItem& item) override;
-    std::future<void> AddAsync(TItem&& item) override;
-    std::future<TItem> TakeAsync() override;
-    std::future<TItem> TakeAsync(CancellationToken cancellationToken) override;
+    Tasks::Task<void> AddAsync(const TItem& item) override;
+    Tasks::Task<void> AddAsync(TItem&& item) override;
+    Tasks::Task<TItem> TakeAsync() override;
+    Tasks::Task<TItem> TakeAsync(CancellationToken cancellationToken) override;
     std::vector<TItem> TryTakeAll() override;
   private:
 
@@ -58,21 +60,21 @@ void RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TI
 }
 
 template <typename TItem>
-std::future<void> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::AddAsync(const TItem& item)
+RStein::AsyncCpp::Tasks::Task<void> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::AddAsync(const TItem& item)
 {
    Add(item);
-  return GetCompletedFuture();
+  return Tasks::GetCompletedTask();
 }
 
 template <typename TItem>
-std::future<void> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::AddAsync(TItem&& item)
+RStein::AsyncCpp::Tasks::Task<void> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::AddAsync(TItem&& item)
 {
   Add(std::forward<TItem>(item));
-  return GetCompletedFuture();
+  return Tasks::GetCompletedTask();
 }
 
 template <typename TItem>
-std::future<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::TakeAsync()
+RStein::AsyncCpp::Tasks::Task<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::TakeAsync()
 {
   co_await _asyncSemaphore.WaitAsync();
   auto retValue = _innerCollection.TryPop();
@@ -85,7 +87,7 @@ std::future<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsume
 }
 
 template <typename TItem>
-std::future<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::TakeAsync(CancellationToken cancellationToken)
+RStein::AsyncCpp::Tasks::Task<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::TakeAsync(CancellationToken cancellationToken)
 {
   co_await _asyncSemaphore.WaitAsync(cancellationToken);
   auto retValue = _innerCollection.TryPop();

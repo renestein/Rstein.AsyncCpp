@@ -44,11 +44,11 @@ namespace RStein::AsyncCpp::DataFlowTest
     transform1->Start();
     for (int i = 0; i < EXPECTED_PROCESSED_ITEMS; ++i)
     {
-      transform1->AcceptInputAsync(i).get();
+      transform1->AcceptInputAsync(i).Wait();
     }
 
     transform1->Complete();
-    finalAction->Completion().get();
+    finalAction->Completion().Wait();
     const auto processedItemsCount = _processedItems.size();
 
     ASSERT_EQ(EXPECTED_PROCESSED_ITEMS, processedItemsCount);
@@ -97,11 +97,11 @@ namespace RStein::AsyncCpp::DataFlowTest
     transform1->Start();
     for (int i = 0; i < EXPECTED_PROCESSED_ITEMS; ++i)
     {
-      transform1->AcceptInputAsync(i).get();
+      transform1->AcceptInputAsync(i).Wait();
     }
 
     transform1->Complete();
-    finalAction->Completion().get();
+    finalAction->Completion().Wait();
     const auto processedItemsCount = _processedItems.size();
 
     ASSERT_EQ(EXPECTED_PROCESSED_ITEMS, processedItemsCount);
@@ -109,8 +109,8 @@ namespace RStein::AsyncCpp::DataFlowTest
 
   TEST(DataFlowTest, WhenAsyncFlatDataflowThenAllInputsProcessed)
   {
-    const int EXPECTED_PROCESSED_ITEMS = 1000;
-    auto transform1 = DataFlowAsyncFactory::CreateTransformBlock<int, string, Detail::NoState>([](const int& item, Detail::NoState*& _)->shared_future<string>
+    const int EXPECTED_PROCESSED_ITEMS = 100000;
+    auto transform1 = DataFlowAsyncFactory::CreateTransformBlock<int, string, Detail::NoState>([](const int& item, Detail::NoState*& _)-> Tasks::Task<string>
     {
       auto message = "int: "  + to_string(item) + "\n";
       cout << message;
@@ -118,20 +118,20 @@ namespace RStein::AsyncCpp::DataFlowTest
       co_return to_string(item);
     });
 
-    auto transform2 = DataFlowAsyncFactory::CreateTransformBlock<string, string>([](const string& item)->shared_future<string>
+    auto transform2 = DataFlowAsyncFactory::CreateTransformBlock<string, string>([](const string& item)-> Tasks::Task<string>
     {
       auto message = "String transform: " + item + "\n";
       cout << message;
-      co_await GetCompletedSharedFuture();
+      co_await Tasks::GetCompletedTask();
       co_return item + ": {string}";
     });
 
     vector<string> _processedItems{};
-    auto finalAction=DataFlowAsyncFactory::CreateActionBlock<string>([&_processedItems](const string& item)->shared_future<void>
+    auto finalAction=DataFlowAsyncFactory::CreateActionBlock<string>([&_processedItems](const string& item)-> Tasks::Task<void>
     {
       auto message = "Final action: " + item + "\n";
       cout << message;
-      co_await GetCompletedSharedFuture();
+      co_await Tasks::GetCompletedTask();
       _processedItems.push_back(item);
     });
 
@@ -141,11 +141,11 @@ namespace RStein::AsyncCpp::DataFlowTest
     transform1->Start();
     for (int i = 0; i < EXPECTED_PROCESSED_ITEMS; ++i)
     {
-      transform1->AcceptInputAsync(i).get();
+      transform1->AcceptInputAsync(i).Wait();
     }
 
     transform1->Complete();
-    finalAction->Completion().get();
+    finalAction->Completion().Wait();
     const auto processedItemsCount = _processedItems.size();
 
     ASSERT_EQ(EXPECTED_PROCESSED_ITEMS, processedItemsCount);

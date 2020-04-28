@@ -9,7 +9,7 @@ namespace RStein::AsyncCpp::DataFlow
   public:
         using IInputOutputBlockPtr = std::shared_ptr<IInputOutputBlock<TInputItem, TOutputItem>>;
         using OutputType = TOutputItem;
-        using TaskOutputItemType = std::shared_future<OutputType>;
+        using TaskOutputItemType = Tasks::Task<OutputType>;
         IInputOutputBlock() = default;
         IInputOutputBlock(const IInputOutputBlock& other) = delete;
         IInputOutputBlock(IInputOutputBlock&& other) = delete;

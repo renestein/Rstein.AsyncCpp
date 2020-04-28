@@ -22,7 +22,7 @@ namespace RStein::AsyncCpp::DataFlow
                   typename InnerDataFlowBlock::CanAcceptFuncType canAcceptFunc = [](const auto& _){ return true;}) :
                                                                                   IInputBlock<TInputItem>{},
                                                                                   std::enable_shared_from_this<ActionBlock<TInputItem, TState>>{},
-                                                                                  _innerBlock{std::make_shared<InnerDataFlowBlock>([actionFunc](const TInputItem& inputItem, TState*& state) ->std::shared_future<Detail::NoOutput>
+                                                                                  _innerBlock{std::make_shared<InnerDataFlowBlock>([actionFunc](const TInputItem& inputItem, TState*& state) ->Tasks::Task<Detail::NoOutput>
                                                                                               {
                                                                                                 co_await actionFunc(inputItem, state);
                                                                                                 co_return Detail::NoOutput::Default();

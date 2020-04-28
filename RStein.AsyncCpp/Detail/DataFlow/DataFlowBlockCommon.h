@@ -5,6 +5,8 @@
 #include "../../AsyncPrimitives/SimpleAsyncProducerConsumerCollection.h"
 #include "../../Collections/ThreadSafeMinimalisticVector.h"
 #include "../../AsyncPrimitives/FutureEx.h"
+#include "../../DataFlow/IDataFlowBlock.h"
+#include "../../Tasks/TaskCombinators.h"
 #include "../../Utils/FinallyBlock.h"
 #include <thread>
 #include <memory>
@@ -58,7 +60,7 @@ namespace Detail
     void ConnectTo(const typename RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>::InputBlockPtr& nextBlock) override;
     virtual ~DataFlowBlockCommon();
     void removeDeadOutputNodes();
-    std::future<void> propagateOutput(TOutputItem outputItem);
+    typename DataFlowBlockCommon<TInputItem, TOutputItem, TState>::TaskVoidType propagateOutput(TOutputItem outputItem);
 
   private:
     enum class BlockState
@@ -87,7 +89,7 @@ namespace Detail
     int _startCallsCount;
 
     explicit DataFlowBlockCommon(CanAcceptFuncType canAcceptFunc);
-    std::shared_future<void> runProcessingTask(
+    typename DataFlowBlockCommon<TInputItem, TOutputItem, TState>::TaskVoidType runProcessingTask(
         RStein::AsyncCpp::AsyncPrimitives::CancellationToken cancellationToken);
     void completeCommon(std::exception_ptr exceptionPtr);
     void throwIfNotStarted();
@@ -136,9 +138,10 @@ namespace Detail
                                                                             _canAcceptFunc{std::move(canAcceptFunc)},
                                                                             _name{},
                                                                             _completedTaskPromise{},
-                                                                            _completedTask{ _completedTaskPromise.get_future().share() },
+                                                                            _completedTask{ _completedTaskPromise.GetTask()},
                                                                             _startTaskPromise{},
-                                                                            _startTask{ _startTaskPromise.get_future().share() },
+                                                                            _startTask{ _startTaskPromise.GetTask()},
+                                                                            _processingTask{RStein::AsyncCpp::Tasks::GetCompletedTask()},
                                                                             _state{ BlockState::Created },
                                                                             _stateMutex{},
                                                                             _inputItems{},
@@ -204,7 +207,7 @@ namespace Detail
     removeDeadOutputNodes();
     _state = BlockState::Started;
     
-    _startTaskPromise.set_value();
+    _startTaskPromise.SetResult();
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
@@ -222,8 +225,7 @@ namespace Detail
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
-  bool DataFlowBlockCommon<TInputItem, TOutputItem, TState>::CanAcceptInput(
-    const TInputItem& item)
+  bool DataFlowBlockCommon<TInputItem, TOutputItem, TState>::CanAcceptInput(const TInputItem& item)
   {
     //Avoid lock
     {
@@ -267,13 +269,13 @@ namespace Detail
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
-  void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::ConnectTo(
-      const typename RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>::InputBlockPtr& nextBlock)
+  void DataFlowBlockCommon<TInputItem, TOutputItem, TState>::ConnectTo(const typename RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>::InputBlockPtr& nextBlock)
   {
     if (!nextBlock)
     {
       throw std::invalid_argument("nextBlock");
     }
+
     _outputNodes.Add(nextBlock);
   }
 
@@ -290,7 +292,8 @@ namespace Detail
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
-  std::future<void> DataFlowBlockCommon<TInputItem, TOutputItem, TState>::propagateOutput(TOutputItem outputItem)
+  typename DataFlowBlockCommon<TInputItem, TOutputItem, TState>::TaskVoidType DataFlowBlockCommon<
+    TInputItem, TOutputItem, TState>::propagateOutput(TOutputItem outputItem)
   {
     auto outputNodesSnapshot = _outputNodes.MapSnapshot<RStein::AsyncCpp::DataFlow::IInputBlock<TOutputItem>::InputBlockPtr>([](auto& weakPtr){return weakPtr.lock();});
     
@@ -329,7 +332,7 @@ namespace Detail
   }
 
   template <typename TInputItem, typename TOutputItem, typename TState>
-  std::shared_future<void> DataFlowBlockCommon<
+  typename DataFlowBlockCommon<TInputItem, TOutputItem, TState>::TaskVoidType DataFlowBlockCommon<
     TInputItem, TOutputItem, TState>::runProcessingTask(
       RStein::AsyncCpp::AsyncPrimitives::CancellationToken cancellationToken)
   {
@@ -337,9 +340,7 @@ namespace Detail
     try
     {
       TState state{};
-      auto statePtr = &state;
-      //For co_await operator
-      using namespace RStein::AsyncCpp::AsyncPrimitives;
+      auto statePtr = &state;     
       co_await _startTask;
       TInputItem inputItem;
       while (!cancellationToken.IsCancellationRequested())
@@ -348,7 +349,7 @@ namespace Detail
         {
           inputItem = co_await _inputItems.TakeAsync(cancellationToken);
         }
-        catch (OperationCanceledException&)
+        catch (RStein::AsyncCpp::AsyncPrimitives::OperationCanceledException&)
         {
           continue;
         }
@@ -435,24 +436,16 @@ namespace Detail
     };
 
 
-    try
-    {
       _processingCts.Cancel();
-      _processingTask.get();
+      _processingTask.Wait();
       if (exceptionPtr != nullptr)
       {
-        _completedTaskPromise.set_exception(exceptionPtr);
+        _completedTaskPromise.TrySetException(exceptionPtr);
       }
       else
       {
-        _completedTaskPromise.set_value();
-      }
-    }
-    catch (const std::future_error&)
-    {
-      const auto alreadySetMessage = "DataFlow node " + Name() + " Completion task already fulfilled. Future_error ignored.";
-      std::cout << alreadySetMessage;
-    }
+        _completedTaskPromise.TrySetResult();
+      }   
   }
 }
 

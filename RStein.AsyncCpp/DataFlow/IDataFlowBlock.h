@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include "../Tasks/Task.h"
+
 #include <future>
 #include <string>
 
@@ -8,8 +10,8 @@ namespace RStein::AsyncCpp::DataFlow
   {
     public:
       using DataFlowBlockPtr = std::shared_ptr<IDataFlowBlock>;
-      using TaskVoidType = std::shared_future<void>;
-      using PromiseVoidType = std::promise<void>;
+      using TaskVoidType = Tasks::Task<void>;
+      using PromiseVoidType = Tasks::TaskCompletionSource<void>;
       IDataFlowBlock() = default;;
       IDataFlowBlock(const IDataFlowBlock& other) = delete;
       IDataFlowBlock(IDataFlowBlock&& other) = delete;

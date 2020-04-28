@@ -17,10 +17,10 @@ class DataFlowAsyncFactory
       }
 
       template<typename TInput>
-      static typename IInputBlock<TInput>::InputBlockPtr CreateActionBlock(std::function<std::shared_future<void>(const TInput& input)> actionFunc,
+      static typename IInputBlock<TInput>::InputBlockPtr CreateActionBlock(std::function<Tasks::Task<void>(const TInput& input)> actionFunc,
                                                                           typename Detail::DataFlowBlockCommon<TInput, Detail::NoOutput, Detail::NoState>::CanAcceptFuncType canAcceptFunc = [](auto& _){return true;})
       {
-        return CreateActionBlock<TInput, Detail::NoState>([actionFunc=std::move(actionFunc)] (const TInput& input, auto _)->std::shared_future<void> {co_await actionFunc(input);},
+        return CreateActionBlock<TInput, Detail::NoState>([actionFunc=std::move(actionFunc)] (const TInput& input, auto _)->Tasks::Task<void> {co_await actionFunc(input);},
                                                           std::move(canAcceptFunc));
       }
 
@@ -32,10 +32,10 @@ class DataFlowAsyncFactory
       }
 
       template<typename TInput, typename TOutput>
-      static typename IInputOutputBlock<TInput, TOutput>::IInputOutputBlockPtr CreateTransformBlock(std::function<std::shared_future<TOutput>(const TInput& input)> transformFunc,
+      static typename IInputOutputBlock<TInput, TOutput>::IInputOutputBlockPtr CreateTransformBlock(std::function<Tasks::Task<TOutput>(const TInput& input)> transformFunc,
                                                                                                     typename Detail::DataFlowBlockCommon<TInput, Detail::NoOutput, Detail::NoState>::CanAcceptFuncType canAcceptFunc = [](auto& _){return true;})
       {
-        return CreateTransformBlock<TInput, TOutput, Detail::NoState>([transformFunc=std::move(transformFunc)] (const TInput& input, auto _)->std::shared_future<TOutput>
+        return CreateTransformBlock<TInput, TOutput, Detail::NoState>([transformFunc=std::move(transformFunc)] (const TInput& input, auto _)-> Tasks::Task<TOutput>
         {
           auto result  = co_await transformFunc(input);
           co_return result;
