@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include "Task.h"
+#include "../AsyncPrimitives/OperationCanceledException.h"
+
 
 #include <exception>
 #include <experimental/coroutine>
@@ -111,7 +113,18 @@ namespace RStein::AsyncCpp::Tasks
 
     void unhandled_exception()
     {
-      _tcs.SetException(std::current_exception());
+       try
+      {
+        std::rethrow_exception(std::current_exception());
+      }
+      catch(AsyncPrimitives::OperationCanceledException&)
+      {
+        _tcs.TrySetCanceled();
+      }
+      catch(...)
+      {
+        _tcs.TrySetException(std::current_exception());
+      }
     }
 
     private:
@@ -148,8 +161,19 @@ namespace RStein::AsyncCpp::Tasks
     }
 
     void unhandled_exception()
-    {      
-      _tcs.SetException(std::current_exception());
+    {
+      try
+      {
+        std::rethrow_exception(std::current_exception());
+      }
+      catch(AsyncPrimitives::OperationCanceledException&)
+      {
+        _tcs.TrySetCanceled();
+      }
+      catch(...)
+      {
+        _tcs.TrySetException(std::current_exception());
+      }
     }
 
     private:

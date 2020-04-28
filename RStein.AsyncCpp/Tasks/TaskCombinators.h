@@ -150,14 +150,14 @@ namespace RStein::AsyncCpp::Tasks
 
   template<typename TSource, typename TMapFunc>
   auto Fmap(Task<TSource> srcTask, TMapFunc mapFunc)->Task<decltype(mapFunc(srcTask.Result()))>
-  {
-    if (!mapFunc)
-    {
-      throw std::invalid_argument("mapFunc");
-    }
+  {    
+    co_return mapFunc(co_await srcTask);    
+  }
 
+  template<typename TSource, typename TMapFunc>
+  auto FBind(Task<TSource> srcTask, TMapFunc mapFunc)->Task<decltype(mapFunc(srcTask.Result()).Result)>
+  {    
     co_return mapFunc(co_await srcTask);
     
   }
-
 }
