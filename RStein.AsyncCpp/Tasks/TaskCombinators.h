@@ -98,23 +98,14 @@ namespace RStein::AsyncCpp::Tasks
 
   //Identity method.
   template<typename TResult>
-  Task<TResult> TaskFromResult(TResult&& taskResult)
+  auto TaskFromResult(TResult&& taskResult)->Task<std::decay_t<TResult>>
   {
     //TODO: Detect invalid values.
-    TaskCompletionSource<TResult> tcs;
-    tcs.SetResult(std::forward<TResult>(taskResult));
-    return tcs.GetTask();
-  }
-   //Identity method.
-
-  template<typename TResult>
-  Task<TResult> TaskFromResult(const TResult& taskResult)
-  {
-    //TODO: Detect invalid values.
-    TaskCompletionSource<TResult> tcs;
+    TaskCompletionSource<std::decay_t<TResult>> tcs;
     tcs.SetResult(taskResult);
     return tcs.GetTask();
   }
+
 
   namespace Detail
   {
@@ -133,17 +124,17 @@ namespace RStein::AsyncCpp::Tasks
   }
 
   template<typename TResult>
-  Task<TResult> TaskFromException(std::exception_ptr exception)
+  auto TaskFromException(std::exception_ptr exception)->Task<std::decay_t<TResult>>
   {
-    TaskCompletionSource<TResult> tcs;
+    TaskCompletionSource<std::decay_t<TResult>> tcs;
     tcs.SetException(exception);
     return tcs.GetTask();
   }
 
   template<typename TResult>
-  Task<TResult> TaskFromCanceled()
+  auto TaskFromCanceled()->Task<std::decay_t<TResult>>
   {
-    TaskCompletionSource<TResult> tcs;
+    TaskCompletionSource<std::decay_t<TResult>> tcs;
     tcs.SetCanceled();
     return tcs.GetTask();
   }
@@ -151,13 +142,13 @@ namespace RStein::AsyncCpp::Tasks
   template<typename TSource, typename TMapFunc>
   auto Fmap(Task<TSource> srcTask, TMapFunc mapFunc)->Task<decltype(mapFunc(srcTask.Result()))>
   {    
-    co_return mapFunc(co_await srcTask);    
+    co_return mapFunc(co_await srcTask);
   }
 
   template<typename TSource, typename TMapFunc>
-  auto FBind(Task<TSource> srcTask, TMapFunc mapFunc)->Task<decltype(mapFunc(srcTask.Result()).Result)>
+  auto Fbind(Task<TSource> srcTask, TMapFunc mapFunc)->Task<std::decay_t<decltype(mapFunc(srcTask.Result()).Result())>>
   {    
-    co_return mapFunc(co_await srcTask);
+    co_return co_await mapFunc(co_await srcTask);
     
   }
 }

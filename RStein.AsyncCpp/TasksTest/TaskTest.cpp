@@ -573,7 +573,7 @@ namespace RStein::AsyncCpp::TasksTest
   {
     const int EXPECTED_TASK_VALUE = 1234;
 
-    auto task  = TaskFromResult(1234);
+    auto task = TaskFromResult(1234);
 
     auto taskValue = task.Result();
     ASSERT_EQ(EXPECTED_TASK_VALUE, taskValue);
@@ -593,7 +593,7 @@ namespace RStein::AsyncCpp::TasksTest
     {
       task.Wait();
     }
-    catch(const logic_error&)
+    catch (const logic_error&)
     {
       SUCCEED();
       return;
@@ -602,7 +602,7 @@ namespace RStein::AsyncCpp::TasksTest
     FAIL();
   }
 
-  
+
   TEST_F(TaskTest, TaskFromCanceledWhenWaitingForTaskThenThrowsOperationCanceledException)
   {
     auto task = TaskFromCanceled<string>();
@@ -611,7 +611,7 @@ namespace RStein::AsyncCpp::TasksTest
     {
       task.Wait();
     }
-    catch(const OperationCanceledException&)
+    catch (const OperationCanceledException&)
     {
       SUCCEED();
       return;
@@ -623,24 +623,37 @@ namespace RStein::AsyncCpp::TasksTest
   TEST_F(TaskTest, FmapWhenMappingTaskThenMappedTaskHasExpectedResult)
   {
     const string EXPECTED_VALUE = "100";
-    auto srcTask  = TaskFromResult(10);
+    auto srcTask = TaskFromResult(10);
 
     auto mappedTask = Fmap(
-                    Fmap(srcTask, [](int value){return value * 10;}),
-                    [](int  value){return to_string(value);});
+                           Fmap(srcTask, [](int value)
+                           {
+                             return value * 10;
+                           }),
+                           [](int value)
+                           {
+                             return to_string(value);
+                           });
 
     ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
   }
 
-  
+
   TEST_F(TaskTest, FmapWhenMappingTaskAndThrowsExceptionThenMappedTaskHasCorectException)
   {
     const string EXPECTED_VALUE = "100";
-    auto srcTask  = TaskFromResult(10);
+    auto srcTask = TaskFromResult(10);
 
     auto mappedTask = Fmap(
-                    Fmap(srcTask, [](int value){throw std::invalid_argument{""}; return value * 10;}),
-                    [](int  value){return to_string(value);});
+                           Fmap(srcTask, [](int value)
+                           {
+                             throw std::invalid_argument{""};
+                             return value * 10;
+                           }),
+                           [](int value)
+                           {
+                             return to_string(value);
+                           });
 
     ASSERT_THROW(mappedTask.Result(), invalid_argument);
   }
@@ -648,14 +661,77 @@ namespace RStein::AsyncCpp::TasksTest
   TEST_F(TaskTest, FmapWhenMappingAndTaskIsCanceledThenMappedTaskIsCanceled)
   {
     const string EXPECTED_VALUE = "100";
-    auto srcTask  = TaskFromResult(10);
+    auto srcTask = TaskFromResult(10);
     auto cts = CancellationTokenSource::Create();
     cts->Cancel();
     auto mappedTask = Fmap(
-                    Fmap(srcTask, [ct=cts->Token()](int value){ct->ThrowIfCancellationRequested(); return value * 10;}),
-                    [](int  value){return to_string(value);});
+                           Fmap(srcTask, [ct=cts->Token()](int value)
+                           {
+                             ct->ThrowIfCancellationRequested();
+                             return value * 10;
+                           }),
+                           [](int value)
+                           {
+                             return to_string(value);
+                           });
 
     ASSERT_TRUE(mappedTask.IsCanceled());
     ASSERT_THROW(mappedTask.Result(), OperationCanceledException);
+  }
+
+  TEST_F(TaskTest, MonadRightIdentityLaw)
+  {
+    auto leftMonad = TaskFromResult(10);
+    auto rightMonad = Fbind(leftMonad, [](int unwrappedValue)
+    {
+      return TaskFromResult(unwrappedValue);
+    });
+
+    ASSERT_EQ(leftMonad.Result(), rightMonad.Result());
+  }
+
+
+  TEST_F(TaskTest, MonadLeftIdentityLaw)
+  {
+    const int initialValue = 10;
+
+    auto selector = [](int value)
+    {
+      auto transformedvalue = value * 100;
+      return TaskFromResult(transformedvalue);
+    };
+
+    auto rightMonad = selector(initialValue);
+
+    auto leftMonad = Fbind(TaskFromResult(initialValue), selector);
+
+    ASSERT_EQ(leftMonad.Result(), rightMonad.Result());
+  }
+
+  TEST_F(TaskTest, MonadAssociativityLaw)
+  {
+    const int initialValue = 10;
+
+    auto initialMonad = TaskFromResult(initialValue);
+    auto gTransformFunc = [](int value)
+    {
+      auto transformedValue = value * 10;
+      return TaskFromResult(transformedValue);
+    };
+
+    auto hTransformFunc = [](int value)
+    {
+      auto transformedValue = value / 2;
+      return TaskFromResult(transformedValue);
+    };
+
+    auto leftMonad = Fbind(Fbind(initialMonad, gTransformFunc), hTransformFunc);
+    auto rightMonad = Fbind(initialMonad, [&gTransformFunc, &hTransformFunc](auto&& value)
+    {
+      return Fbind(gTransformFunc(value), hTransformFunc);
+    });
+
+    cout << "Result: " << leftMonad.Result();
+    ASSERT_EQ(leftMonad.Result(), rightMonad.Result());
   }
 }
