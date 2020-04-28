@@ -122,18 +122,18 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       const auto maxCount{1};
       const auto initialCount{0};
       AsyncSemaphore semaphore{maxCount, initialCount};
-      future<void> waiterFutures[WAITERS];
+      std::vector<Tasks::Task<void>> waiterTasks;
 
-      for (auto& waiterFuture : waiterFutures)
+      for (auto i = 0; i < WAITERS; i++)
       {
-        waiterFuture = semaphore.WaitAsync();
+        waiterTasks.push_back(semaphore.WaitAsync());
       }
       semaphore.Dispose();
-      for (auto& waiterFuture : waiterFutures)
+      for (auto& waiterTask : waiterTasks)
       {
         try
         {
-          co_await waiterFuture; 
+          co_await waiterTask; 
         }
         catch (const OperationCanceledException&)
         {

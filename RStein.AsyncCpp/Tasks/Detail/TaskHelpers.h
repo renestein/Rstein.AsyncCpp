@@ -8,6 +8,7 @@
 
 #include <any>
 #include <cassert>
+#include <utility>
 #include <vector>
 #include <mutex>
 #include <condition_variable>
@@ -33,7 +34,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       _cancellationToken(std::move(cancellationToken)),
       _lockObject{},
       _waitTaskCv{},
-      _scheduler{scheduler},
+      _scheduler{std::move(scheduler)},
       _taskId{ _idGenerator++ },
       _state{ TaskState::Created },
       _continuations{ std::vector<ContinuationFunc>{} },

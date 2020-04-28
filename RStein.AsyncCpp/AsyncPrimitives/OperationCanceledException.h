@@ -20,7 +20,8 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     OperationCanceledException(OperationCanceledException&& other) noexcept = default;
     OperationCanceledException& operator=(const OperationCanceledException& other) = default;
     OperationCanceledException& operator=(OperationCanceledException&& other) noexcept = default;
-    ~OperationCanceledException() = default;  
+    ~OperationCanceledException() = default;
+
   };
 
   

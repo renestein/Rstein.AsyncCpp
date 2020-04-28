@@ -2,7 +2,6 @@
 #include "Task.h"
 #include "TaskCompletionSource.h"
 #include "../AsyncPrimitives/AggregateException.h"
-#include "../AsyncPrimitives/OperationCanceledException.h"
 
 namespace RStein::AsyncCpp::Tasks
 {
@@ -109,13 +108,7 @@ namespace RStein::AsyncCpp::Tasks
 
   namespace Detail
   {
-    Task<void> getCompletedTask()
-    {
-      TaskCompletionSource<void> _tcs;
-      _tcs.SetResult();
-      return _tcs.GetTask();
-    }
-
+    
     template<typename TFunc>
     struct BindFuncHolder
     {
@@ -139,11 +132,8 @@ namespace RStein::AsyncCpp::Tasks
     };
   }
 
-  Task<void> GetCompletedTask()
-  {
-    static Task<void> _completedTask = Detail::getCompletedTask();    
-    return _completedTask;
-  }
+  Task<void> GetCompletedTask();
+  
 
   template<typename TResult>
   auto TaskFromException(std::exception_ptr exception)->Task<std::decay_t<TResult>>

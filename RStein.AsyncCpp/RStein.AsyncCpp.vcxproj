@@ -195,6 +195,7 @@
     <ClCompile Include="Tasks\Detail\TaskHelpers.cpp" />
     <ClCompile Include="TasksTest\TaskTest.cpp" />
     <ClCompile Include="Tasks\Task.cpp" />
+    <ClCompile Include="Tasks\TaskCombinators.cpp" />
     <ClCompile Include="Tasks\TaskCompletionSource.cpp" />
     <ClCompile Include="Tasks\TaskFactory.cpp" />
     <ClCompile Include="Utils\Disposable.cpp" />

@@ -3,12 +3,16 @@
 #include "FutureEx.h"
 #include "OperationCanceledException.h"
 #include "SemaphoreFullException.h"
+#include "../Tasks/TaskCombinators.h"
+#include "../Utils/FinallyBlock.h"
+
+
 
 #include <iostream>
 
 
 using namespace std;
-
+using namespace RStein::Utils;
 namespace RStein::AsyncCpp::AsyncPrimitives
 {
   AsyncSemaphore::AsyncSemaphore(int maxCount, int initialCount) : _initialCount{ initialCount },
@@ -32,50 +36,39 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     Dispose();
   }
 
-  future<void> AsyncSemaphore::WaitAsync()
+  Tasks::Task<void> AsyncSemaphore::WaitAsync()
   {
     return WaitAsync(CancellationToken::None());
   }
 
-  future<void> AsyncSemaphore::WaitAsync(CancellationToken cancellationToken)
+  Tasks::Task<void> AsyncSemaphore::WaitAsync(CancellationToken cancellationToken)
   {
     lock_guard lock{ _waitersLock };
-
-    //cache completed future. Problem with shared_future + await;
-
-    //We need to use promise in two contexts, so use make_shared for now as a workaround.
-    SharedPromise newWaitingPromise = make_shared<promise<void>>();
-    auto waiterFuture = newWaitingPromise->get_future();
 
     if (_currentCount > 0)
     {
       _currentCount--;
-      newWaitingPromise->set_value();
-      return waiterFuture;
+      return Tasks::GetCompletedTask();
     }
 
     optional<CancellationRegistration> cancelRegistration;
+    SharedPromise waiterPromise{};
+    auto waiterTsk = waiterPromise.GetTask();
     if (cancellationToken.CanBeCanceled())
     {
-      cancelRegistration = cancellationToken.Register([newWaitingPromise]
+      cancelRegistration = cancellationToken.Register([waiterPromise]() mutable
         {
 
           OperationCanceledException oce{};
-          //Throw if the future is ready
-          try
-          {
-            newWaitingPromise->set_exception(make_exception_ptr(oce));
-          }
-          catch (const future_error&)
-          {
-            //Already fulfilled promise.
-          }
+
+          waiterPromise.TrySetException(make_exception_ptr(oce));
+
         });
     }
 
-    _waiters.emplace_back(pair(std::move(newWaitingPromise), std::move(cancelRegistration)));
+    _waiters.emplace_back(pair(std::move(waiterPromise), std::move(cancelRegistration)));
 
-    return waiterFuture;
+    return waiterTsk;
   }
 
   void AsyncSemaphore::Release()
@@ -99,16 +92,14 @@ namespace RStein::AsyncCpp::AsyncPrimitives
       _waiters.pop_front();
       try
       {
-        promise->set_value();
-        waiterReleased = true;
+        if (promise.TrySetResult())
+        {
+          waiterReleased = true;
+        }
         if (cancellationRegistration)
         {
           cancellationRegistration->Dispose();
         }
-      }
-      catch (const future_error&)
-      {
-        cerr << "AsyncSemaphore::Release - Already fulfilled future.\n";
       }
       catch (...)
       {
@@ -123,27 +114,30 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     }
   }
 
-  void AsyncSemaphore::Dispose()
+  void AsyncSemaphore::Dispose() noexcept
   {
-    //Do not lock in the destructor/Dispose.
-    for (auto& [promise, cancellation] : _waiters)
+    try
     {
-      try
+      //Do not lock in the destructor/Dispose.
+      for (auto& [promise, cancellation] : _waiters)
       {
-        promise->set_exception(make_exception_ptr(OperationCanceledException{}));
-        //TODO: Dispose even in case the promise set_exception method throw
-        if (cancellation)
-        {
-          cancellation->Dispose();
-        }
-      }
-      catch(...)
-      {
-        
-      }
-    }
+        FinallyBlock finally([&cancellation]
+          {
+            if (cancellation)
+            {
+                cancellation->Dispose();              
+            }
+          });
 
-    _waiters.clear();
+          promise.TrySetException(make_exception_ptr(OperationCanceledException{}));        
+      }
+
+      _waiters.clear();
+    }
+    catch(...)
+    {
+      cerr << "AsyncSemaphore - exception in dtor.";
+    }
   }
 
 }
