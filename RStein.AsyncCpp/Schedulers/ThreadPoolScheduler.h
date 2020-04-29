@@ -11,7 +11,7 @@ namespace RStein::AsyncCpp::Schedulers
   public:
     static const int MAX_THREADS_IN_STRAND = 1;
 
-    ThreadPoolScheduler(SimpleThreadPool& threadPool);
+    explicit ThreadPoolScheduler(SimpleThreadPool& threadPool);
     virtual ~ThreadPoolScheduler();
 
     ThreadPoolScheduler(const ThreadPoolScheduler& other) = delete;

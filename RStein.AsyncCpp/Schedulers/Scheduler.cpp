@@ -17,14 +17,14 @@ namespace RStein::AsyncCpp::Schedulers
 
   Scheduler::~Scheduler() = default;
 
-  thread_local Scheduler::SchedulerPtr Scheduler::_currentScheduler = Scheduler::SchedulerPtr{};
+  thread_local Scheduler::SchedulerPtr Scheduler::_currentScheduler = SchedulerPtr{};
 
   Scheduler::SchedulerPtr Scheduler::initDefaultScheduler()
   {
     //TODO: Better ThreadPool
     static unsigned int MIN_THREADS = 8;
     static unsigned int HW_THREADS = std::thread::hardware_concurrency() * 2;
-    const int THREADS_COUNT = max(MIN_THREADS, HW_THREADS);
+    const unsigned int THREADS_COUNT = max(MIN_THREADS, HW_THREADS);
 
     static SimpleThreadPool threadPool{THREADS_COUNT};
     static SchedulerPtr defaultScheduler = std::make_shared<ThreadPoolScheduler>(threadPool);

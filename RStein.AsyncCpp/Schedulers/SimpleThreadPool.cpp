@@ -9,12 +9,12 @@ namespace RStein::AsyncCpp::Schedulers
   {
   }
 
-  SimpleThreadPool::SimpleThreadPool(int numberOfThreads) : _innerQueue(),
-                                                            _lockRoot(),
-                                                            _queueConditionVariable(),
-                                                            _threadPoolState(ThreadPoolState::Created),
-                                                            _numberOfThreads(numberOfThreads),
-                                                            _quitRequest(false)
+  SimpleThreadPool::SimpleThreadPool(unsigned int numberOfThreads) : _innerQueue(),
+                                                                  _lockRoot(),
+                                                                  _queueConditionVariable(),
+                                                                  _threadPoolState(ThreadPoolState::Created),
+                                                                  _numberOfThreads(numberOfThreads),
+                                                                  _quitRequest(false)
 
   {
     if (numberOfThreads < 0)
@@ -41,7 +41,7 @@ namespace RStein::AsyncCpp::Schedulers
       throwInvalidThreadPoolState();
     }
 
-    for (int i = 0; i < _numberOfThreads; i++)
+    for (auto i = 0u; i < _numberOfThreads; i++)
   {
       _threads.emplace_back([this]
       {
@@ -113,12 +113,12 @@ namespace RStein::AsyncCpp::Schedulers
     _queueConditionVariable.notify_one();
   }
 
-  int SimpleThreadPool::GetNumberOfThreads() const
+  unsigned SimpleThreadPool::GetNumberOfThreads() const
   {
     return _numberOfThreads;
   }
 
-  SimpleThreadPool::ThreadPoolState SimpleThreadPool::GetThreadPoolState()
+  SimpleThreadPool::ThreadPoolState SimpleThreadPool::GetThreadPoolState() const
   {
     return _threadPoolState;
   }

@@ -46,7 +46,7 @@ namespace RStein::AsyncCpp::Tasks
     template <typename TTask>
     void waitAnyTask(TTask&& task, TaskCompletionSource<int>& tcs, int taskIndex) 
     {
-      auto continuation = [tcs, taskIndex](auto& previous) mutable {tcs.TrySetResult(taskIndex);};
+      auto continuation = [tcs, taskIndex]([[maybe_unused]] auto& previous) mutable {tcs.TrySetResult(taskIndex);};
       task.ContinueWith(continuation);      
     }
 

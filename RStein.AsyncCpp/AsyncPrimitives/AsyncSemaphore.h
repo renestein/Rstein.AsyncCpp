@@ -14,7 +14,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
   {
   public:
     AsyncSemaphore(int maxCount, int initialCount);
-    void Dispose() noexcept;
+    void Dispose();
     AsyncSemaphore(const AsyncSemaphore& other) = delete;
     AsyncSemaphore(AsyncSemaphore&& other) noexcept = delete;
     AsyncSemaphore& operator=(const AsyncSemaphore& other) = delete;

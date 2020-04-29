@@ -10,7 +10,7 @@ namespace RStein::AsyncCpp::Schedulers
   class StrandSchedulerDecorator :	public Scheduler
   {
   public:
-	  StrandSchedulerDecorator(const std::shared_ptr<Scheduler> &scheduler);
+    explicit StrandSchedulerDecorator(const std::shared_ptr<Scheduler>& scheduler);
 	  virtual ~StrandSchedulerDecorator();
 
     StrandSchedulerDecorator(const StrandSchedulerDecorator& other) = delete;

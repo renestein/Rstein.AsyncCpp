@@ -16,9 +16,8 @@ namespace RStein::AsyncCpp::AsyncPrimitives
 
   public:
     using CancellationAction = Detail::CtsSharedState::CancellationAction;
-    CancellationToken(Detail::CtsSharedState::CtsSharedStatePtr sharedState);
     static CancellationToken None();
-
+    //TODO: Check interface, ensure thread safe (shared_ptr atomicity?)
     CancellationToken(const CancellationToken& other) = default;
     CancellationToken(CancellationToken&& other) noexcept = default;
     CancellationToken& operator=(const CancellationToken& other) = default;
@@ -30,6 +29,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     void ThrowIfCancellationRequested() const;
     CancellationRegistration Register(CancellationAction cancellationAction) const;
   private:
+    explicit CancellationToken(Detail::CtsSharedState::CtsSharedStatePtr sharedState);
     static CancellationToken _none;
     Detail::CtsSharedState::CtsSharedStatePtr _sharedState;
     

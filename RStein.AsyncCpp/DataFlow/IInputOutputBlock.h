@@ -24,6 +24,6 @@ namespace RStein::AsyncCpp::DataFlow
         {
           ConnectTo(nextBlock);
           return nextBlock;
-        }; 
-    };
+        }
+  };
 }

@@ -9,8 +9,8 @@
 
 namespace RStein::AsyncCpp::Schedulers
 {
-  //TODO: Start/Stop is not thread safe.
   //TODO: Better Lock free + work stealing ThreadPool
+  //TODO: Start/Stop is not thread safe.
   class SimpleThreadPool
   {
   public:
@@ -24,7 +24,7 @@ namespace RStein::AsyncCpp::Schedulers
 
     using WorkItem = std::function<void()>;
     SimpleThreadPool();
-    SimpleThreadPool(int numberOfThreads);   
+    SimpleThreadPool(unsigned int numberOfThreads);   
     virtual ~SimpleThreadPool();
 
     SimpleThreadPool(const SimpleThreadPool& other) = delete;
@@ -36,15 +36,15 @@ namespace RStein::AsyncCpp::Schedulers
     void Stop();
     
     void EnqueueItem(WorkItem&& originalFunction);
-    int GetNumberOfThreads() const;
-    ThreadPoolState GetThreadPoolState();
+    unsigned GetNumberOfThreads() const;
+    ThreadPoolState GetThreadPoolState() const;
 
   private:
     std::queue<WorkItem> _innerQueue;
     std::mutex _lockRoot;
     std::condition_variable _queueConditionVariable;
     ThreadPoolState _threadPoolState;
-    int _numberOfThreads;
+    unsigned int _numberOfThreads;
 
     std::vector<std::thread> _threads;
     std::atomic<bool> _quitRequest;

@@ -1,7 +1,5 @@
 ﻿#include "CancellationRegistration.h"
 
-#include <cassert>
-
 namespace RStein::AsyncCpp::AsyncPrimitives
 {
   CancellationRegistration::CancellationRegistration() : _disposeAction()

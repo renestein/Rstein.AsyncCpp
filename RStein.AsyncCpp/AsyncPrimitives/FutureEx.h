@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include <experimental/coroutine>
 #include <future>
 #include <iostream>
 #include <thread>
@@ -52,7 +51,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
 
         //This is really terrible awaiter, we are wasting thread (but MS do the same?)
         std::thread waitThread{
-            [coroutine=std::move(coroutine), waitToFuture = Future]()
+            [coroutine= coroutine, waitToFuture = Future]()
             {
               try
               {
@@ -103,7 +102,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
 
         //This is really terrible awaiter, we are wasting thread (but MS do the same?)
         std::thread waitThread{
-            [coroutine=std::move(coroutine), waitToFuture = Future]()
+            [coroutine = coroutine, waitToFuture = Future]()
             {
               try
               {
@@ -139,7 +138,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     SharedVoidFutureCoroutinePromise() : _promise(),
                                          _future(_promise.get_future().share())
     {
-    };
+    }
 
     [[nodiscard]] std::shared_future<void> get_return_object() const
     {
@@ -176,7 +175,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     SharedFutureTCoroutinePromise() : _promise(),
                                       _future(_promise.get_future().share())
     {
-    };
+    }
 
     [[nodiscard]] std::shared_future<TR> get_return_object() const
     {

@@ -33,7 +33,9 @@ namespace RStein::AsyncCpp::AsyncPrimitives
 
   AsyncSemaphore::~AsyncSemaphore()
   {
-    Dispose();
+    
+      Dispose(); 
+
   }
 
   Tasks::Task<void> AsyncSemaphore::WaitAsync()
@@ -58,8 +60,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     {
       cancelRegistration = cancellationToken.Register([waiterPromise]() mutable
         {
-
-          OperationCanceledException oce{};
+          const OperationCanceledException oce{};
 
           waiterPromise.TrySetException(make_exception_ptr(oce));
 
@@ -85,7 +86,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
       return;
     }
 
-    bool waiterReleased = false;
+    auto waiterReleased = false;
     do
     {
       auto [promise, cancellationRegistration] = std::move(_waiters.front());
@@ -114,7 +115,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     }
   }
 
-  void AsyncSemaphore::Dispose() noexcept
+  void AsyncSemaphore::Dispose()
   {
     try
     {

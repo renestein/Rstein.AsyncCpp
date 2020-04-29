@@ -2,7 +2,6 @@
 #include <experimental/resumable>
 #include <memory>
 #include <functional>
-#include <thread>
 
 namespace RStein::AsyncCpp::Schedulers
 {
