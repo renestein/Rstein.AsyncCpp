@@ -58,7 +58,7 @@ namespace RStein::AsyncCpp::Detail
     TaskSharedState() : TaskSharedState(nullptr,
                                         Schedulers::Scheduler::SchedulerPtr{},
                                         false,
-                                        AsyncPrimitives::CancellationToken::CancellationToken::None())
+                                        AsyncPrimitives::CancellationToken::None())
     {
 
     }

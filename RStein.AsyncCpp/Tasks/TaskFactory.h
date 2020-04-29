@@ -17,7 +17,7 @@ namespace RStein::AsyncCpp::Tasks
 
     template <typename TFunc>
     static auto Run(TFunc&& func,
-                    const AsyncPrimitives::CancellationToken cancellationToken)
+                    AsyncPrimitives::CancellationToken cancellationToken)
     {
       return Run(std::forward<TFunc>(func),
                 std::move(cancellationToken),
@@ -36,7 +36,7 @@ namespace RStein::AsyncCpp::Tasks
 
     template <typename TFunc>
     static auto Run(TFunc&& func,
-                    const AsyncPrimitives::CancellationToken cancellationToken,
+                    AsyncPrimitives::CancellationToken cancellationToken,
                     const Schedulers::Scheduler::SchedulerPtr& scheduler)
     {
       using Ret_Task_Type = decltype(func());
