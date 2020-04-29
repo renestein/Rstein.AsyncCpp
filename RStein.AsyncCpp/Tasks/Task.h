@@ -55,7 +55,7 @@ namespace RStein::AsyncCpp::Tasks
                                                               false,
                                                               std::move(cancellationToken))}
     {
-      static_assert(!std::is_reference_v<TResult>, "Task result should not be a reference!");
+      static_assert(!std::is_rvalue_reference_v<TResult>, "RValue reference is not supported.");
     }
 
     Task(const Task& other) = default;

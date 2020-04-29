@@ -11,7 +11,7 @@ namespace RStein::AsyncCpp::Tasks
 
   Task<void> GetCompletedTask()
   {
-    static Task<void> _completedTask = getCompletedTask();
-    return _completedTask;
+    /*static Task<void> _completedTask = getCompletedTask();*/
+    return getCompletedTask();
   }
 }

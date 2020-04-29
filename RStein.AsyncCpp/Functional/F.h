@@ -9,14 +9,31 @@ namespace RStein::Functional
   {
     assert(originalFunc != nullptr);
     using Ret_Type = decltype(originalFunc());
-    return [originalFunc = std::forward<TCallable>(originalFunc), retTaskType = Ret_Type(), wasMethodCalled = false]() mutable
+    if constexpr (std::is_reference_v<Ret_Type>)
     {
-      if (!wasMethodCalled)
+      std::remove_reference_t<Ret_Type>* retTypePtr = nullptr;
+      return [originalFunc = std::forward<TCallable>(originalFunc), retTaskTypePtr = retTypePtr, wasMethodCalled = false]() mutable ->Ret_Type
       {
-        retTaskType = originalFunc();
-        wasMethodCalled = true;
-      }
-      return retTaskType;
-    };
+        if (!wasMethodCalled)
+        {
+          Ret_Type value = originalFunc();
+          retTaskTypePtr = &value;
+          wasMethodCalled = true;
+        }
+        return *retTaskTypePtr;
+      };
+    }
+    else
+    {
+      return [originalFunc = std::forward<TCallable>(originalFunc), retTaskType = Ret_Type(), wasMethodCalled = false]() mutable
+      {
+        if (!wasMethodCalled)
+        {
+          retTaskType = originalFunc();
+          wasMethodCalled = true;
+        }
+        return retTaskType;
+      };
+    }
   }
 }

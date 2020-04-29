@@ -138,6 +138,29 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_EQ(TaskState::RunToCompletion, taskState);
   }
 
+  
+  TEST_F(TaskTest, RunWhenHotRefTaskCreatedThenReturnsReference)
+  {
+    static int gen = 0;
+
+    struct TestValue
+    {
+      int id = gen++;
+    };
+    auto taskResultPtr = make_unique<TestValue>();
+    bool taskRun = false;
+
+    
+    auto task = TaskFactory::Run([rawPtr = taskResultPtr.get()]()->TestValue&
+    {
+      return *rawPtr; 
+    });
+
+
+    auto& taskResult = task.Result();
+    ASSERT_EQ(taskResultPtr.get(), &taskResult);
+  }
+
   TEST_F(TaskTest, RunWhenUsingExplicitSchedulerThenExplicitSchedulerRunTaskFunc)
   {
     SimpleThreadPool threadPool{1};
