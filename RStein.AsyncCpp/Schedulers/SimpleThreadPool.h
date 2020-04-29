@@ -24,7 +24,7 @@ namespace RStein::AsyncCpp::Schedulers
 
     using WorkItem = std::function<void()>;
     SimpleThreadPool();
-    SimpleThreadPool(unsigned int numberOfThreads);   
+    SimpleThreadPool(unsigned int numberOfThreads); 
     virtual ~SimpleThreadPool();
 
     SimpleThreadPool(const SimpleThreadPool& other) = delete;
@@ -35,7 +35,7 @@ namespace RStein::AsyncCpp::Schedulers
     void Start();
     void Stop();
     
-    void EnqueueItem(WorkItem&& originalFunction);
+    void EnqueueItem(WorkItem originalFunction);
     unsigned GetNumberOfThreads() const;
     ThreadPoolState GetThreadPoolState() const;
 

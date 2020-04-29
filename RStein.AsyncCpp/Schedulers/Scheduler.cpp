@@ -49,20 +49,6 @@ namespace RStein::AsyncCpp::Schedulers
     return _currentScheduler;
   }
 
-
-  void Scheduler::EnqueueItem(std::function<void()>&& originalFunction)
-  {
-    
-    FinallyBlock finally{[]{_currentScheduler = SchedulerPtr{};}};
-
-    OnEnqueueItem([originalFunction = std::move(originalFunction), scheduler = shared_from_this()]()
-    {
-      _currentScheduler = scheduler;
-      FinallyBlock finally{[]{_currentScheduler = SchedulerPtr{};}};
-      originalFunction();
-    });
-  }
-
   bool Scheduler::await_ready() const
   {
     return false;

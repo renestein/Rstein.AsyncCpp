@@ -106,7 +106,7 @@ namespace RStein::AsyncCpp::Schedulers
     _threadPoolState = ThreadPoolState::Stopped;
   }
 
-  void SimpleThreadPool::EnqueueItem(WorkItem&& originalFunction)
+  void SimpleThreadPool::EnqueueItem(WorkItem originalFunction)
   {
     unique_lock<mutex> lock(_lockRoot);
     _innerQueue.push(move(originalFunction));

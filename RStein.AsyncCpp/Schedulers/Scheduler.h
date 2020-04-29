@@ -1,4 +1,6 @@
 #pragma once
+#include "../Utils/FinallyBlock.h"
+
 #include <experimental/resumable>
 #include <memory>
 #include <functional>
@@ -25,10 +27,11 @@ class Scheduler : public std::enable_shared_from_this<Scheduler>
     static SchedulerPtr CurrentScheduler();
 	  virtual void Start() = 0;
 	  virtual void Stop() = 0;
-	  virtual void EnqueueItem(std::function<void()>&& originalFunction);
+
+    template<typename TFunc>
+	  void EnqueueItem(TFunc originalFunction);
 	  virtual bool IsMethodInvocationSerialized() const = 0 ;
     
-
     //awaiter members
     bool await_ready() const;
     bool await_suspend(std::experimental::coroutine_handle<> coroutine);
@@ -40,5 +43,18 @@ private:
     static thread_local SchedulerPtr _currentScheduler;
     static SchedulerPtr initDefaultScheduler(); 
 };
+
+template <typename TFunc>
+void Scheduler::EnqueueItem(TFunc originalFunction)
+{
+  Utils::FinallyBlock finally{[]{_currentScheduler = SchedulerPtr{};}};
+
+    OnEnqueueItem([originalFunction = std::move(originalFunction), scheduler = shared_from_this()]()
+    {
+      _currentScheduler = scheduler;
+      Utils::FinallyBlock finally{[]{_currentScheduler = SchedulerPtr{};}};
+      originalFunction();
+    });
+}
 }
 

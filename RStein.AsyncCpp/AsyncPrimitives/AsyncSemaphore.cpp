@@ -126,7 +126,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
           {
             if (cancellation)
             {
-                cancellation->Dispose();              
+                cancellation->Dispose();
             }
           });
 

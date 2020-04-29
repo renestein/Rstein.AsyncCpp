@@ -7,6 +7,7 @@
 
 namespace RStein::AsyncCpp::Schedulers
 {
+  //TODO: Change locks, atomic etc.
   class StrandSchedulerDecorator :	public Scheduler
   {
   public:

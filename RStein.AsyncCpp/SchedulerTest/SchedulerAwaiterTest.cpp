@@ -4,6 +4,9 @@
 #include "../Schedulers/ThreadPoolScheduler.h"
 #include <future>
 #include "../AsyncPrimitives/FutureEx.h"
+#include "../Tasks/Task.h"
+#include "../Tasks/TaskCompletionSource.h"
+
 #include <gtest/gtest.h>
 
 using namespace std;
@@ -27,7 +30,8 @@ namespace RStein::AsyncCpp::SchedulersTest
     {
       cout << this_thread::get_id() << endl;
     }
-    std::future<bool> WhenUsingAwaiterThenOperationIsCompletedImpl(Scheduler& scheduler)
+
+    Tasks::Task<bool> WhenUsingAwaiterThenOperationIsCompletedImpl(Scheduler& scheduler)
     {
       cout << "\nBefore awaiter: ";
       logCurrentThreadId();
@@ -116,8 +120,11 @@ namespace RStein::AsyncCpp::SchedulersTest
   TYPED_TEST(SchedulerTest, WhenUsingAwaiterThenSimpleOperationIsCompleted)
   {
     auto scheduler = this->CreateScheduler();
-    auto awaiterRun = this->WhenUsingAwaiterThenOperationIsCompletedImpl(*scheduler).get();
-    ASSERT_TRUE(awaiterRun);
+    
+    auto awaiterRun = this->WhenUsingAwaiterThenOperationIsCompletedImpl(*scheduler).Result();
+    ASSERT_TRUE(awaiterRun);  
+    
+    
 
   }
 
