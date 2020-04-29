@@ -58,6 +58,7 @@ namespace RStein::AsyncCpp::Tasks
       static_assert(!std::is_rvalue_reference_v<TResult>, "RValue reference is not supported.");
     }
 
+    //TODO: Revisit copy/move, ensure that all operations are thread safe.
     Task(const Task& other) = default;
     Task(Task&& other) noexcept = default;
     Task& operator=(const Task& other) = default;
