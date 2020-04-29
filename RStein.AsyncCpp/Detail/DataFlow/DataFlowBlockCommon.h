@@ -12,7 +12,7 @@
 #include <memory>
 #include <functional>
 
-namespace Detail
+namespace RStein::AsyncCpp::Detail
 {
   struct NoState
   {

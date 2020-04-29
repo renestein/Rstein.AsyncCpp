@@ -1,10 +1,12 @@
 #pragma once
 #include "../../AsyncPrimitives/OperationCanceledException.h"
-#include "../../Collections/ThreadSafeMinimalisticVector.h"
 #include "../../Schedulers/Scheduler.h"
-#include "../../Utils/FinallyBlock.h"
-#include "../TaskState.h"
 #include "../../Functional/F.h"
+#include "../../Tasks/TaskState.h"
+#include "../../Utils/FinallyBlock.h"
+#include "../../Collections//ThreadSafeMinimalisticVector.h"
+
+
 
 #include <any>
 #include <cassert>
@@ -13,7 +15,7 @@
 #include <mutex>
 #include <condition_variable>
 
-namespace RStein::AsyncCpp::Tasks::Detail
+namespace RStein::AsyncCpp::Detail
 {
 
 
@@ -36,7 +38,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       _waitTaskCv{},
       _scheduler{std::move(scheduler)},
       _taskId{ _idGenerator++ },
-      _state{ TaskState::Created },
+      _state{RStein::AsyncCpp::Tasks::TaskState::Created },
       _continuations{ std::vector<ContinuationFunc>{} },
       _exceptionPtr{ nullptr }
     {
@@ -44,7 +46,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       {
         if (_func != nullptr)
         {
-          _func = Functional::Memoize0(std::move(_func));
+          _func = RStein::Functional::Memoize0(std::move(_func));
         }
       }
       if (!_scheduler)
@@ -74,7 +76,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       return _taskId;
     }
 
-    TaskState State() const
+    Tasks::TaskState State() const
     {
       std::lock_guard lock{ _lockObject };
       return _state;
@@ -121,7 +123,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       {
         {
           std::lock_guard lock{ _lockObject };
-          _state = TaskState::Canceled;
+          _state = Tasks::TaskState::Canceled;
         }
 
         _waitTaskCv.notify_all();
@@ -133,13 +135,13 @@ namespace RStein::AsyncCpp::Tasks::Detail
       {
         std::lock_guard lock{ _lockObject };
 
-        if (_state != TaskState::Created)
+        if (_state != Tasks::TaskState::Created)
         {
           throw std::logic_error("Task already started.");
         }
 
 
-        _state = TaskState::Scheduled;
+        _state = Tasks::TaskState::Scheduled;
       }
 
       _scheduler->EnqueueItem([this, sharedThis = this->shared_from_this()]
@@ -159,26 +161,26 @@ namespace RStein::AsyncCpp::Tasks::Detail
 
             {
               std::lock_guard lock{_lockObject};
-              assert(_state == TaskState::Scheduled);
-              _state = TaskState::Running;
+              assert(_state == Tasks::TaskState::Scheduled);
+              _state = Tasks::TaskState::Running;
             }
 
             DoRunTaskNow();
-            _state = TaskState::RunToCompletion;
+            _state = Tasks::TaskState::RunToCompletion;
           }
           catch (const AsyncPrimitives::OperationCanceledException&)
           {
             _exceptionPtr = std::current_exception();
             std::lock_guard lock{_lockObject};
-            assert(_state == TaskState::Scheduled || _state == TaskState::Running);
-            _state = TaskState::Canceled;
+            assert(_state == Tasks::TaskState::Scheduled || _state == Tasks::TaskState::Running);
+            _state = Tasks::TaskState::Canceled;
           }
           catch (...)
           {
             _exceptionPtr = std::current_exception();
             std::lock_guard lock{_lockObject};
-            assert(_state == TaskState::Running);
-            _state = TaskState::Faulted;
+            assert(_state == Tasks::TaskState::Running);
+            _state = Tasks::TaskState::Faulted;
           }
         });
     }
@@ -186,17 +188,17 @@ namespace RStein::AsyncCpp::Tasks::Detail
     void Wait() const
     {
       std::unique_lock lock{ _lockObject };
-      while (_state != TaskState::RunToCompletion &&
-        _state != TaskState::Faulted &&
-        _state != TaskState::Canceled)
+      while (_state != Tasks::TaskState::RunToCompletion &&
+        _state != Tasks::TaskState::Faulted &&
+        _state != Tasks::TaskState::Canceled)
       {
         _waitTaskCv.wait(lock);
       }
 
-      if (_state != TaskState::RunToCompletion)
+      if (_state != Tasks::TaskState::RunToCompletion)
       {
         auto exceptionPtr = Exception();
-        if (exceptionPtr == nullptr && _state == TaskState::Canceled)
+        if (exceptionPtr == nullptr && _state == Tasks::TaskState::Canceled)
         {
           exceptionPtr = make_exception_ptr(AsyncPrimitives::OperationCanceledException());
         }
@@ -209,9 +211,9 @@ namespace RStein::AsyncCpp::Tasks::Detail
     {
       //TODO inline task if possible
       std::lock_guard lock{ _lockObject };
-      if (_state == TaskState::RunToCompletion ||
-        _state == TaskState::Faulted ||
-        _state == TaskState::Canceled)
+      if (_state == Tasks::TaskState::RunToCompletion ||
+        _state == Tasks::TaskState::Faulted ||
+        _state == Tasks::TaskState::Canceled)
       {
         continuationFunc();
         return;
@@ -231,7 +233,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
         std::lock_guard lock{ _lockObject };
         throwIfTaskCompleted();
         _exceptionPtr = exception;
-        _state = TaskState::Faulted;
+        _state = Tasks::TaskState::Faulted;
       }
       _waitTaskCv.notify_all();
       runContinuations();
@@ -246,12 +248,12 @@ namespace RStein::AsyncCpp::Tasks::Detail
 
       {
         std::lock_guard lock{ _lockObject };
-        if (_state != TaskState::Created)
+        if (_state != Tasks::TaskState::Created)
         {
           return false;
         }
         _exceptionPtr = exception;
-        _state = TaskState::Faulted;
+        _state = Tasks::TaskState::Faulted;
       }
       _waitTaskCv.notify_all();
       runContinuations();
@@ -264,7 +266,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       {
         std::lock_guard lock{ _lockObject };
         throwIfTaskCompleted();
-        _state = TaskState::Canceled;
+        _state = Tasks::TaskState::Canceled;
       }
 
       _waitTaskCv.notify_all();
@@ -275,12 +277,12 @@ namespace RStein::AsyncCpp::Tasks::Detail
     {
       {
         std::lock_guard lock{ _lockObject };
-        if (_state != TaskState::Created)
+        if (_state != Tasks::TaskState::Created)
         {
           return false;
         }
 
-        _state = TaskState::Canceled;
+        _state = Tasks::TaskState::Canceled;
       }
 
       _waitTaskCv.notify_all();
@@ -295,7 +297,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
         std::lock_guard lock{ _lockObject };
         throwIfTaskCompleted();
         _func = [taskResult = std::move(result)]{ return taskResult; };
-        _state = TaskState::RunToCompletion;
+        _state = Tasks::TaskState::RunToCompletion;
       }
 
       _waitTaskCv.notify_all();
@@ -308,12 +310,12 @@ namespace RStein::AsyncCpp::Tasks::Detail
     {
       {
         std::lock_guard lock{ _lockObject };
-        if (_state != TaskState::Created)
+        if (_state != Tasks::TaskState::Created)
         {
           return false;
         }
         _func = [taskResult = std::move(result)] { return taskResult; };
-        _state = TaskState::RunToCompletion;
+        _state = Tasks::TaskState::RunToCompletion;
       }
 
       _waitTaskCv.notify_all();
@@ -329,7 +331,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
       {
         std::lock_guard lock{ _lockObject };
         throwIfTaskCompleted();
-        _state = TaskState::RunToCompletion;
+        _state = Tasks::TaskState::RunToCompletion;
       }
 
       _waitTaskCv.notify_all();
@@ -342,12 +344,12 @@ namespace RStein::AsyncCpp::Tasks::Detail
     {
       {
         std::lock_guard lock{ _lockObject };
-        if (_state != TaskState::Created)
+        if (_state != Tasks::TaskState::Created)
         {
           return false;
         }
 
-        _state = TaskState::RunToCompletion;
+        _state = Tasks::TaskState::RunToCompletion;
       }
 
       _waitTaskCv.notify_all();
@@ -358,9 +360,9 @@ namespace RStein::AsyncCpp::Tasks::Detail
     ~TaskSharedState()
     {
       std::lock_guard lock{ _lockObject };
-      if (_state != TaskState::RunToCompletion &&
-        _state != TaskState::Faulted &&
-        _state != TaskState::Canceled)
+      if (_state != Tasks::TaskState::RunToCompletion &&
+        _state != Tasks::TaskState::Faulted &&
+        _state != Tasks::TaskState::Canceled)
       {
         assert(false);
       }
@@ -376,7 +378,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
     Schedulers::Scheduler::SchedulerPtr _scheduler;
     static std::atomic<unsigned long> _idGenerator;
     unsigned long _taskId;
-    TaskState _state;
+    Tasks::TaskState _state;
     Collections::ThreadSafeMinimalisticVector<ContinuationFunc> _continuations;
     std::exception_ptr _exceptionPtr;
 
@@ -390,9 +392,9 @@ namespace RStein::AsyncCpp::Tasks::Detail
       std::vector<ContinuationFunc> continuations;
       {
         std::lock_guard lock{ _lockObject };
-        assert(_state == TaskState::RunToCompletion ||
-          _state == TaskState::Faulted ||
-          _state == TaskState::Canceled);
+        assert(_state == Tasks::TaskState::RunToCompletion ||
+          _state == Tasks::TaskState::Faulted ||
+          _state == Tasks::TaskState::Canceled);
 
         continuations = _continuations.GetSnapshot();
         _continuations.Clear();
@@ -406,7 +408,7 @@ namespace RStein::AsyncCpp::Tasks::Detail
 
     void throwIfTaskCompleted() const
     {
-      if (_state != TaskState::Created)
+      if (_state != Tasks::TaskState::Created)
       {
         throw std::logic_error("Task already completed.");
       }

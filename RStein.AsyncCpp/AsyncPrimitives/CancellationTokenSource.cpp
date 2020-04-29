@@ -1,7 +1,7 @@
 ﻿#include "CancellationTokenSource.h"
 
 using namespace std;
-using namespace Detail;
+using namespace RStein::AsyncCpp::Detail;
 namespace RStein::AsyncCpp::AsyncPrimitives
 { 
   CancellationTokenSource::CancellationTokenSource() : _sharedState(CtsSharedState::New()),

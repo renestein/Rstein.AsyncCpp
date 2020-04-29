@@ -8,7 +8,7 @@
 #include <iostream>
 
 using namespace std;
-namespace Detail
+namespace RStein::AsyncCpp::Detail
 {
   
     CtsSharedState::CtsSharedState() : std::enable_shared_from_this<CtsSharedState>(),
