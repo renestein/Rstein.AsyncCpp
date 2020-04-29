@@ -109,7 +109,7 @@ namespace RStein::AsyncCpp::DataFlowTest
 
   TEST(DataFlowTest, WhenAsyncFlatDataflowThenAllInputsProcessed)
   {
-    const int EXPECTED_PROCESSED_ITEMS = 100000;
+    const int EXPECTED_PROCESSED_ITEMS = 100;
     auto transform1 = DataFlowAsyncFactory::CreateTransformBlock<int, string, Detail::NoState>([](const int& item, Detail::NoState*& _)-> Tasks::Task<string>
     {
       auto message = "int: "  + to_string(item) + "\n";
