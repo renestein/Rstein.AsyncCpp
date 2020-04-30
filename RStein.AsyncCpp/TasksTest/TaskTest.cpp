@@ -330,6 +330,30 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_THROW(task.Wait(), OperationCanceledException);
   }
 
+  TEST_F(TaskTest, WaitWhenTaskProcessingCanceledThenThrowsOperationCanceledException)
+  {
+    //Create new CancellationTokenSource
+    auto cts = CancellationTokenSource{};
+    cts.Cancel();
+    //Use CancellationToken
+    auto task = TaskFactory::Run([cancellationToken = cts.Token()]
+    {
+        while(true)
+        {
+          //Simulate work;
+          this_thread::sleep_for(1000ms);
+
+         //Monitor CancellationToken
+          //When cancellationToken is canceled, throws OperationCanceledException.
+          cancellationToken.ThrowIfCancellationRequested();
+        }
+    }, cts.Token());
+
+    //Signalize "Cancel operation"
+    cts.Cancel();
+    ASSERT_THROW(task.Wait(), OperationCanceledException);
+  }
+
 
   TEST_F(TaskTest, IsCanceledWhenTaskCanceledThenReturnsTrue)
   {

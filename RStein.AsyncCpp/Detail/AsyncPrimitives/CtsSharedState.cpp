@@ -71,7 +71,6 @@ namespace RStein::AsyncCpp::Detail
 
   void CtsSharedState::NotifyCanceled()
   {
-    assert(!_isCanceled);
     auto canceledNow = !_isCanceled.exchange(true);
 
     if (canceledNow)

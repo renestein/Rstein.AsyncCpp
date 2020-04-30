@@ -28,27 +28,34 @@ The Task class represents result of the execution of the one (usually asynchrono
 * [`TaskFromCanceled method - creates a completed instance of the Task<T> in the Canceled state.`](#TaskFromCanceled)
   
   ## **TaskCompletionSource&lt;T&gt;.** 
-  The TaskCompletionSource class explicitly controls the state and result of the Task that is provided to the consumer. TaskCompletionSource has relation to the Task class similar to relation between std::future and std::promise types. This class is very useful in situations when you must call code that uses different asynchronous patterns and you would like only the Task class in your API. Different asynchronous patterns may be simply converted to Task based world using the TaskCompletionSource.
-  * [`TaskCompletion<T> SetResult method).`](#TaskCompletionSource-SetResult)
-  * [`TaskCompletion<T> TrySetResult method).`](#TaskCompletionSource-TrySetResult)
-  * [`TaskCompletion<T> SetException method).`](#TaskCompletionSource-SetException)
-  * [`TaskCompletion<T> TrySetException method).`](#TaskCompletionSource-TrySetException)
-  * [`TaskCompletion<T> SetCanceled method).`](#TaskCompletionSource-SetCanceled)
-  * [`TaskCompletion<T> TrySetCanceled method).`](#TaskCompletionSource-TrySetCanceled)
+  The TaskCompletionSource class explicitly controls the state and result of the Task that is provided to the consumer. TaskCompletionSource has relation to the Task class similar to relation which exists between std::future and std::promise types. This class is very useful in situations when you must call code that uses different asynchronous patterns and you would like only the Task class in your API. Different asynchronous patterns may be simply converted to the Task based world using the TaskCompletionSource.
+* [`TaskCompletion<T> SetResult method).`](#TaskCompletionSource-SetResult)
+* [`TaskCompletion<T> TrySetResult method).`](#TaskCompletionSource-TrySetResult)
+* [`TaskCompletion<T> SetException method).`](#TaskCompletionSource-SetException)
+ * [`TaskCompletion<T> TrySetException method).`](#TaskCompletionSource-TrySetException)
+ * [`TaskCompletion<T> SetCanceled method).`](#TaskCompletionSource-SetCanceled)
+ * [`TaskCompletion<T> TrySetCanceled method).`](#TaskCompletionSource-TrySetCanceled)
 
 ## **Functional map (Fmap) and bind (Fbind) methods (Task monad).**
 The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) method.
 
- * [`Task<T> Fmap (map, Select) method.`](#Task-Fmap)
- * [`Task<T> Fbind (bind, SelectMany, mapMany) method.`](#Task-Fbind)
- * [`| (pipe) operator for Fbind and FMap` - simple composition](#Task-Pipe-Operator)]
- * [`Monadic laws (tests)`](#Task-Monadic-Laws)]
+* [`Task<T> Fmap (map, Select) method.`](#Task-Fmap)
+* [`Task<T> Fbind (bind, SelectMany, mapMany) method.`](#Task-Fbind)
+* [`| (pipe) operator for Fbind and FMap` - simple composition](#Task-Pipe-Operator)]
+* [`Monadic laws (tests)`](#Task-Monadic-Laws)]
  
- 
+ ## Simple DataFlow**
 
+* [`Flat dataflow`](#Flat-Dataflow)
+* [`Fork-Join dataflow`](#Fork-Join-Dataflow)
+
+ ##Async primitives**
+ * [`AsyncSemaphore - asynchronous variant of the Semaphore synchronization primitive`](#AsyncSemaphore)
+ * [`CancellationTokensource and CancellationToken - types used for cooperative cancel.`](#CancellationToken)
   ## TaskFactory Run
   Create Task<T> using the TaskFactory (uses default scheduler - ThreadPoolScheduler).
   ```c++
+
 
   //Using co_await
   auto result = co_await TaskFactory::Run([expectedValue]
@@ -608,7 +615,7 @@ TEST_F(TaskTest, FBindPipeOperatorWhenComposingThenReturnsExpectedResult)
     ASSERT_THROW(mappedTask.Result(), invalid_argument);
   }
   ```
-  ## Task Monadic Laws
+## Task Monadic Laws
   ```c++
   //Right identity
   TEST_F(TaskTest, MonadRightIdentityLaw)
@@ -667,4 +674,212 @@ TEST_F(TaskTest, FBindPipeOperatorWhenComposingThenReturnsExpectedResult)
     cout << "Result: " << leftMonad.Result();
     ASSERT_EQ(leftMonad.Result(), rightMonad.Result());
   }
-    ```
+  ```
+## Flat DataFlow
+    
+```c++
+    Tasks::Task<int> WhenAsyncFlatDataflowThenAllInputsProcessedImpl(int processItemsCount) const
+    {
+      //Create TransformBlock. As the name of the block suggests, TransformBlock transforms input to output.
+      //Following block transforms int to string.
+      auto transform1 = DataFlowAsyncFactory::CreateTransformBlock<int, string>([](const int& item)-> Tasks::Task<string>
+                                                          {
+                                                            auto message = "int: " + to_string(item) + "\n";
+                                                            cout << message;
+                                                            //await async operation returning standard shared_future.
+                                                            co_await GetCompletedSharedFuture();
+                                                            co_return to_string(item);
+                                                          });
+
+      //TransformBlock transforms a string to another string.
+      auto transform2 = DataFlowAsyncFactory::CreateTransformBlock<string, string>([](const string& item)-> Tasks::Task<string>
+                                                          {
+                                                            auto message = "String transform: " + item + "\n";
+                                                            cout << message;
+                                                            //await async operation returning Task.
+                                                            co_await Tasks::GetCompletedTask();
+                                                            co_return item + ": {string}";
+                                                          });
+
+      //Create final (last) dataflow block. ActionBlock does not propagate output and usually performs some important "side effect".
+      //For example: Save data to collection, send data to socket, write to log...
+      //Following ActionBlock stores all strings which it has received from the previous block in the _processedItems collection.
+      vector<string> _processedItems{};
+      auto finalAction = DataFlowAsyncFactory::CreateActionBlock<string>([&_processedItems](const string& item)-> Tasks::Task<void>
+                                                            {
+                                                              auto message = "Final action: " + item + "\n";
+                                                              cout << message;
+                                                              //await async operation returning Task.
+                                                              co_await Tasks::GetCompletedTask();
+                                                              _processedItems.push_back(item);
+                                                            });
+      //Connect all dataflow nodes.
+      transform1->Then(transform2)
+                 ->Then(finalAction);
+
+      //Start dataflow.
+      transform1->Start();
+
+      //Add input data to the first transform node.
+      for (auto i = 0; i < processItemsCount; ++i)
+      {
+        co_await transform1->AcceptInputAsync(i);
+      }
+
+      //All input data are in the dataflow. Send notification that no more data will be added.
+      //This does not mean that all data in the dataflow are processed!
+      transform1->Complete();
+
+      //Wait for completion. When finalAction (last block) completes, all data were processed.
+      co_await finalAction->Completion();
+
+      //_processedItems contains all transformed items.
+      const auto processedItemsCount = _processedItems.size();
+
+      co_return processedItemsCount;
+    }
+  };
+  ```
+   ## Fork-Join Dataflow
+    
+``` C++
+Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputItemsCount)
+  {
+      //Create TransformBlock. As the name of the block suggests, TransformBlock transforms input to output.
+      //Following block transforms int to string.
+      auto transform1 = DataFlowAsyncFactory::CreateTransformBlock<int, int>([](const int& item)-> Tasks::Task<int>
+                                                            {
+                                                              //Simulate work
+                                                              co_await Tasks::GetCompletedTask();
+                                                              auto message = "int: " + to_string(item) + "\n";
+                                                              cout << message;
+                                                              co_return item;
+                                                            });
+
+      //Fork dataflow (even numbers are processed in one TransformBlock, for odd numbers create another transformBlock)    
+      auto transform2 =  DataFlowAsyncFactory::CreateTransformBlock<int, string>([](const int& item)->Tasks::Task<string>
+                                                        {
+                                                          //Simulate work
+                                                          co_await Tasks::GetCompletedTask();
+                                                          auto message = "Even number: " + to_string(item) + "\n";
+                                                          cout << message;
+                                                          co_return to_string(item);
+                                                        },
+                                                        //Accept only even numbers.
+                                                        //Condition is evaluated for every input.
+                                                        //If the condition evaluates to true, input is accepted; otherwise input is ignored.
+                                                        [](const int& item)
+                                                        {
+                                                          return item % 2 == 0;
+                                                        });
+
+      auto transform3 = DataFlowAsyncFactory::CreateTransformBlock<int, string>([](const int& item)->Tasks::Task<string>
+                                                      {
+                                                         //Simulate work
+                                                         co_await Tasks::GetCompletedTask();
+                                                        auto message = "Odd number: " + to_string(item) + "\n";
+                                                        cout << message;
+                                                        co_return to_string(item);
+                                                      },
+                                                       //Accept only odd numbers.
+                                                       //Condition is evaluated for every input.
+                                                       //If the condition evaluates to true, input is accepted; otherwise input is ignored.
+                                                      [](const int& item)
+                                                      {
+                                                        return item % 2 != 0;
+                                                      });
+      //End fork.
+
+      vector<string> _processedItems{};
+      auto finalAction = DataFlowSyncFactory::CreateActionBlock<string>([&_processedItems](const string& item)
+                                                            {
+                                                              auto message = "Final action: " + item + "\n";
+                                                              cout << message;
+                                                              _processedItems.push_back(item);
+                                                            });
+      //Fork
+      transform1->ConnectTo(transform2);
+      transform1->ConnectTo(transform3);
+      //end fork
+
+       //Join
+      transform3->ConnectTo(finalAction);
+      transform2->ConnectTo(finalAction);
+      //End join
+
+      //Start dataflow
+      transform1->Start();
+
+      //Add input data to the first block.
+      for (int i = 0; i < inputItemsCount; ++i)
+      {
+        co_await transform1->AcceptInputAsync(i);
+      }
+
+      
+      //All input data are in the dataflow. Send notification that no more data will be added.
+      //This does not mean that all data in the dataflow are processed!
+      transform1->Complete();
+      //Wait for last block.
+      co_await finalAction->Completion();
+      const auto processedItemsCount = _processedItems.size();
+
+      co_return processedItemsCount;    
+    }
+  };
+```
+## AsyncSemaphore
+``` C++
+[[nodiscard]] int waitAsyncWhenUsingMoreTasksThenAllTasksAreSynchronizedImpl(int taskCount)
+    {  
+
+    //Not using our friendly Task. Simulate apocalypse with threads. :)
+      cout << "start";
+      const auto maxCount{1};
+      const auto initialCount{0};
+
+      AsyncSemaphore semaphore{maxCount, initialCount};
+      std::vector<future<future<int>>> futures;
+      futures.reserve(taskCount);
+
+      int result = 0;
+      for (auto i : generate(taskCount))
+      {        
+
+        packaged_task<future<int>(int*, AsyncSemaphore*, int)> task{
+            [](int* result, AsyncSemaphore* semaphore, int i)-> future<int>
+            {
+              co_await semaphore->WaitAsync();
+              (*result)++;
+              semaphore->Release();
+              co_return i;
+            }
+        };
+
+        //Workaround, do not create and immediately throw away threads
+        auto taskFuture = task.get_future();
+        thread runner{std::move(task), &result, &semaphore, i};
+        runner.detach();       
+        futures.push_back(std::move(taskFuture));
+      }
+      semaphore.Release();
+      for (auto&& future : futures)
+      {
+        auto nestedFuture = future.get();
+        const auto taskId = nestedFuture.get();
+        cout << "Task completed: " << taskId << endl;
+      }
+
+      return result;
+    }
+    
+  TEST_F(AsyncSemaphoreTest, WaitAsyncWhenUsingMoreTasksThenAllTasksAreSynchronized)
+  {
+    const auto TASKS_COUNT = 100;
+    const auto EXPECTED_RESULT = 100;
+
+    const auto result = waitAsyncWhenUsingMoreTasksThenAllTasksAreSynchronizedImpl(TASKS_COUNT);
+    ASSERT_EQ(EXPECTED_RESULT, result);
+  }
+  ```
+  ## #CancellationTokenSource
