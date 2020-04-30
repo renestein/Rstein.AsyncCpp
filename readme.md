@@ -13,7 +13,7 @@ The Task class represents the result of the execution of the one (usually asynch
 
 * [`WaitAll method for tasks - synchronously waits for the completion of the all tasks.`](#Task-WaitAll)
 
-* [`WaitAny method for tasks - Synchronously waits for the completion of the any Task. `](#Task-WaitAny)
+* [`WaitAny method for tasks - synchronously waits for the completion of the any Task. `](#Task-WaitAny)
 
 * [`WhenAll method for tasks - returns Task that will be completed when all of the provided tasks have completed.`](#Task-WhenAll)
 
@@ -102,7 +102,7 @@ Using co_await
 
       co_return co_await task;
     }
-    
+
 TEST_F(TaskTest, RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFunc)
   {
     SimpleThreadPool threadPool{1};
