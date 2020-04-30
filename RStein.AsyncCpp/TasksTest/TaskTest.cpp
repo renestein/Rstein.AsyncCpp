@@ -121,6 +121,21 @@ namespace RStein::AsyncCpp::TasksTest
       waitFirstTaskTcs.TrySetResult();
       co_return taskIndex;
     }
+
+    Task<Scheduler::SchedulerPtr> RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFuncImpl(Scheduler::SchedulerPtr taskScheduler)
+    {
+
+      auto task = TaskFactory::Run([&taskScheduler]
+                  {
+                    //capture used scheduler
+                    return taskScheduler;
+                    
+                  },
+                  //run on explicit scheduler
+                 taskScheduler);
+
+      co_return co_await task;
+    }
   };
 
   TEST_F(TaskTest, RunWhenHotTaskCreatedThenTaskIsCompleted)
@@ -193,6 +208,19 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_EQ(taskScheduler.get(), explicitTaskScheduler.get());
   }
 
+  
+  TEST_F(TaskTest, RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFunc)
+  {
+    SimpleThreadPool threadPool{1};
+    auto explicitTaskScheduler{make_shared<ThreadPoolScheduler>(threadPool)};
+    explicitTaskScheduler->Start();
+    auto usedScheduler = RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFuncImpl(explicitTaskScheduler)
+                                          .Result();
+    explicitTaskScheduler->Stop();
+
+    ASSERT_EQ(explicitTaskScheduler.get(), usedScheduler.get());
+  }
+
 
   TEST_F(TaskTest, RunWhenUnspecifiedSchedulerThenDefaultSchedulerRunTaskFunc)
   {
@@ -219,12 +247,15 @@ namespace RStein::AsyncCpp::TasksTest
       future.wait();
     });
 
+    //Register continuation
     auto continuationTask = task.ContinueWith([&continuationRun](const auto& task)
     {
       continuationRun = true;
     });
 
     startTaskPromise.set_value();
+
+    //or co_await continuation Task
     continuationTask.Wait();
 
     ASSERT_TRUE(continuationRun);
