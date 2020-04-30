@@ -160,10 +160,8 @@ namespace RStein::AsyncCpp::TasksTest
   TEST_F(TaskTest, RunWhenHotRefTaskCreatedThenReturnsReference)
   {
       
-    auto taskResultPtr = make_unique<TestValue>();
-    bool taskRun = false;
+    auto taskResultPtr = make_unique<TestValue>();   
 
-    
     auto task = TaskFactory::Run([rawPtr = taskResultPtr.get()]()->TestValue&
     {
       return *rawPtr; 
