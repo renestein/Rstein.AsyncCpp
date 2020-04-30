@@ -4,7 +4,7 @@
 - The library is my playground for testing coroutine support in the C++.
 - The library supports compilation in the VS 2019. Support for other compilers is planned.
 ## **Task&lt;T&gt;.** 
-The Task class represents result of the execution of the one (usually asynchronous) operation - an instance of the Task contains either return value of the operation or exception or information that task was cancelled. Tasks created by the TaskFactory are 'hot'. 'Hot' in this context means that the Task Start method is called and Task is immediately scheduled on Scheduler (~=executor). You can 'co_await' Task (preferred) or/and you can use methods from the Task public interface (ContinueWith, Wait, State, IsCompleted, IsFaulted, IsCanceled, Result...). Task supports both the 'awaiter' and the 'promise' concepts.
+The Task class represents result of the execution of the one (usually asynchronous) operation - an instance of the Task contains either return value of the operation or exception or information that task was cancelled. Tasks created by the TaskFactory are 'hot'. 'Hot' in this context means that the Task Start method is called and Task is immediately scheduled on Scheduler (~=executor). You can 'co_await' Task (preferred) or/and you can use methods from the Task public interface (ContinueWith, Wait, State, IsCompleted, IsFaulted, IsCanceled, Result...). The Task supports both the 'awaiter' and the 'promise' concepts.
 * [`Create Task<T> using the TaskFactory (uses default scheduler = ThreadPoolScheduler).`](#TaskFactory-Run)
 * [`Create Task<T> using the TaskFactory and explicit scheduler.`](#TaskFactory-Run-With-Scheduler)
 * [`Task<T> ContinueWith method - register continuation function that will be called when the Task have completed ('future.then' type of the method).`](#Task-ContinueWith)
@@ -52,6 +52,7 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
  ##Async primitives**
  * [`AsyncSemaphore - asynchronous variant of the Semaphore synchronization primitive`](#AsyncSemaphore)
  * [`CancellationTokensource and CancellationToken - types used for cooperative cancel.`](#CancellationToken)
+
   ## TaskFactory Run
   Create Task<T> using the TaskFactory (uses default scheduler - ThreadPoolScheduler).
   ```c++
@@ -882,4 +883,29 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
     ASSERT_EQ(EXPECTED_RESULT, result);
   }
   ```
-  ## #CancellationTokenSource
+  ## CancellationTokenSource
+  ``` C++
+  TEST_F(TaskTest, WaitWhenTaskProcessingCanceledThenThrowsOperationCanceledException)
+  {
+    //Create new CancellationTokenSource
+    auto cts = CancellationTokenSource{};
+    cts.Cancel();
+    //Capture CancellationToken
+    auto task = TaskFactory::Run([cancellationToken = cts.Token()]
+    {
+        while(true)
+        {
+          //Simulate work;
+          this_thread::sleep_for(1000ms);
+
+          //Monitor CancellationToken
+          //When cancellationToken is canceled, then following call throws OperationCanceledException.
+          cancellationToken.ThrowIfCancellationRequested();
+        }
+    }, cts.Token());
+
+    //Signalize "Cancel operation"
+    cts.Cancel();
+    ASSERT_THROW(task.Wait(), OperationCanceledException);
+  }
+  ```
