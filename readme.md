@@ -41,7 +41,7 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
 
 * [`Task<T> Fmap (map, Select) method.`](#Task-Fmap)
 * [`Task<T> Fbind (bind, SelectMany, mapMany) method.`](#Task-Fbind)
-* [`| (pipe) operator for Fbind and FMap` - simple composition](#Task-Pipe-Operator)]
+* [`| (pipe) operator for Fbind and FMap` - simple composition](#Task-Pipe-Operator)
 * [`Monadic laws (tests)`](#Task-Monadic-Laws)]
  
  ## **Simple DataFlow**
@@ -49,7 +49,7 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
 * [`Flat dataflow`](#Flat-Dataflow)
 * [`Fork-Join dataflow`](#Fork-Join-Dataflow)
 
- ##Async primitives**
+ ## **Async primitives**
  * [`AsyncSemaphore - asynchronous variant of the Semaphore synchronization primitive`](#AsyncSemaphore)
  * [`CancellationTokensource and CancellationToken - types used for cooperative cancel.`](#CancellationToken)
 
