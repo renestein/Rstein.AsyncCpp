@@ -19,7 +19,7 @@ namespace RStein::AsyncCpp::DataFlowTest
   class DataFlowTest : public testing::Test
   {
   public:
-    Tasks::Task<int> WhenAsyncFlatDataflowThenAllInputsProcessedImpl(int processItemsCount) const
+    Tasks::Task<size_t> WhenAsyncFlatDataflowThenAllInputsProcessedImpl(int processItemsCount) const
     {
       //Create TransformBlock. As the name of the block suggests, TransformBlock transforms input to output.
       //Following block transforms int to string.
@@ -80,7 +80,7 @@ namespace RStein::AsyncCpp::DataFlowTest
       co_return processedItemsCount;
     }
 
-  Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputItemsCount)
+  Tasks::Task<size_t> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputItemsCount)
   {
       //Create TransformBlock. As the name of the block suggests, TransformBlock transforms input to output.
       //Following block transforms int to string.
