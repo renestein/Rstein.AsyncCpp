@@ -97,10 +97,10 @@ namespace RStein::AsyncCpp::Tasks
 
   //Identity method.
   template<typename TResult>
-  auto TaskFromResult(TResult&& taskResult)->Task<std::decay_t<TResult>>
+  auto TaskFromResult(TResult taskResult)->Task<TResult>
   {
     //TODO: Detect invalid values.
-    TaskCompletionSource<std::decay_t<TResult>> tcs;
+    TaskCompletionSource<TResult> tcs;
     tcs.SetResult(taskResult);
     return tcs.GetTask();
   }
@@ -136,17 +136,17 @@ namespace RStein::AsyncCpp::Tasks
   
 
   template<typename TResult>
-  auto TaskFromException(std::exception_ptr exception)->Task<std::decay_t<TResult>>
+  auto TaskFromException(std::exception_ptr exception)->Task<TResult>
   {
-    TaskCompletionSource<std::decay_t<TResult>> tcs;
+    TaskCompletionSource<TResult> tcs;
     tcs.SetException(exception);
     return tcs.GetTask();
   }
 
   template<typename TResult>
-  auto TaskFromCanceled()->Task<std::decay_t<TResult>>
+  auto TaskFromCanceled()->Task<TResult>
   {
-    TaskCompletionSource<std::decay_t<TResult>> tcs;
+    TaskCompletionSource<TResult> tcs;
     tcs.SetCanceled();
     return tcs.GetTask();
   }
@@ -158,7 +158,7 @@ namespace RStein::AsyncCpp::Tasks
   }
 
   template<typename TSource, typename TMapFunc>
-  auto Fbind(Task<TSource> srcTask, TMapFunc mapFunc)->Task<std::decay_t<decltype(mapFunc(srcTask.Result()).Result())>>
+  auto Fbind(Task<TSource> srcTask, TMapFunc mapFunc)->Task<decltype(mapFunc(srcTask.Result()).Result())>
   {    
     co_return co_await mapFunc(co_await srcTask);
     

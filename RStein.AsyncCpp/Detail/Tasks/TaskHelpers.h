@@ -291,7 +291,7 @@ namespace RStein::AsyncCpp::Detail
     }
 
     template <typename TUResult, typename TResultCopy = TResult>
-    void SetResult(typename std::enable_if<!std::is_same<TResultCopy, void>::value, std::decay_t<TUResult>>::type result)
+    void SetResult(typename std::enable_if<!std::is_same<TResultCopy, void>::value, TUResult>::type result)
     {
       {
         std::lock_guard lock{ _lockObject };
@@ -306,7 +306,7 @@ namespace RStein::AsyncCpp::Detail
 
     
     template <typename TUResult, typename TResultCopy = TResult>
-    bool TrySetResult(typename std::enable_if<!std::is_same<TResultCopy, void>::value, std::decay_t<TUResult>>::type result)
+    bool TrySetResult(typename std::enable_if<!std::is_same<TResultCopy, void>::value, TUResult>::type result)
     {
       {
         std::lock_guard lock{ _lockObject };
