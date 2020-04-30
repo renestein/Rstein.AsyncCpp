@@ -1,6 +1,6 @@
-#include "../AsyncPrimitives/CancellationTokenSource.h"
-#include "../AsyncPrimitives/OperationCanceledException.h"
-#include "../AsyncPrimitives/SimpleAsyncProducerConsumerCollection.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/CancellationTokenSource.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/OperationCanceledException.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/SimpleAsyncProducerConsumerCollection.h"
 
 #include <experimental/coroutine>
 #include <gtest/gtest.h>

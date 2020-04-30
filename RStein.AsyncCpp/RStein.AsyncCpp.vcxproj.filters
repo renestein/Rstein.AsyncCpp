@@ -15,13 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RStein.AsyncCpp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AsyncPrimitives\AsyncSemaphore.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AsyncPrimitivesTest\AsyncSemaphoreTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AsyncPrimitives\CancellationTokenSource.cpp">
@@ -31,12 +25,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AsyncPrimitives\CancellationRegistration.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AsyncPrimitivesTest\CancellationTokenSourceTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AsyncPrimitivesTest\CancellationTokenTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Collections\ThreadSafeMinimalisticVector.cpp">
@@ -49,12 +37,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Collections\ThreadSafeMinimalisticQueue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AsyncPrimitivesTest\IAsyncProducerConsumerCollectionTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AsyncPrimitivesTest\FutureExTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Schedulers\Scheduler.cpp">
@@ -84,9 +66,6 @@
     <ClCompile Include="DataFlow\TransformBlock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DataFlowTest\DataflowBlockTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DataFlow\ActionBlock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -99,25 +78,13 @@
     <ClCompile Include="Schedulers\CurrentThreadScheduler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SchedulerTest\SchedulerAwaiterTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Tasks\Task.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TasksTest\TaskTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Tasks\TaskFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Tasks\TaskCompletionSource.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TasksTest\TaskCompletionSourceTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TasksTest\TaskPromiseTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AsyncPrimitives\AggregateException.cpp">

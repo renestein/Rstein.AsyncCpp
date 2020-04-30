@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RStein.AsyncCpp", "RStein.AsyncCpp\RStein.AsyncCpp.vcxproj", "{03605C1F-427D-4AAA-8747-217CDD165A16}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RStein.AsyncCpp.Test", "RStein.AsyncCpp.Test\RStein.AsyncCpp.Test.vcxproj", "{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Release|x64.Build.0 = Release|x64
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Release|x86.ActiveCfg = Release|Win32
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Release|x86.Build.0 = Release|Win32
+		{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}.Debug|x64.ActiveCfg = Debug|x64
+		{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}.Debug|x64.Build.0 = Debug|x64
+		{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}.Debug|x86.ActiveCfg = Debug|Win32
+		{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}.Debug|x86.Build.0 = Debug|Win32
+		{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}.Release|x64.ActiveCfg = Release|x64
+		{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}.Release|x64.Build.0 = Release|x64
+		{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}.Release|x86.ActiveCfg = Release|Win32
+		{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

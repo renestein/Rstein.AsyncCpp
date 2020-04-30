@@ -1,10 +1,10 @@
-#include "../AsyncPrimitives/CancellationTokenSource.h"
-#include "../AsyncPrimitives/OperationCanceledException.h"
-#include "../Schedulers/SimpleThreadPool.h"
-#include "../Schedulers/ThreadPoolScheduler.h"
-#include "../Tasks/Task.h"
-#include "../Tasks/TaskCombinators.h"
-#include "../Tasks/TaskFactory.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/CancellationTokenSource.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/OperationCanceledException.h"
+#include "../../RStein.AsyncCpp/Schedulers/SimpleThreadPool.h"
+#include "../../RStein.AsyncCpp/Schedulers/ThreadPoolScheduler.h"
+#include "../../RStein.AsyncCpp/Tasks/Task.h"
+#include "../../RStein.AsyncCpp/Tasks/TaskCombinators.h"
+#include "../../RStein.AsyncCpp/Tasks/TaskFactory.h"
 #include <gtest/gtest.h>
 #include <future>
 #include <string>

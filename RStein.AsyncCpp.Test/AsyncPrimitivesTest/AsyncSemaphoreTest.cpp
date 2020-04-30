@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 
-#include "../AsyncPrimitives/AsyncSemaphore.h"
-#include "../AsyncPrimitives/OperationCanceledException.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/AsyncSemaphore.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/OperationCanceledException.h"
 
-#include <experimental/resumable>
-#include <experimental/generator>
 #include <xutility>
+#include <experimental/generator>
+#include <experimental/resumable>
 
 using namespace RStein::AsyncCpp::AsyncPrimitives;
 using namespace testing;

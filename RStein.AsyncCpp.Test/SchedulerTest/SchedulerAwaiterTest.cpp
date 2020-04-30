@@ -1,11 +1,11 @@
-#include "../Schedulers/CurrentThreadScheduler.h"
-#include "../Schedulers/Scheduler.h"
-#include "../Schedulers/SimpleThreadPool.h"
-#include "../Schedulers/ThreadPoolScheduler.h"
+#include "../../RStein.AsyncCpp/Schedulers/CurrentThreadScheduler.h"
+#include "../../RStein.AsyncCpp/Schedulers/Scheduler.h"
+#include "../../RStein.AsyncCpp/Schedulers/SimpleThreadPool.h"
+#include "../../RStein.AsyncCpp/Schedulers/ThreadPoolScheduler.h"
 #include <future>
-#include "../AsyncPrimitives/FutureEx.h"
-#include "../Tasks/Task.h"
-#include "../Tasks/TaskCompletionSource.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/FutureEx.h"
+#include "../../RStein.AsyncCpp/Tasks/Task.h"
+#include "../../RStein.AsyncCpp/Tasks/TaskCompletionSource.h"
 
 #include <gtest/gtest.h>
 

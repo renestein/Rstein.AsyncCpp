@@ -1,11 +1,11 @@
-#include "../AsyncPrimitives/FutureEx.h"
-#include "../DataFlow/ActionBlock.h"
-#include "../DataFlow/DataflowAsyncFactory.h"
-#include "../DataFlow/DataFlowSyncFactory.h"
-#include "../DataFlow/TransformBlock.h"
-#include "../Tasks/Task.h"
-#include "../Tasks/TaskCombinators.h"
-#include "../Tasks/TaskCompletionSource.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/FutureEx.h"
+#include "../../RStein.AsyncCpp/DataFlow/ActionBlock.h"
+#include "../../RStein.AsyncCpp/DataFlow/DataflowAsyncFactory.h"
+#include "../../RStein.AsyncCpp/DataFlow/DataFlowSyncFactory.h"
+#include "../../RStein.AsyncCpp/DataFlow/TransformBlock.h"
+#include "../../RStein.AsyncCpp/Tasks/Task.h"
+#include "../../RStein.AsyncCpp/Tasks/TaskCombinators.h"
+#include "../../RStein.AsyncCpp/Tasks/TaskCompletionSource.h"
 #include <gtest/gtest.h>
 #include <vector>
 using namespace std;

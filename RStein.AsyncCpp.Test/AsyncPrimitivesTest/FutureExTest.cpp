@@ -1,5 +1,5 @@
-#include "../AsyncPrimitives/FutureEx.h"
-#include "../AsyncPrimitives/OperationCanceledException.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/OperationCanceledException.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/FutureEx.h"
 
 #include <future>
 #include <gtest/gtest.h>

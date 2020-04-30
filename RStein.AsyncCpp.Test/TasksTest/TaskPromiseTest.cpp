@@ -1,7 +1,7 @@
-#include "../AsyncPrimitives/OperationCanceledException.h"
-#include "../Tasks/Task.h"
-#include "../Tasks/TaskFactory.h"
-#include "../Tasks/TaskCompletionSource.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/OperationCanceledException.h"
+#include "../../RStein.AsyncCpp/Tasks/Task.h"
+#include "../../RStein.AsyncCpp/Tasks/TaskFactory.h"
+#include "../../RStein.AsyncCpp/Tasks/TaskCompletionSource.h"
 
 
 #include <gtest/gtest.h>
