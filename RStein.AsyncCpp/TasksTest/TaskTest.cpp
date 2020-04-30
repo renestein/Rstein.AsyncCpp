@@ -125,10 +125,10 @@ namespace RStein::AsyncCpp::TasksTest
     Task<Scheduler::SchedulerPtr> RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFuncImpl(Scheduler::SchedulerPtr taskScheduler)
     {
 
-      auto task = TaskFactory::Run([&taskScheduler]
+      auto task = TaskFactory::Run([]
                   {
                     //capture used scheduler
-                    return taskScheduler;
+                    return Scheduler::CurrentScheduler();
                     
                   },
                   //run on explicit scheduler

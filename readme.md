@@ -88,21 +88,21 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
 ## TaskFactory Run With Scheduler
 Using co_await
 ```c++
-Task<Scheduler::SchedulerPtr> RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFuncImpl(Scheduler::SchedulerPtr taskScheduler)
+ Task<Scheduler::SchedulerPtr> RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFuncImpl(Scheduler::SchedulerPtr taskScheduler)
     {
 
-      auto task = TaskFactory::Run([&taskScheduler]
+      auto task = TaskFactory::Run([]
                   {
                     //capture used scheduler
-                    return taskScheduler;
+                    return Scheduler::CurrentScheduler();
                     
                   },
                   //run on explicit scheduler
-                 taskSchSynceduler);
+                 taskScheduler);
 
       co_return co_await task;
     }
-
+    
 TEST_F(TaskTest, RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFunc)
   {
     SimpleThreadPool threadPool{1};
