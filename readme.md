@@ -4,7 +4,7 @@
 - The library is my playground for testing coroutine support in the C++.
 - The library supports compilation in the VS 2019. Support for other compilers is planned.
 ## **Task&lt;T&gt;.** 
-The Task class represents result of the execution of the one (usually asynchronous) operation - an instance of the Task contains either return value of the operation or exception or information that task was cancelled. Tasks created by the TaskFactory are 'hot'. 'Hot' in this context means that the Task Start method is called and Task is immediately scheduled on Scheduler (~=executor). You can 'co_await' Task (preferred) or/and you can use methods from the Task public interface (ContinueWith, Wait, State, IsCompleted, IsFaulted, IsCanceled, Result...). The Task supports both the 'awaiter' and the 'promise' concepts.
+The Task class represents the result of the execution of the one (usually asynchronous) operation - an instance of the Task contains either return value of the operation or exception or an information that task was cancelled. Tasks created by the TaskFactory are 'hot'. 'Hot' in this context means that the Task Start method is called and the Task is immediately scheduled on Scheduler (~=executor). You can 'co_await' Task (preferred) or/and you can use methods from the Task public interface (ContinueWith, Wait, State, IsCompleted, IsFaulted, IsCanceled, Result...). The Task supports both the 'awaiter' and the 'promise' concepts.
 * [`Create Task<T> using the TaskFactory (uses default scheduler = ThreadPoolScheduler).`](#TaskFactory-Run)
 * [`Create Task<T> using the TaskFactory and explicit scheduler.`](#TaskFactory-Run-With-Scheduler)
 * [`Task<T> ContinueWith method - register continuation function that will be called when the Task have completed ('future.then' type of the method).`](#Task-ContinueWith)
@@ -28,7 +28,7 @@ The Task class represents result of the execution of the one (usually asynchrono
 * [`TaskFromCanceled method - creates a completed instance of the Task<T> in the Canceled state.`](#TaskFromCanceled)
   
   ## **TaskCompletionSource&lt;T&gt;.** 
-  The TaskCompletionSource class explicitly controls the state and result of the Task that is provided to the consumer. TaskCompletionSource has relation to the Task class similar to relation which exists between std::future and std::promise types. This class is very useful in situations when you must call code that uses different asynchronous patterns and you would like only the Task class in your API. Different asynchronous patterns may be simply converted to the Task based world using the TaskCompletionSource.
+  The TaskCompletionSource class explicitly controls the state and result of the Task that is provided to the consumer. TaskCompletionSource has relation to the Task class similar to the relation which exists between std::future and std::promise types. This class is very useful in situations when you call to library that uses different asynchronous patterns and you would like to use only the Task class in your API. Different asynchronous patterns can be simply converted to the Task-based world using the TaskCompletionSource.
 * [`TaskCompletion<T> SetResult method).`](#TaskCompletionSource-SetResult)
 * [`TaskCompletion<T> TrySetResult method).`](#TaskCompletionSource-TrySetResult)
 * [`TaskCompletion<T> SetException method).`](#TaskCompletionSource-SetException)
@@ -44,7 +44,7 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
 * [`| (pipe) operator for Fbind and FMap` - simple composition](#Task-Pipe-Operator)]
 * [`Monadic laws (tests)`](#Task-Monadic-Laws)]
  
- ## Simple DataFlow**
+ ## **Simple DataFlow**
 
 * [`Flat dataflow`](#Flat-Dataflow)
 * [`Fork-Join dataflow`](#Fork-Join-Dataflow)
@@ -883,7 +883,7 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
     ASSERT_EQ(EXPECTED_RESULT, result);
   }
   ```
-  ## CancellationTokenSource
+  ## CancellationToken
   ``` C++
   TEST_F(TaskTest, WaitWhenTaskProcessingCanceledThenThrowsOperationCanceledException)
   {
@@ -893,6 +893,7 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
     //Capture CancellationToken
     auto task = TaskFactory::Run([cancellationToken = cts.Token()]
     {
+        //Task Run on default scheduler (ThreadPoolScheduler).
         while(true)
         {
           //Simulate work;
@@ -904,7 +905,7 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
         }
     }, cts.Token());
 
-    //Signalize "Cancel operation"
+    //Signalize "Cancel operation" from another thread.
     cts.Cancel();
     ASSERT_THROW(task.Wait(), OperationCanceledException);
   }
