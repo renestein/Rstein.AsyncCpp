@@ -193,7 +193,7 @@ TEST_F(TaskTest, ContinueWithWhenAntecedentTaskCompletedThenContinuationRun)
 ```
 ## Task Promise Concept
 ```c++
-Task<string> is a promise
+    //Task<string> is a promise (return value of the async function).
     Task<string> TaskPromiseStringWhenCalledThenReturnsExpectedValueImpl(string expectedValue) const
     {
       auto result = co_await TaskFactory::Run([expectedValue]
