@@ -32,17 +32,17 @@ The Task class represents the result of the execution of the one (usually asynch
 * [`TaskCompletion<T> SetResult method).`](#TaskCompletionSource-SetResult)
 * [`TaskCompletion<T> TrySetResult method).`](#TaskCompletionSource-TrySetResult)
 * [`TaskCompletion<T> SetException method).`](#TaskCompletionSource-SetException)
- * [`TaskCompletion<T> TrySetException method).`](#TaskCompletionSource-TrySetException)
- * [`TaskCompletion<T> SetCanceled method).`](#TaskCompletionSource-SetCanceled)
- * [`TaskCompletion<T> TrySetCanceled method).`](#TaskCompletionSource-TrySetCanceled)
+* [`TaskCompletion<T> TrySetException method).`](#TaskCompletionSource-TrySetException)
+* [`TaskCompletion<T> SetCanceled method).`](#TaskCompletionSource-SetCanceled)
+* [`TaskCompletion<T> TrySetCanceled method).`](#TaskCompletionSource-TrySetCanceled)
 
 ## **Functional map (Fmap) and bind (Fbind) methods (Task monad).**
 The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) method.
 
-* [`Task<T> Fmap (map, Select) method.`](#Task-Fmap)
-* [`Task<T> Fbind (bind, SelectMany, mapMany) method.`](#Task-Fbind)
-* [`| (pipe) operator for Fbind and FMap - simple composition.`](#Task-Pipe-Operator)
-* [`Monadic laws (tests).`](#Task-Monadic-Laws)]
+* [`Fmap (map, Select) method for Task<T>.`](#Task-Fmap)
+* [`Fbind (bind, SelectMany, mapMany) method for Task<T> .`](#Task-Fbind)
+* [`| (pipe) operator for Fbind and FMap - simplified Task<T> composition.`](#Task-Pipe-Operator)
+* [`Monadic laws (tests).`](#Task-Monadic-Laws)
  
  ## **Simple DataFlow**
 
