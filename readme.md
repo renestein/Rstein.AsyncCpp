@@ -51,7 +51,7 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
 
  ## **Async primitives**
  * [`AsyncSemaphore - asynchronous variant of the Semaphore synchronization primitive.`](#AsyncSemaphore)
- * [`CancellationTokensource and CancellationToken - types used for cooperative cancel.`](#CancellationToken)
+ * [`CancellationTokensource and CancellationToken - types used for the cooperative cancellation.`](#CancellationToken)
 
   ## TaskFactory Run
   Create Task<T> using the TaskFactory (uses default scheduler - ThreadPoolScheduler).
