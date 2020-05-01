@@ -175,6 +175,8 @@
     <ClCompile Include="DataFlow\IInputOutputBlock.cpp" />
     <ClCompile Include="DataFlow\TransformBlock.cpp" />
     <ClCompile Include="Collections\ThreadSafeMinimalisticVector.cpp" />
+    <ClCompile Include="Detail\Tasks\IdGenerator.cpp" />
+    <ClCompile Include="Detail\Tasks\TaskTag.cpp" />
     <ClCompile Include="Schedulers\CurrentThreadScheduler.cpp" />
     <ClCompile Include="Schedulers\Scheduler.cpp" />
     <ClCompile Include="Schedulers\SimpleThreadPool.cpp" />
@@ -209,6 +211,8 @@
     <ClInclude Include="DataFlow\IInputBlock.h" />
     <ClInclude Include="DataFlow\IInputOutputBlock.h" />
     <ClInclude Include="DataFlow\TransformBlock.h" />
+    <ClInclude Include="Detail\Tasks\IdGenerator.h" />
+    <ClInclude Include="Detail\Tasks\TaskTag.h" />
     <ClInclude Include="Functional\F.h" />
     <ClInclude Include="Schedulers\CurrentThreadScheduler.h" />
     <ClInclude Include="Schedulers\Scheduler.h" />

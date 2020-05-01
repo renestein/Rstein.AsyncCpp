@@ -1,4 +1,5 @@
 #pragma once
+#include "IdGenerator.h"
 #include "../../AsyncPrimitives/OperationCanceledException.h"
 #include "../../Schedulers/Scheduler.h"
 #include "../../Functional/F.h"
@@ -17,11 +18,12 @@
 
 namespace RStein::AsyncCpp::Detail
 {
-
+  struct TaskTag;
 
   template <typename TResult>
   struct TaskSharedState : public std::enable_shared_from_this<TaskSharedState<TResult>>
   {
+      
   public:
     using ContinuationFunc = std::function<void()>;
     using Function_Ret_Type = TResult;
@@ -37,8 +39,8 @@ namespace RStein::AsyncCpp::Detail
       _lockObject{},
       _waitTaskCv{},
       _scheduler{std::move(scheduler)},
-      _taskId{ _idGenerator++ },
-      _state{RStein::AsyncCpp::Tasks::TaskState::Created },
+      _taskId{::Detail::IdGenerator<TaskTag>::Counter++},
+      _state{Tasks::TaskState::Created },
       _continuations{ std::vector<ContinuationFunc>{} },
       _exceptionPtr{ nullptr }
     {
@@ -388,7 +390,6 @@ namespace RStein::AsyncCpp::Detail
     mutable std::mutex _lockObject;
     mutable std::condition_variable _waitTaskCv;
     Schedulers::Scheduler::SchedulerPtr _scheduler;
-    static std::atomic<unsigned long> _idGenerator;
     unsigned long _taskId;
     Tasks::TaskState _state;
     Collections::ThreadSafeMinimalisticVector<ContinuationFunc> _continuations;
@@ -426,8 +427,6 @@ namespace RStein::AsyncCpp::Detail
       }
     }
   };
-
-  template <typename TResult>
-  std::atomic<unsigned long> TaskSharedState<TResult>::_idGenerator{};
+  
   
 }
