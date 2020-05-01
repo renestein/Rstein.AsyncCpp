@@ -210,16 +210,28 @@ namespace RStein::AsyncCpp::Detail
     void AddContinuation(ContinuationFunc&& continuationFunc)
     {
       //TODO inline task if possible
-      std::lock_guard lock{ _lockObject };
-      if (_state == Tasks::TaskState::RunToCompletion ||
-        _state == Tasks::TaskState::Faulted ||
-        _state == Tasks::TaskState::Canceled)
+      auto runContinuationNow = false;
       {
-        continuationFunc();
-        return;
+        std::lock_guard lock{ _lockObject };
+        if (_state == Tasks::TaskState::RunToCompletion ||
+          _state == Tasks::TaskState::Faulted ||
+          _state == Tasks::TaskState::Canceled)
+        {
+          runContinuationNow = true;
+        }
+        else
+        {
+          _continuations.Add(continuationFunc);
+        }
       }
 
-      _continuations.Add(continuationFunc);
+      if (runContinuationNow)
+      {
+        continuationFunc();
+      }
+
+
+      
     }
 
     void SetException(std::exception_ptr exception)
