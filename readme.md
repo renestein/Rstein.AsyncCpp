@@ -28,7 +28,7 @@ The Task class represents the result of the execution of the one (usually asynch
 * [`TaskFromCanceled method - creates a completed instance of the Task<T> in the Canceled state.`](#TaskFromCanceled)
   
   ## **TaskCompletionSource&lt;T&gt;.** 
-  The TaskCompletionSource class explicitly controls the state and result of the Task that is provided to the consumer. TaskCompletionSource has relation to the Task class similar to the relation which exists between std::future and std::promise types. This class is very useful in situations when you call to a library that uses different asynchronous patterns and you would like to use only the Task class in your API. Different asynchronous patterns can be simply converted to the Task-based world using the TaskCompletionSource.
+  The TaskCompletionSource class explicitly controls the state and result of the Task that is provided to the consumer. TaskCompletionSource has relation to the Task class similar to the relation which exists between std::future and std::promise types. This class is very useful in situations when you call to a library that uses different asynchronous pattern and you would like to use only the Task class in your API. Different asynchronous patterns can be simply converted to the Task-based world using the TaskCompletionSource.
 * [`TaskCompletion<T> SetResult method).`](#TaskCompletionSource-SetResult)
 * [`TaskCompletion<T> TrySetResult method).`](#TaskCompletionSource-TrySetResult)
 * [`TaskCompletion<T> SetException method).`](#TaskCompletionSource-SetException)
@@ -59,11 +59,12 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
 
 
   //Using co_await
-  auto result = co_await TaskFactory::Run([expectedValue]
-      {
-        return expectedValue;
-      });
-      co_return result;
+  auto result = co_await TaskFactory::Run([this]
+                {
+                    //Do some work
+                    int result = CalculateResult();
+                    return result;
+                });    
   ```
   ```c++
 
@@ -166,7 +167,7 @@ TEST_F(TaskTest, ContinueWithWhenAntecedentTaskCompletedThenContinuationRun)
   }
 ```
 ```c++
-Continuation function can be called on an explicitly specified Scheduler.
+//Continuation function can be called on an explicitly specified Scheduler.
 
   TEST_F(TaskTest, ContinueWithWhenUsingExplicitSchedulerThenContinuationRunOnExplicitScheduler)
   {
