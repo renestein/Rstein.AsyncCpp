@@ -29,12 +29,12 @@ The Task class represents the result of the execution of the one (usually asynch
   
   ## **TaskCompletionSource&lt;T&gt;.** 
   The TaskCompletionSource class explicitly controls the state and result of the Task that is provided to the consumer. TaskCompletionSource has relation to the Task class similar to the relation which exists between std::future and std::promise types. This class is very useful in situations when you call to a library that uses different asynchronous pattern and you would like to use only the Task class in your API. Different asynchronous patterns can be simply converted to the Task-based world using the TaskCompletionSource.
-* [`TaskCompletion<T> SetResult method).`](#TaskCompletionSource-SetResult)
-* [`TaskCompletion<T> TrySetResult method).`](#TaskCompletionSource-TrySetResult)
-* [`TaskCompletion<T> SetException method).`](#TaskCompletionSource-SetException)
-* [`TaskCompletion<T> TrySetException method).`](#TaskCompletionSource-TrySetException)
-* [`TaskCompletion<T> SetCanceled method).`](#TaskCompletionSource-SetCanceled)
-* [`TaskCompletion<T> TrySetCanceled method).`](#TaskCompletionSource-TrySetCanceled)
+* [`TaskCompletion<T> SetResult method.`](#TaskCompletionSource-SetResult)
+* [`TaskCompletion<T> TrySetResult method.`](#TaskCompletionSource-TrySetResult)
+* [`TaskCompletion<T> SetException method.`](#TaskCompletionSource-SetException)
+* [`TaskCompletion<T> TrySetException method.`](#TaskCompletionSource-TrySetException)
+* [`TaskCompletion<T> SetCanceled method.`](#TaskCompletionSource-SetCanceled)
+* [`TaskCompletion<T> TrySetCanceled method.`](#TaskCompletionSource-TrySetCanceled)
 
 ## **Functional map (Fmap) and bind (Fbind) methods (Task monad).**
 The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) method.
