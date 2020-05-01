@@ -41,16 +41,16 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
 
 * [`Task<T> Fmap (map, Select) method.`](#Task-Fmap)
 * [`Task<T> Fbind (bind, SelectMany, mapMany) method.`](#Task-Fbind)
-* [`| (pipe) operator for Fbind and FMap` - simple composition](#Task-Pipe-Operator)
-* [`Monadic laws (tests)`](#Task-Monadic-Laws)]
+* [`| (pipe) operator for Fbind and FMap - simple composition.`](#Task-Pipe-Operator)
+* [`Monadic laws (tests).`](#Task-Monadic-Laws)]
  
  ## **Simple DataFlow**
 
-* [`Flat dataflow`](#Flat-Dataflow)
-* [`Fork-Join dataflow`](#Fork-Join-Dataflow)
+* [`Flat DataFlow.`](#Flat-Dataflow)
+* [`Fork-Join DataFlow.`](#Fork-Join-Dataflow)
 
  ## **Async primitives**
- * [`AsyncSemaphore - asynchronous variant of the Semaphore synchronization primitive`](#AsyncSemaphore)
+ * [`AsyncSemaphore - asynchronous variant of the Semaphore synchronization primitive.`](#AsyncSemaphore)
  * [`CancellationTokensource and CancellationToken - types used for cooperative cancel.`](#CancellationToken)
 
   ## TaskFactory Run
@@ -59,10 +59,10 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
 
 
   //Using co_await
-  auto result = co_await TaskFactory::Run([this]
+  auto result = co_await TaskFactory::Run([]
                 {
                     //Do some work
-                    int result = CalculateResult();
+                    int result = 42; //Calculate result.
                     return result;
                 });    
   ```
@@ -742,7 +742,7 @@ TEST_F(TaskTest, FBindPipeOperatorWhenComposingThenReturnsExpectedResult)
     }
   };
   ```
-   ## Fork-Join Dataflow
+   ## Fork-Join DataFlow
     
 ``` C++
 Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputItemsCount)
