@@ -106,6 +106,7 @@ namespace RStein::AsyncCpp::Tasks
       _tcs.SetResult(std::forward<TU>(retValue));
     }
 
+    //TODO return suspend_always, capture and destroy coroutine_handle in Task?
     [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
     {
       return {};
@@ -155,6 +156,7 @@ namespace RStein::AsyncCpp::Tasks
       _tcs.SetResult();
     }
 
+    //TODO return suspend_always, capture and destroy coroutine_handle in Task?
     [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
     {
       return {};

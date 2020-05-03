@@ -137,7 +137,7 @@ TEST_F(TaskTest, RunWhenUsingExplicitSchedulerThenExplicitSchedulerRunTaskFunc)
 ```
 ## Task ContinueWith
 ```c++
-ContinueWith method registers continuation function which will be called when the Task is completed.
+//ContinueWith method registers continuation function which will be called when the Task is completed.
 TEST_F(TaskTest, ContinueWithWhenAntecedentTaskCompletedThenContinuationRun)
   {
     std::promise<void> startTaskPromise;
