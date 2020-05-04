@@ -1,5 +1,5 @@
 # RStein.AsyncCpp (C++ library)
-- The RStein.AsyncCpp library is a set of types that should be familiar for anyone who know the Task Parallel Library (TPL) for .NET (C#). In addition, this library contains simple DataFlow, functional combinators for the Task<T> class, useful async primitives (AsyncSemaphore, AsyncProducerConsumerCollection, CancellationToken, CancellationTokenSource ...).
+- The RStein.AsyncCpp library is a set of types that should be familiar for anyone who knows the Task Parallel Library (TPL) for .NET (C#). In addition, this library contains simple DataFlow, functional combinators for the Task<T> class, useful async primitives (AsyncSemaphore, AsyncProducerConsumerCollection, CancellationToken, CancellationTokenSource ...).
 
 - The library is my playground for testing coroutine support in the C++.
 - The library supports compilation in the VS 2019. Support for other compilers is planned.
