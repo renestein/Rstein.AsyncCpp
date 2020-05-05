@@ -1,5 +1,5 @@
 # RStein.AsyncCpp (C++ library)
-- The RStein.AsyncCpp library is a set of types that should be familiar for anyone who knows the Task Parallel Library (TPL) for .NET (C#). In addition, this library contains simple DataFlow, functional combinators for the Task<T> class, useful async primitives (AsyncSemaphore, AsyncProducerConsumerCollection, CancellationToken, CancellationTokenSource ...).
+- The RStein.AsyncCpp library is a set of types that should be familiar for anyone who knows the Task Parallel Library (TPL) for .NET (C#). In addition, this library contains simple DataFlow, functional combinators for the Task<T> class, useful async primitives (AsyncSemaphore, AsyncProducerConsumerCollection, CancellationToken, CancellationTokenSource, AsyncMutex ...).
 
 - The library is my playground for testing coroutine support in C++.
 - The library supports compilation in the VS 2019. Support for other compilers is planned.
@@ -52,6 +52,7 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
  ## **Async primitives**
  * [`AsyncSemaphore - asynchronous variant of the Semaphore synchronization primitive.`](#AsyncSemaphore)
  * [`CancellationTokensource and CancellationToken - types used for the cooperative cancellation.`](#CancellationToken)
+ * [`AsyncMutex` - asynchronous variant of the mutex synchronization primitive.](#AsyncMutex)
 
   ## TaskFactory Run
   Create Task<T> using the TaskFactory (uses default scheduler - ThreadPoolScheduler).
@@ -911,3 +912,22 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
     ASSERT_THROW(task.Wait(), OperationCanceledException);
   }
   ```
+## AsyncMutex
+ ``` C++
+  Task<int> LockWhenCalledThenExpectedNumberItemsAreInUnsafeCollectionImpl(int itemsCount)
+    {
+      std::vector<int> items;
+      AsyncMutex asyncMutex;
+
+      for (int i = 0; i < itemsCount; ++i)
+      {
+        //test only repeated Lock/implicit Unlock without concurrency
+        auto locker = asyncMutex.Lock();
+        co_await locker;
+        items.push_back(i);
+        //implicit locker.Unlock();
+      }
+
+      co_return items.size();
+    }
+ ```

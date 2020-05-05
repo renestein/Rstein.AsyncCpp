@@ -14,14 +14,36 @@ namespace RStein::AsyncCpp::Tasks
   template<typename TResult>
   class TaskCompletionSource;
 
+  
   template <typename TResult = void>
   class Task
   {
+  private:
+  template<typename>
+  struct is_task_returning_nested_task : std::false_type
+  {
+    
+  };
+
+  template<typename TNestedResult>
+  struct is_task_returning_nested_task<Task<TNestedResult>> : std::true_type
+  {
+    
+  };
+  
   public:
 
-    
     using TypedTaskSharedState = Detail::TaskSharedState<TResult>;
+
     using Ret_Type = TResult;
+    struct InvalidPlaceholderTaskCreator
+    {
+       Task<TResult> operator()()
+       {
+         static Task<TResult> placeholderTask{true};
+         return placeholderTask;
+       }
+    };
 
     template<typename TFunc>
     explicit Task(TFunc func) : Task{std::move(func),
@@ -179,7 +201,7 @@ namespace RStein::AsyncCpp::Tasks
     friend class TaskCompletionSource<TResult>;
 
     //TaskCompletionSource uses this ctor
-    Task() : _sharedTaskState(std::make_shared<TypedTaskSharedState>())
+    Task(bool isInvalidPlaceholderTask = false) : _sharedTaskState(std::make_shared<TypedTaskSharedState>(isInvalidPlaceholderTask))
     {
     }
 
@@ -264,6 +286,14 @@ namespace RStein::AsyncCpp::Tasks
     {
       continuationTask.Start();
     });
-  }  
-  
+  }
 }
+namespace RStein::Functional
+  {
+    template<typename TResult>
+    struct Result_Traits<AsyncCpp::Tasks::Task<TResult>>
+    {
+      using Result_Type = AsyncCpp::Tasks::Task<TResult>;
+      using Default_Value_Func = typename AsyncCpp::Tasks::Task<TResult>::InvalidPlaceholderTaskCreator;
+    };  
+  }

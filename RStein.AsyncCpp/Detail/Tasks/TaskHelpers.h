@@ -30,37 +30,38 @@ namespace RStein::AsyncCpp::Detail
 
     TaskSharedState(std::function<TResult()> func,
                     Schedulers::Scheduler::SchedulerPtr scheduler,
-                    bool isTaskReturnFunc,
+                    bool isInvalidTaskPlaceHolder,
                     AsyncPrimitives::CancellationToken cancellationToken) :
-      std::enable_shared_from_this<TaskSharedState<TResult>>(),
-      _func(std::move(func)),
-      _isTaskReturnFunc(isTaskReturnFunc),
-      _cancellationToken(std::move(cancellationToken)),
-      _lockObject{},
-      _waitTaskCv{},
-      _scheduler{std::move(scheduler)},
-      _taskId{::Detail::IdGenerator<TaskTag>::Counter++},
-      _state{Tasks::TaskState::Created },
-      _continuations{ std::vector<ContinuationFunc>{} },
-      _exceptionPtr{ nullptr }
+                    std::enable_shared_from_this<TaskSharedState<TResult>>(),
+                    _func(std::move(func)),
+                    _isInvalidTaskPlaceHolder(isInvalidTaskPlaceHolder),
+                    _cancellationToken(std::move(cancellationToken)),
+                    _lockObject{},
+                    _waitTaskCv{},
+                    _scheduler{std::move(scheduler)},
+                    _taskId{::Detail::IdGenerator<TaskTag>::Counter++},
+                    _state{Tasks::TaskState::Created },
+                    _continuations{ std::vector<ContinuationFunc>{} },
+                    _exceptionPtr{ nullptr }
     {
       if constexpr(!std::is_same<TResult, void>::value)
       {
-        if (_func != nullptr)
+        if (!isInvalidTaskPlaceHolder && _func != nullptr)
         {
-          _func = RStein::Functional::Memoize0(std::move(_func));
+          _func = Functional::Memoize0(std::move(_func));
         }
       }
-      if (!_scheduler)
-      {
+
+     if (!isInvalidTaskPlaceHolder && !_scheduler)
+     {
         _scheduler = Schedulers::Scheduler::DefaultScheduler();
-      }
+     }
     }
 
-    TaskSharedState() : TaskSharedState(nullptr,
-                                        Schedulers::Scheduler::SchedulerPtr{},
-                                        false,
-                                        AsyncPrimitives::CancellationToken::None())
+    TaskSharedState(bool isInvalidTaskPlaceHolder) : TaskSharedState(nullptr,
+                                                    Schedulers::Scheduler::SchedulerPtr{},
+                                                    isInvalidTaskPlaceHolder,
+                                                    AsyncPrimitives::CancellationToken::None())
     {
 
     }
@@ -93,12 +94,7 @@ namespace RStein::AsyncCpp::Detail
     {
       return _exceptionPtr;
     }
-
-    bool IsTaskBasedReturnFunc() const
-    {
-      return _isTaskReturnFunc;
-    }
-
+   
     AsyncPrimitives::CancellationToken CancellationToken() const
     {
       return _cancellationToken;
@@ -373,6 +369,11 @@ namespace RStein::AsyncCpp::Detail
 
     ~TaskSharedState()
     {
+      if (_isInvalidTaskPlaceHolder)
+      {
+        return;
+      }
+
       std::lock_guard lock{ _lockObject };
       if (_state != Tasks::TaskState::RunToCompletion &&
         _state != Tasks::TaskState::Faulted &&
@@ -385,7 +386,7 @@ namespace RStein::AsyncCpp::Detail
 
   private:
     std::function<TResult()> _func;
-    bool _isTaskReturnFunc;
+    bool _isInvalidTaskPlaceHolder;
     AsyncPrimitives::CancellationToken _cancellationToken;
     mutable std::mutex _lockObject;
     mutable std::condition_variable _waitTaskCv;

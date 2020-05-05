@@ -158,6 +158,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AsyncPrimitives\AggregateException.cpp" />
+    <ClCompile Include="AsyncPrimitives\AsyncMutex.cpp" />
     <ClCompile Include="AsyncPrimitives\AsyncSemaphore.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationRegistration.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationToken.cpp" />
@@ -191,6 +192,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncPrimitives\AggregateException.h" />
+    <ClInclude Include="AsyncPrimitives\AsyncMutex.h" />
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h" />
     <ClInclude Include="AsyncPrimitives\CancellationRegistration.h" />
     <ClInclude Include="AsyncPrimitives\CancellationToken.h" />
