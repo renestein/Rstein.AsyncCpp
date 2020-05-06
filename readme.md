@@ -8,7 +8,7 @@ The Task class represents the result of the execution of the one (usually asynch
 * [`Create Task<T> using the TaskFactory (uses default scheduler = ThreadPoolScheduler).`](#TaskFactory-Run)
 * [`Create Task<T> using the TaskFactory and explicit scheduler.`](#TaskFactory-Run-With-Scheduler)
 
-* [`Unwrap nested Task (Run coroutine returning Task) using the TaskFactory - prevents some hard-to-debug bugs.`](#TaskFactory-Unwrap-Nested-Task)
+* [`Unwrap nested Task (lambda-coroutine returns Task) using the TaskFactory - prevents some hard-to-debug bugs.`](#TaskFactory-Unwrap-Nested-Task)
 
 * [`Task<T> ContinueWith method - register continuation function that will be called when the Task have completed ('future.then' type of the method).`](#Task-ContinueWith)
 
