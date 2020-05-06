@@ -139,8 +139,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
                                   *dataHolder.Result -= 2;
                                   *dataHolder.Result -= 2;
                                 });
-        //outerTasks.push_back(outerTask);
-        //auto innerTask = co_await outerTask;
+        
         tasks.push_back(task);
       }      
 
