@@ -30,7 +30,9 @@ namespace RStein::AsyncCpp::Tasks
   {
     
   };
-  
+
+  static inline constexpr bool is_task_returning_nested_task_v = is_task_returning_nested_task<TResult>::value;
+
   public:
 
     using TypedTaskSharedState = Detail::TaskSharedState<TResult>;
@@ -47,7 +49,7 @@ namespace RStein::AsyncCpp::Tasks
 
     constexpr static bool IsTaskReturningTask()
     {
-      return is_task_returning_nested_task<TResult>::value;
+      return is_task_returning_nested_task_v;
     }
 
     constexpr static bool IsTaskReturningVoid()
@@ -145,7 +147,7 @@ namespace RStein::AsyncCpp::Tasks
 
         [[nodiscard]] Ret_Type await_resume() const
         {
-          if constexpr(std::is_same<Ret_Type, void>::value)
+          if constexpr(IsTaskReturningVoid())
           {
             _task.Wait(); //Propagate exception
             return (void) 0;
@@ -162,6 +164,85 @@ namespace RStein::AsyncCpp::Tasks
 
     }
 
+    template<typename TResultCopy=TResult>
+    std::enable_if_t<is_task_returning_nested_task_v, TResultCopy> Unwrap()
+    {
+      //Unwrap without co_await;
+      decltype(this->Result()) proxyTask{false};
+      //TODO: Unify logic, write TaskFromAnother Task function;
+      //try to keep potential coroutine func alive (thisCopy)
+      this->ContinueWith([thisCopy = *this, proxyTask](auto& self)
+      {
+        
+        if constexpr (decltype(self.Result())::IsTaskReturningVoid())
+        {
+          self.Result().ContinueWith([thisCopy = thisCopy, proxyTask](auto& innerTask)
+          {
+            assert(innerTask.IsCompleted());
+
+            switch (innerTask.State())
+            {
+              case TaskState::RunToCompletion:
+              {
+               proxyTask._sharedTaskState->TrySetResult();
+                break;
+              }
+              case TaskState::Faulted:
+              {
+                proxyTask._sharedTaskState->TrySetException(innerTask.Exception());
+                break;
+              }
+              case TaskState::Canceled:
+              {
+                proxyTask._sharedTaskState->TrySetCanceled();;
+                break;
+              }
+              default:
+              {
+                assert(false);
+                break;
+              }
+            }
+            
+          });
+
+        }
+        else
+        {
+          self.Result().ContinueWith([thisCopy = thisCopy, proxyTask](auto& innerTask)
+          {
+            assert(innerTask.IsCompleted());
+           switch (innerTask.State())
+            {
+              case TaskState::RunToCompletion:
+              {
+                proxyTask._sharedTaskState->template TrySetResult<decltype(innerTask.Result())>(innerTask.Result());
+                break;
+              }
+              case TaskState::Faulted:
+              {
+                proxyTask._sharedTaskState->TrySetException(innerTask.Exception());
+                break;
+              }
+              case TaskState::Canceled:
+              {
+                proxyTask._sharedTaskState->TrySetCanceled();;
+                break;
+              }
+              default:
+              {
+                assert(false);
+                break;
+              }
+            }
+
+          });
+          
+        }
+      });
+
+      return proxyTask;
+    }
 
     friend bool operator==(const Task& lhs, const Task& rhs)
     {
@@ -208,6 +289,7 @@ namespace RStein::AsyncCpp::Tasks
   private:
     
     friend class TaskCompletionSource<TResult>;
+    friend class Task<Task<TResult>>;
 
     //TaskCompletionSource uses this ctor
     Task(bool isInvalidPlaceholderTask = false) : _sharedTaskState(std::make_shared<TypedTaskSharedState>(isInvalidPlaceholderTask))

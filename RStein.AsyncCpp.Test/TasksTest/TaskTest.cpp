@@ -153,7 +153,7 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_EQ(TaskState::RunToCompletion, taskState);
   }
 
-   TEST_F(TaskTest, RunWhenReturnValueIsNestedTaskThenTaskIsUnwrapped)
+  TEST_F(TaskTest, RunWhenReturnValueIsNestedTaskThenTaskIsUnwrapped)
   {
     
      int EXPECTED_VALUE  = 10;
@@ -895,4 +895,38 @@ namespace RStein::AsyncCpp::TasksTest
 
     ASSERT_THROW(mappedTask.Result(), invalid_argument);
   }
+
+  TEST_F(TaskTest, UnwrapWhenNestedTaskThenReturnsNestedTaskWithExpectedValue)
+  {
+    const int EXPECTED_RESULT = 42;
+    Task<Task<int>> task{[value=EXPECTED_RESULT]()->Task<int>
+                    {
+                        co_await GetCompletedTask();
+                        co_return value;
+                    }};
+    task.Start();
+    auto innerTask = task.Unwrap();
+
+    auto result = innerTask.Result();
+
+    ASSERT_EQ(EXPECTED_RESULT, result);
+  }
+
+  
+  TEST_F(TaskTest, UnwrapWhenNestedVoidTaskThenNestedVoidTaskIsCompleted)
+  {
+    Task<Task<void>> task{[]()->Task<void>
+                    {
+                        this_thread::sleep_for(100ms);
+                        co_await GetCompletedTask();                  
+                    }};
+    task.Start();
+    auto innerTask = task.Unwrap();
+
+    innerTask.Wait();
+
+    ASSERT_EQ(TaskState::RunToCompletion,  innerTask.State());
+  }
+
+
 }

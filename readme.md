@@ -4,9 +4,12 @@
 - The library is my playground for testing coroutine support in C++.
 - The library supports compilation in the VS 2019. Support for other compilers is planned.
 ## **Task&lt;T&gt;.** 
-The Task class represents the result of the execution of the one (usually asynchronous) operation - an instance of the Task contains either return value of the operation or exception or an information that task was cancelled. Tasks created by the TaskFactory are 'hot'. 'Hot' in this context means that the Task Start method is called and the Task is immediately scheduled on Scheduler (~=executor). You can 'co_await' Task (preferred) or/and you can use methods from the Task public interface (ContinueWith, Wait, State, IsCompleted, IsFaulted, IsCanceled, Result...). The Task supports both the 'awaiter' and the 'promise' concepts.
+The Task class represents the result of the execution of the one (usually asynchronous) operation - an instance of the Task contains either return value of the operation or exception or an information that task was cancelled. Tasks created by the TaskFactory are 'hot'. 'Hot' in this context means that the Task Start method is called and the Task is immediately scheduled on Scheduler (~=executor). You can 'co_await' Task (preferred) or/and you can use methods from the Task public interface (ContinueWith, Wait, State, IsCompleted, IsFaulted, IsCanceled, Result, Unwrap...). The Task supports both the 'awaiter' and the 'promise' concepts.
 * [`Create Task<T> using the TaskFactory (uses default scheduler = ThreadPoolScheduler).`](#TaskFactory-Run)
 * [`Create Task<T> using the TaskFactory and explicit scheduler.`](#TaskFactory-Run-With-Scheduler)
+
+* [`Unwrap nested Task (Run coroutine returning Task) using the TaskFactory - prevents some hard-to-debug bugs.`](#TaskFactory-Unwrap-Nested-Task)
+
 * [`Task<T> ContinueWith method - register continuation function that will be called when the Task have completed ('future.then' type of the method).`](#Task-ContinueWith)
 
 * [`Task<T> in a 'promise' role (return type of the C++ coroutine).`](#Task-Promise-Concept)
@@ -135,7 +138,27 @@ TEST_F(TaskTest, RunWhenUsingExplicitSchedulerThenExplicitSchedulerRunTaskFunc)
     explicitTaskScheduler->Stop();
     ASSERT_EQ(taskScheduler.get(), explicitTaskScheduler.get());
   }
+
 ```
+## TaskFactory Unwrap Nested Task
+```c++
+  TEST_F(TaskTest, RunWhenReturnValueIsNestedTaskThenTaskIsUnwrapped)
+  {
+    
+     int EXPECTED_VALUE  = 10;
+    //TaskFactory detects that return value of the Run would be Task<Task<int>>
+    //and unwraps inner Task. Real return type is Task<int>.
+    Task<int> task = TaskFactory::Run([value = EXPECTED_VALUE]()->Task<int>
+    {
+      co_await GetCompletedTask();
+      co_return value;
+    });
+
+    auto taskValue = task.Result();
+    ASSERT_EQ(EXPECTED_VALUE, taskValue);
+  }
+```
+
 ## Task ContinueWith
 ```c++
 //ContinueWith method registers continuation function which will be called when the Task is completed.
@@ -931,3 +954,4 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
       co_return items.size();
     }
  ```
+ 
