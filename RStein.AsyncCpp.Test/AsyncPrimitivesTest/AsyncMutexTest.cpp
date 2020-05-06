@@ -54,7 +54,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
     }
 
 
-    Task<int> LockWhenCalledThenExpectedNumberItemsAreInUnsafeCollectionImpl(int itemsCount)
+    Task<size_t> LockWhenCalledThenExpectedNumberItemsAreInUnsafeCollectionImpl(int itemsCount)
     {
       std::vector<int> items;
       AsyncMutex asyncMutex;
@@ -120,32 +120,27 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
 
       std::vector<Task<void>> tasks;
 
-      //Keep Task with coroutine func alive!!!
-      std::vector<Task<Task<void>>> outerTasks;
-      auto testFunc = [dataHolder=dataHolder]()-> Task<void>
-        {
-          co_await dataHolder.StartTasksTcs->GetTask();
-          auto locker =  dataHolder.AsyncMutex->Lock();
-          co_await locker;
-          (*dataHolder.Result)++;
-          (*dataHolder.Result) += 2;
-          (*dataHolder.Result) += 2;
-
-          (*dataHolder.Result) -= 2;
-          (*dataHolder.Result) -= 2;
-          (*dataHolder.Result) += 2;
-          (*dataHolder.Result) += 2;
-          (*dataHolder.Result) -= 2;
-          (*dataHolder.Result) -= 2;
-        };
-      
       for (int i = 0; i < tasksCount; ++i)
       {
         
-        auto outerTask = TaskFactory::Run(testFunc);
-        outerTasks.push_back(outerTask);
-        auto innerTask = co_await outerTask;
-        tasks.push_back(innerTask);
+        auto task = TaskFactory::Run([dataHolder=dataHolder]()-> Task<void>
+                                {
+                                  co_await dataHolder.StartTasksTcs->GetTask();
+                                  auto locker =  dataHolder.AsyncMutex->Lock();
+                                  co_await locker;
+                                  (*dataHolder.Result)++;
+                                  *dataHolder.Result += 2;
+                                  *dataHolder.Result += 2;
+
+                                  *dataHolder.Result -= 2;
+                                  *dataHolder.Result -= 2;
+                                  *dataHolder.Result += 2;
+                                  *dataHolder.Result += 2;
+                                  *dataHolder.Result -= 2;
+                                  *dataHolder.Result -= 2;
+                                });
+        
+        tasks.push_back(task);
       }      
 
       startTasksTcs.TrySetResult();
@@ -160,7 +155,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
 
   TEST_F(AsyncMutexTest, LockWhenCalledThenExpectedNumberItemsAreInUnsafeCollection)
   {
-    const int ADD_ITEMS_COUNT = 10;
+    const size_t ADD_ITEMS_COUNT = 10;
 
     auto itemsCount = LockWhenCalledThenExpectedNumberItemsAreInUnsafeCollectionImpl(ADD_ITEMS_COUNT).Result();
 
@@ -208,7 +203,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
 
   TEST_F(AsyncMutexTest, WhenUsingThreadPoolAndSumVariableThenAccessToSumVariableIsSychronized)
   {
-    const int TasksCount = 100;
+    const int TasksCount = 1000;
     const int EXPECTED_SUM = TasksCount;
 
     auto result = WhenUsingThreadPoolAndSumVariableThenAccessToSumVariableIsSychronizedImpl(TasksCount).Result();

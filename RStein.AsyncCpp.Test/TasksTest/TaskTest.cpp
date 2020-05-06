@@ -153,6 +153,22 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_EQ(TaskState::RunToCompletion, taskState);
   }
 
+  TEST_F(TaskTest, RunWhenReturnValueIsNestedTaskThenTaskIsUnwrapped)
+  {
+    
+     int EXPECTED_VALUE  = 10;
+    //TaskFactory detects that return value of the Run would be Task<Task<int>>
+    //and unwraps inner Task. Real return type is Task<int>.
+    Task<int> task = TaskFactory::Run([value = EXPECTED_VALUE]()->Task<int>
+    {
+      co_await GetCompletedTask();
+      co_return value;
+    });
+
+    auto taskValue = task.Result();
+    ASSERT_EQ(EXPECTED_VALUE, taskValue);
+  }
+
    struct TestValue
    {
    };
@@ -879,4 +895,38 @@ namespace RStein::AsyncCpp::TasksTest
 
     ASSERT_THROW(mappedTask.Result(), invalid_argument);
   }
+
+  TEST_F(TaskTest, UnwrapWhenNestedTaskThenReturnsNestedTaskWithExpectedValue)
+  {
+    const int EXPECTED_RESULT = 42;
+    Task<Task<int>> task{[value=EXPECTED_RESULT]()->Task<int>
+                    {
+                        co_await GetCompletedTask();
+                        co_return value;
+                    }};
+    task.Start();
+    auto innerTask = task.Unwrap();
+
+    auto result = innerTask.Result();
+
+    ASSERT_EQ(EXPECTED_RESULT, result);
+  }
+
+  
+  TEST_F(TaskTest, UnwrapWhenNestedVoidTaskThenNestedVoidTaskIsCompleted)
+  {
+    Task<Task<void>> task{[]()->Task<void>
+                    {
+                        this_thread::sleep_for(100ms);
+                        co_await GetCompletedTask();                  
+                    }};
+    task.Start();
+    auto innerTask = task.Unwrap();
+
+    innerTask.Wait();
+
+    ASSERT_EQ(TaskState::RunToCompletion,  innerTask.State());
+  }
+
+
 }

@@ -6,6 +6,28 @@ namespace RStein::AsyncCpp::Tasks
 {
   class TaskFactory
   {
+  private:
+    template <typename TFunc>
+    static auto unwrapNestedTaskRun(TFunc&& func,
+                    AsyncPrimitives::CancellationToken cancellationToken,
+                    const Schedulers::Scheduler::SchedulerPtr& scheduler)->decltype(func())
+    {
+      using Ret_Task_Type = decltype(func());
+      Task<Ret_Task_Type> outerTask{std::forward<TFunc>(func), scheduler, std::move(cancellationToken)};
+      outerTask.Start();
+
+      auto nestedTask = co_await outerTask;
+      if constexpr (decltype(nestedTask)::IsTaskReturningVoid())
+      {
+        co_await nestedTask;
+      }
+      else
+      { 
+        auto result = co_await nestedTask;
+        co_return result;
+      }
+    }
+
   public:
     template <typename TFunc>
     static auto Run(TFunc&& func)
@@ -40,9 +62,20 @@ namespace RStein::AsyncCpp::Tasks
                     const Schedulers::Scheduler::SchedulerPtr& scheduler)
     {
       using Ret_Task_Type = decltype(func());
-      Task<Ret_Task_Type> task{std::forward<TFunc>(func), scheduler, std::move(cancellationToken)};
-      task.Start();
-      return task;
+      
+      if constexpr (Task<Ret_Task_Type>::IsTaskReturningTask())
+      {
+        return TaskFactory::unwrapNestedTaskRun(std::forward<TFunc>(func),
+                                   std::move(cancellationToken),
+                                   scheduler);
+      }
+      else
+      {
+        Task<Ret_Task_Type> task{std::forward<TFunc>(func), scheduler, std::move(cancellationToken)};
+        task.Start();
+        return task;
+      }
     }
+    
   };
 }
