@@ -153,6 +153,22 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_EQ(TaskState::RunToCompletion, taskState);
   }
 
+   TEST_F(TaskTest, RunWhenReturnValueIsNestedTaskThenTaskIsUnwrapped)
+  {
+    
+     int EXPECTED_VALUE  = 10;
+    //TaskFactory detects that return value of the Run would be Task<Task<int>>
+    //and unwraps inner Task. Real return type is Task<int>.
+    Task<int> task = TaskFactory::Run([value = EXPECTED_VALUE]()->Task<int>
+    {
+      co_await GetCompletedTask();
+      co_return value;
+    });
+
+    auto taskValue = task.Result();
+    ASSERT_EQ(EXPECTED_VALUE, taskValue);
+  }
+
    struct TestValue
    {
    };

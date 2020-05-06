@@ -45,6 +45,16 @@ namespace RStein::AsyncCpp::Tasks
        }
     };
 
+    constexpr static bool IsTaskReturningTask()
+    {
+      return is_task_returning_nested_task<TResult>::value;
+    }
+
+    constexpr static bool IsTaskReturningVoid()
+    {
+      return std::is_same<Ret_Type, void>::value;
+    }
+    
     template<typename TFunc>
     explicit Task(TFunc func) : Task{std::move(func),
                                      Schedulers::Scheduler::DefaultScheduler(),
@@ -54,11 +64,10 @@ namespace RStein::AsyncCpp::Tasks
 
     template<typename TFunc>
     Task(TFunc func, AsyncPrimitives::CancellationToken cancellationToken) : Task
-                                                                                                        {
-                                                                                                          std::move(func),
-                                                                                                          Schedulers::Scheduler::DefaultScheduler(),
-                                                                                                          std::move(cancellationToken),
-                                                                                                        }
+                                                                              {
+                                                                            std::move(func),
+                                                                            Schedulers::Scheduler::DefaultScheduler(),
+                                                                            std::move(cancellationToken)}
   
     {
     }

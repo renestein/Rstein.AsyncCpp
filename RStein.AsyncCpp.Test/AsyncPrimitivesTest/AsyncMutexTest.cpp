@@ -119,9 +119,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
         };
 
       std::vector<Task<void>> tasks;
-
-      //Keep Task with coroutine func alive!!!
-      std::vector<Task<Task<void>>> outerTasks;
+    
       auto testFunc = [dataHolder=dataHolder]()-> Task<void>
         {
           co_await dataHolder.StartTasksTcs->GetTask();
@@ -142,10 +140,10 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       for (int i = 0; i < tasksCount; ++i)
       {
         
-        auto outerTask = TaskFactory::Run(testFunc);
-        outerTasks.push_back(outerTask);
-        auto innerTask = co_await outerTask;
-        tasks.push_back(innerTask);
+        auto task = TaskFactory::Run(testFunc);
+        //outerTasks.push_back(outerTask);
+        //auto innerTask = co_await outerTask;
+        tasks.push_back(task);
       }      
 
       startTasksTcs.TrySetResult();
