@@ -1,13 +1,26 @@
 #pragma once
-#include <cassert>
-#include <functional>
 namespace RStein::Functional
 {
+  template<typename TResult>
+  struct DefaultValueCreator
+  {
+    TResult operator()()
+    {
+      return TResult{};
+    }
+  };
+
+  template <typename TResult>
+  struct Result_Traits
+  {
+    using Result_Type = TResult;
+    using Default_Value_Func = DefaultValueCreator<TResult>;
+  };
+  
   //Not thread safe
   template<typename TCallable>
   auto Memoize0(TCallable&& originalFunc)
-  {
-    assert(originalFunc != nullptr);
+  {    
     using Ret_Type = decltype(originalFunc());
     if constexpr (std::is_reference_v<Ret_Type>)
     {
@@ -25,7 +38,7 @@ namespace RStein::Functional
     }
     else
     {
-      return [originalFunc = std::forward<TCallable>(originalFunc), retTaskType = Ret_Type(), wasMethodCalled = false]() mutable
+      return [originalFunc = std::forward<TCallable>(originalFunc), retTaskType = typename Result_Traits<Ret_Type>::Default_Value_Func{} (), wasMethodCalled = false]() mutable
       {
         if (!wasMethodCalled)
         {
