@@ -17,7 +17,7 @@ variables:
 
 steps:
 - script: |
-    vcpkg install gtest-x64
+    vcpkg install gtest:x64
     vcpkg integrate install
   displayName: vcpkg
 
