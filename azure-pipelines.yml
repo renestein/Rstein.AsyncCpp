@@ -13,11 +13,11 @@ pool:
 variables:
   solution: '**/*.sln'
   buildPlatform: 'x64'
-  buildConfiguration: 'debug'
+  buildConfiguration: 'release'
 
 steps:
 - script: |
-    vcpkg install gtest
+    vcpkg install gtest-x64
     vcpkg integrate install
   displayName: vcpkg
 
