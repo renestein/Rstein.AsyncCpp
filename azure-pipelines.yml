@@ -16,6 +16,18 @@ variables:
   buildConfiguration: 'debug'
 
 steps:
+- script: |
+    vcpkg install gtest
+    vcpkg integrate install
+  displayName: vcpkg
+
+- task: NuGetToolInstaller@0
+  displayName: 'Nuget - Install'
+
+- task: NuGetCommand@2
+  displayName: 'Nuget - Restore Packages'
+  inputs:
+    restoreSolution: '$(solution)'
 
 - task: VSBuild@1
   inputs:
@@ -28,7 +40,7 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
     
-- task: CopyFiles@2
-  inputs:
-    Contents: '**\$(BuildConfiguration)\**\?(*.exe|*.dll|*.pdb)'
-    TargetFolder: 
+# - task: CopyFiles@2
+#   inputs:
+#     Contents: '**\$(BuildConfiguration)\**\?(*.exe|*.dll|*.pdb)'
+#     TargetFolder: 
