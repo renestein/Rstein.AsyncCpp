@@ -43,7 +43,7 @@ steps:
 - task: CmdLine@2
   displayName: 'Google Test  - run tests'
   inputs:
-    script: '$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)\RStein.AsyncCpp.Test.exe -gtest_output="xml:$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)\"'
+    script: '$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)\RStein.AsyncCpp.Test.exe --gtest_output="xml:$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)\RStein.AsyncCpp.Test.xml"'
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'JUnit'
