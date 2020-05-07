@@ -40,11 +40,16 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: VSTest@2
+- task: CmdLine@2
+  displayName: 'Google Test  - run tests'
   inputs:
-    testSelector: 'testAssemblies'
-    testAssemblyVer2: '**\RStein.AsyncCpp.Test.exe'
-    searchFolder: '$(System.DefaultWorkingDirectory)'
+    script: '$(Build.ArtifactStagingDirectory)\RStein.AsyncCpp.Test.exe  -gtest_output="googletest.xml"'
+
+# - task: VSTest@2
+#   inputs:
+#     testSelector: 'testAssemblies'
+#     testAssemblyVer2: '**\RStein.AsyncCpp.Test.exe'
+#     searchFolder: '$(System.DefaultWorkingDirectory)'
 # - task: VSTest@2
 #   inputs:
 #     platform: '$(buildPlatform)'
