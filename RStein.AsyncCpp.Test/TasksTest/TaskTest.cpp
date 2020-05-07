@@ -928,5 +928,45 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_EQ(TaskState::RunToCompletion,  innerTask.State());
   }
 
+  TEST_F(TaskTest, FJoinWhenNestedTaskThenReturnsNestedTaskWithExpectedValue)
+  {
+    const int EXPECTED_RESULT = 42;
 
+    Task<Task<int>> task{[value=EXPECTED_RESULT]()->Task<int>
+                    {
+                        co_await GetCompletedTask();
+                        co_return value;
+                    }};
+    task.Start();
+    auto innerTask = Fjoin(task);
+
+    auto result = innerTask.Result();
+
+   ASSERT_EQ(EXPECTED_RESULT, result);
+  }
+
+  
+  TEST_F(TaskTest, PipeOperatorWhenUsingJoinThenReturnsExpectedResult)
+  {
+    const int initialValue= 10;
+    const string EXPECTED_VALUE  = "5";
+    auto initialTask = TaskFromResult(initialValue);
+    auto mappedTask = initialTask 
+                       | Fbind([](auto value) {return TaskFromResult(value * 2);})
+    //Wrap Task<Task<int>>
+                       | Fmap([](auto value) {return TaskFromResult(value / 4);})
+    //Unwrap Task<Task<int>> -> Task<int>
+                       | Fjoin()
+    //Wrap Task<int> -> Task<Task<int>>
+                       | Fmap([](auto value) {return TaskFromResult(value);})
+    //Wrap Task<Task<int>> -> Task<Task<Task<int>>>
+                       | Fmap([](auto value) {return TaskFromResult(value);})
+    //Unwrap Task<Task<Task<int>>> -> Task<Task<int>>
+                       | Fjoin()
+    //Unwrap  Task<Task<int>> -> Task<int>
+                       | Fjoin()
+                       | Fbind([](auto value) {return TaskFromResult(to_string(value));});
+
+    ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
+  }
 }

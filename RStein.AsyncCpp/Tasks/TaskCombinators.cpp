@@ -14,4 +14,9 @@ namespace RStein::AsyncCpp::Tasks
     /*static Task<void> _completedTask = getCompletedTask();*/
     return getCompletedTask();
   }
+
+  Detail::FjoinPlaceholder Fjoin()
+  {
+    return {};
+  }
 }

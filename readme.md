@@ -44,7 +44,8 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
 
 * [`Fmap (map, Select) method for Task<T>.`](#Task-Fmap)
 * [`Fbind (bind, SelectMany, mapMany) method for Task<T> .`](#Task-Fbind)
-* [`| (pipe) operator for Fbind and FMap - simplified Task<T> composition.`](#Task-Pipe-Operator)
+* [`Fjoin (Unwrap Task<Task<T> and returns Task<T>.`](#Task-Fjoin)
+* [`| (pipe) operator for Fbind, Fmap, Fjoin- simplified Task<T> composition.`](#Task-Pipe-Operator)
 * [`Monadic laws (tests).`](#Task-Monadic-Laws)
  
  ## **Simple DataFlow**
@@ -611,6 +612,27 @@ TEST_F(TaskTest, FBindPipeOperatorWhenComposingThenReturnsExpectedResult)
     ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
   }
 ```
+
+## Task Fjoin
+```c++
+TEST_F(TaskTest, FJoinWhenNestedTaskThenReturnsNestedTaskWithExpectedValue)
+  {
+    const int EXPECTED_RESULT = 42;
+
+    Task<Task<int>> task{[value=EXPECTED_RESULT]()->Task<int>
+                    {
+                        co_await GetCompletedTask();
+                        co_return value;
+                    }};
+    task.Start();
+    auto innerTask = Fjoin(task);
+
+    auto result = innerTask.Result();
+
+   ASSERT_EQ(EXPECTED_RESULT, result);
+  }
+```
+
 ## Task Pipe Operator
 ```c++
  TEST_F(TaskTest, PipeOperatorWhenMixedComposingThenReturnsExpectedResult)
@@ -639,6 +661,34 @@ TEST_F(TaskTest, FBindPipeOperatorWhenComposingThenReturnsExpectedResult)
                        | Fbind([](auto value) {return TaskFromResult(to_string(value));});
 
     ASSERT_THROW(mappedTask.Result(), invalid_argument);
+  }
+  ```
+  
+  ```c++
+  //Fmap, Fbind, Fjoin
+ 
+  TEST_F(TaskTest, PipeOperatorWhenUsingJoinThenReturnsExpectedResult)
+  {
+    const int initialValue= 10;
+    const string EXPECTED_VALUE  = "5";
+    auto initialTask = TaskFromResult(initialValue);
+    auto mappedTask = initialTask 
+                       | Fbind([](auto value) {return TaskFromResult(value * 2);})
+    //Wrap Task<Task<int>>
+                       | Fmap([](auto value) {return TaskFromResult(value / 4);})
+    //Unwrap Task<Task<int>> -> Task<int>
+                       | Fjoin()
+    //Wrap Task<int> -> Task<Task<int>>
+                       | Fmap([](auto value) {return TaskFromResult(value);})
+    //Wrap Task<Task<int>> -> Task<Task<Task<int>>>
+                       | Fmap([](auto value) {return TaskFromResult(value);})
+    //Unwrap Task<Task<Task<int>>> -> Task<Task<int>>
+                       | Fjoin()
+    //Unwrap  Task<Task<int>> -> Task<int>
+                       | Fjoin()
+                       | Fbind([](auto value) {return TaskFromResult(to_string(value));});
+
+    ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
   }
   ```
 ## Task Monadic Laws
