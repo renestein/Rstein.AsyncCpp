@@ -15,11 +15,11 @@ class Environment : public ::testing::Environment {
   }
 };
 
-int main()
+int main(int argc, char** argv)
 {
      auto environment = new Environment;
      ::testing::AddGlobalTestEnvironment(environment);
-     ::testing::InitGoogleTest();
+     ::testing::InitGoogleTest(&argc, argv);
     RUN_ALL_TESTS();
 }
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
