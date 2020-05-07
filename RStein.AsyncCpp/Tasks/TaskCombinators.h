@@ -95,7 +95,7 @@ namespace RStein::AsyncCpp::Tasks
     return anyTcs.GetTask();   
   }
 
-  //Identity method.
+  //Unit/Return method.
   template<typename TResult>
   auto TaskFromResult(TResult taskResult)->Task<TResult>
   {
@@ -130,7 +130,15 @@ namespace RStein::AsyncCpp::Tasks
         _func = func;
       }
     };
+
+    struct FjoinPlaceholder
+    {
+      
+    };
+    
   }
+
+  
 
   Task<void> GetCompletedTask();
   
@@ -164,6 +172,14 @@ namespace RStein::AsyncCpp::Tasks
     
   }
 
+  template<typename TSource>
+  Task<TSource> Fjoin(Task<Task<TSource>> srcTask)
+  {    
+    return srcTask.Unwrap();    
+  }
+  
+  Detail::FjoinPlaceholder Fjoin();
+  
   template<typename TMapFunc>
   Detail::BindFuncHolder<TMapFunc> Fbind(TMapFunc mapFunc)
   {
@@ -188,6 +204,12 @@ namespace RStein::AsyncCpp::Tasks
   auto operator |(Task<TSource> srcTask, Detail::MapFuncHolder<TMapFunc> mapFunc)->decltype(Fmap(srcTask, mapFunc._func))
   {
     return Fmap(srcTask, mapFunc._func);
+  }
+
+  template<typename TSource>
+  auto operator| (Task<Task<TSource>> srcTask, Detail::FjoinPlaceholder _)
+  {    
+    return Fjoin(srcTask);
   }
 
 }
