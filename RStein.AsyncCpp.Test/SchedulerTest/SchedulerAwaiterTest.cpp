@@ -3,7 +3,6 @@
 #include "../../RStein.AsyncCpp/Schedulers/SimpleThreadPool.h"
 #include "../../RStein.AsyncCpp/Schedulers/ThreadPoolScheduler.h"
 #include <future>
-#include "../../RStein.AsyncCpp/AsyncPrimitives/FutureEx.h"
 #include "../../RStein.AsyncCpp/Tasks/Task.h"
 #include "../../RStein.AsyncCpp/Tasks/TaskCompletionSource.h"
 

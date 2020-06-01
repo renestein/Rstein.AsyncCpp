@@ -164,14 +164,20 @@
     <ClCompile Include="DataFlowTest\DataflowBlockTest.cpp" />
     <ClCompile Include="RStein.AsyncCpp.Test.cpp" />
     <ClCompile Include="SchedulerTest\SchedulerAwaiterTest.cpp" />
+    <ClCompile Include="SchedulerTest\SynchronizationContextSchedulerTest.cpp" />
     <ClCompile Include="TasksTest\TaskCompletionSourceTest.cpp" />
     <ClCompile Include="TasksTest\TaskPromiseTest.cpp" />
     <ClCompile Include="TasksTest\TaskTest.cpp" />
+    <ClCompile Include="Threading\SynchronizationContextScopeTest.cpp" />
+    <ClCompile Include="Threading\SynchronizationContextTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RStein.AsyncCpp\RStein.AsyncCpp.vcxproj">
       <Project>{03605c1f-427d-4aaa-8747-217cdd165a16}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Mocks\SynchronizationContextMock.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

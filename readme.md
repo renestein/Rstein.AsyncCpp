@@ -1,6 +1,6 @@
 # RStein.AsyncCpp (C++ library)
 [![Build Status](https://dev.azure.com/rene0884/RStein.AsyncCpp/_apis/build/status/renestein.Rstein.AsyncCpp?branchName=master)](https://dev.azure.com/rene0884/RStein.AsyncCpp/_build/latest?definitionId=2&branchName=master)
-- The RStein.AsyncCpp library is a set of types that should be familiar for anyone who knows the Task Parallel Library (TPL) for .NET (C#). In addition, this library contains simple DataFlow, functional combinators for the Task<T> class, useful async primitives (AsyncSemaphore, AsyncProducerConsumerCollection, CancellationToken, CancellationTokenSource, AsyncMutex ...).
+- The RStein.AsyncCpp library is a set of types that should be familiar for anyone who knows the Task Parallel Library (TPL) for .NET (C#). In addition, this library contains simple DataFlow, functional combinators for the Task<T> class, useful async primitives (AsyncSemaphore, AsyncProducerConsumerCollection, CancellationToken, CancellationTokenSource, AsyncMutex, SynchronizationContext, SynchronizationContextScope ...).
 
 - The library is my playground for testing coroutine support in C++.
 - The library supports compilation in the VS 2019. Support for other compilers is planned.
@@ -58,6 +58,8 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
  * [`AsyncSemaphore - asynchronous variant of the Semaphore synchronization primitive.`](#AsyncSemaphore)
  * [`CancellationTokensource and CancellationToken - types used for the cooperative cancellation.`](#CancellationToken)
  * [`AsyncMutex` - asynchronous variant of the mutex synchronization primitive.](#AsyncMutex)
+ * [`SynchronizationContext` - provides a mechanism to queue work to a specialized context. (useful for marshaling calls to UI thread, event loop etc.)](#SynchronizationContext)
+ * [`SynchronizationContextScope` - RAII class for SynchronizationContext. Instance of this class captures current synchronization context in constructor (now 'old' context), installs new synchronization context provided by the user and restores 'old' synchronization context in destructor.)](#SynchronizationContextScope)
 
   ## TaskFactory Run
   Create Task<T> using the TaskFactory (uses default scheduler - ThreadPoolScheduler).
@@ -1005,4 +1007,89 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
       co_return items.size();
     }
  ```
- 
+
+ ## SynchronizationContext
+ ``` C++
+ using UiSynchronizationContext = Mocks::TestSynchronizationContextMock;
+
+  TEST(Scheduler, FromSynchronizationContextReturnsSchedulerBasedOnSynchronizationContext)
+  {
+    //Assume that this is a special (non-default) synchronization context  - UI context, event loop, dedicated service thread...
+    UiSynchronizationContext uicontext;
+    
+    //UI framework/Specialized service installs special context.
+
+    Threading::SynchronizationContext::SetSynchronizationContext(&uicontext);
+    auto myCompletionHandler = []
+    {
+      //UI controls like textbox expects access from the UI thread.
+      //textbox.Text = GetAsyncResult();
+      
+    };
+
+    //UI framework/Specialized service calls infrastructure code (e. g. async processor)
+    //asyncProcessor.Run(heavyWorkForBackgroundThread, myCompletionHandler);
+   
+    //Another part of the application, typically infrastructure code (e. g. async processor) captures synchronization context for calling thread and wraps it in scheduler.  
+
+    auto callingThreadScheduler = Schedulers::Scheduler::FromCurrentSynchronizationContext();
+    auto clientHandler = myCompletionHandler;
+    //Async processor executes async work, possibly in another thread (task, scheduler).
+
+    //[time passed...]
+
+    //Async processor completes work in another thread and then invokes clientHandler in the UI synchronization context.
+    callingThreadScheduler->EnqueueItem(clientHandler);
+
+    ASSERT_TRUE(uicontext.WasPostCalled());
+  }
+}
+ ```
+## SynchronizationContextScope
+``` C++
+  TEST(SynchronizationContextScope, DtorWhenCalledThenOldContextIsRestored)
+  {
+
+    auto oldContext = SynchronizationContext::Current();
+    TestSynchronizationContextMock synchronizationContextMock;         
+    {
+      //synchronizationContextMock is the SynchronizationContext::Current()
+      SynchronizationContextScope syncScope(synchronizationContextMock);
+      SynchronizationContext::Current()->Post([]{});
+      SynchronizationContext::Current()->Send([]{});
+    } //synchronizationContextMock is removed and previous context is restored
+
+    auto restoredContext = SynchronizationContext::Current();
+    
+    ASSERT_EQ(oldContext, restoredContext);
+
+  }
+```
+``` C++
+//Nesting synchronization contexts
+
+  TEST(SynchronizationContextScope, CtorWhenNestedScopeThenNestedContextIsUsed)
+  {
+
+    TestSynchronizationContextMock synchronizationContextMock;
+    TestSynchronizationContextMock nestedSynchronizationContextMock;
+
+    {
+    //synchronizationContextMock is the SynchronizationContext::Current()      
+      SynchronizationContextScope syncScope(synchronizationContextMock);
+      {
+        //nestedSynchronizationContextMock is the SynchronizationContext::Current()
+        SynchronizationContextScope nestedSyncScope(nestedSynchronizationContextMock);
+        SynchronizationContext::Current()->Post([]{});
+        SynchronizationContext::Current()->Send([]{});
+      }//nestedSynchronizationContextMock is removed and synchronizationContextMock is restored.
+
+    } //synchronizationContextMock is removed and previous context is restored
+    
+    ASSERT_TRUE(nestedSynchronizationContextMock.WasPostCalled());
+    ASSERT_TRUE(nestedSynchronizationContextMock.WaSendCalled());
+    ASSERT_FALSE(synchronizationContextMock.WaSendCalled());
+    ASSERT_FALSE(synchronizationContextMock.WasPostCalled());
+
+  }
+```
