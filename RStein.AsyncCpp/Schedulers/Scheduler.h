@@ -25,6 +25,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler>
     static SchedulerPtr DefaultScheduler();
     static void StopDefaultScheduler();
     static SchedulerPtr CurrentScheduler();
+    static SchedulerPtr FromCurrentSynchronizationContext();
 	  virtual void Start() = 0;
 	  virtual void Stop() = 0;
 

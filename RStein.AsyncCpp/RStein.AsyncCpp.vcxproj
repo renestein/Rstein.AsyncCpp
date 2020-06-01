@@ -184,10 +184,12 @@
     <ClCompile Include="Schedulers\StrandSchedulerDecorator.cpp" />
     <ClCompile Include="Schedulers\ThreadPoolScheduler.cpp" />
     <ClCompile Include="Detail\Tasks\TaskHelpers.cpp" />
+    <ClCompile Include="Threading\SynchronizationContext.cpp" />
     <ClCompile Include="Tasks\Task.cpp" />
     <ClCompile Include="Tasks\TaskCombinators.cpp" />
     <ClCompile Include="Tasks\TaskCompletionSource.cpp" />
     <ClCompile Include="Tasks\TaskFactory.cpp" />
+    <ClCompile Include="Threading\SynchronizationContextScope.cpp" />
     <ClCompile Include="Utils\Disposable.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -222,11 +224,13 @@
     <ClInclude Include="Schedulers\StrandSchedulerDecorator.h" />
     <ClInclude Include="Schedulers\ThreadPoolScheduler.h" />
     <ClInclude Include="Detail\Tasks\TaskHelpers.h" />
+    <ClInclude Include="Threading\SynchronizationContext.h" />
     <ClInclude Include="Tasks\Task.h" />
     <ClInclude Include="Tasks\TaskCombinators.h" />
     <ClInclude Include="Tasks\TaskCompletionSource.h" />
     <ClInclude Include="Tasks\TaskFactory.h" />
     <ClInclude Include="Tasks\TaskState.h" />
+    <ClInclude Include="Threading\SynchronizationContextScope.h" />
     <ClInclude Include="Utils\Disposable.h" />
     <ClInclude Include="Utils\FinallyBlock.h" />
   </ItemGroup>

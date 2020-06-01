@@ -2,10 +2,12 @@
 
 #include "SimpleThreadPool.h"
 #include "ThreadPoolScheduler.h"
+#include "../Threading/SynchronizationContext.h"
 #include "../Utils/FinallyBlock.h"
 
 #include <experimental/coroutine>
 #include <algorithm>
+#include <cassert>
 
 using namespace std;
 using namespace RStein::Utils;
@@ -49,6 +51,7 @@ namespace RStein::AsyncCpp::Schedulers
     return _currentScheduler;
   }
 
+
   bool Scheduler::await_ready() const
   {
     return false;
@@ -63,4 +66,58 @@ namespace RStein::AsyncCpp::Schedulers
   void Scheduler::await_resume() const
   {
   }
+
+  class SynchronizationContextScheduler : public Scheduler
+  {
+    public:
+
+    SynchronizationContextScheduler(Threading::SynchronizationContext* synchronizationContext): _synchronizationContext(synchronizationContext)
+    {
+      if (!synchronizationContext)
+      {
+        throw invalid_argument("synchronizationContext");
+      }
+    }
+
+    SynchronizationContextScheduler(const SynchronizationContextScheduler& other) = delete;
+
+    SynchronizationContextScheduler(SynchronizationContextScheduler&& other) noexcept = delete;
+
+    SynchronizationContextScheduler& operator=(const SynchronizationContextScheduler& other) = delete;
+
+    SynchronizationContextScheduler& operator=(SynchronizationContextScheduler&& other) noexcept = delete;
+    ~SynchronizationContextScheduler() = default;
+    void Start() override
+    {
+      
+    }
+    void Stop() override
+    {
+      
+    }
+    bool IsMethodInvocationSerialized() const override
+    {
+      return false;
+    };
+
+  protected:
+    void OnEnqueueItem(std::function<void()>&& originalFunction) override
+    {
+      assert(_synchronizationContext);
+      _synchronizationContext->Post(std::move(originalFunction));
+    }
+
+  private:
+    Threading::SynchronizationContext* _synchronizationContext;
+  };
+
+  Scheduler::SchedulerPtr Scheduler::FromCurrentSynchronizationContext()
+  {
+    auto* synchronizationContext = Threading::SynchronizationContext::Current();
+    assert(synchronizationContext != nullptr);
+    SchedulerPtr scheduler = make_shared<SynchronizationContextScheduler>(synchronizationContext);
+    scheduler->Start();
+    return scheduler;
+  }
+  
 }
