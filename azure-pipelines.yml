@@ -11,28 +11,28 @@ strategy:
   matrix:
       x64-release:
         variables:
-          buildPlatform: 'x64'
-          buildConfiguration: 'release'
+          buildPlatform: x64
+          buildConfiguration: release
       x64-debug:
         variables:
-          buildPlatform: 'x64'
-          buildConfiguration: 'debug'
+          buildPlatform: x64
+          buildConfiguration: debug
       x86-release:
         variables:
-          buildPlatform: 'x86'
-          buildConfiguration: 'release'
+          buildPlatform: x86
+          buildConfiguration: release
       x86-debug:
         variables:
-          buildPlatform: 'x86'
-          buildConfiguration: 'debug'
+          buildPlatform: x86
+          buildConfiguration: debug
 
 pool:
   vmImage: 'windows-latest'
 
 variables:
   solution: '**/*.sln'
-  # buildPlatform: 'x64'
-  # buildConfiguration: 'release'
+  buildPlatform: $(buildPlatform)
+  buildConfiguration: $(buildConfiguration)
 
 steps:
 - script: |
