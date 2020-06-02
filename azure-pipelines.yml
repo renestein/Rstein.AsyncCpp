@@ -10,19 +10,15 @@ trigger:
 strategy:
   matrix:
       x64-release:
-        variables:
           buildPlatform: x64
           buildConfiguration: release
       x64-debug:
-        variables:
           buildPlatform: x64
           buildConfiguration: debug
       x86-release:
-        variables:
           buildPlatform: x86
           buildConfiguration: release
-      x86-debug:
-        variables:
+      x86-debug:        
           buildPlatform: x86
           buildConfiguration: debug
 
