@@ -326,7 +326,7 @@ namespace RStein::AsyncCpp::Detail
     {
       if (node)
       {
-        co_await node->AcceptInputAsync(outputItem);
+        co_await node->AcceptInputAsync(outputItem).ConfigureAwait(false);
       }
     }
   }
@@ -341,13 +341,13 @@ namespace RStein::AsyncCpp::Detail
     {
       TState state{};
       auto statePtr = &state;     
-      co_await _startTask;
+      co_await _startTask.ConfigureAwait(false);
       TInputItem inputItem;
       while (!cancellationToken.IsCancellationRequested())
       {
         try
         {
-          inputItem = co_await _inputItems.TakeAsync(cancellationToken);
+          inputItem = co_await _inputItems.TakeAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (RStein::AsyncCpp::AsyncPrimitives::OperationCanceledException&)
         {
@@ -355,7 +355,7 @@ namespace RStein::AsyncCpp::Detail
         }
 
         auto outputItem = _isAsyncNode
-          ? co_await _transformAsyncFunc(inputItem, statePtr)
+          ? co_await _transformAsyncFunc(inputItem, statePtr).ConfigureAwait(false)
           : _transformSyncFunc(inputItem, statePtr);
 
         propagateOutput(outputItem);
@@ -366,7 +366,7 @@ namespace RStein::AsyncCpp::Detail
       for (auto& item : toProcessInputItems)
       {
         auto outputRemainingItem = _isAsyncNode
-          ? co_await _transformAsyncFunc(item, statePtr)
+          ? co_await _transformAsyncFunc(item, statePtr).ConfigureAwait(false)
           : _transformSyncFunc(item, statePtr);
 
         propagateOutput(outputRemainingItem);

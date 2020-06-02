@@ -30,6 +30,12 @@ The Task class represents the result of the execution of the one (usually asynch
 * [`TaskFromException method - creates a completed instance of the Task<T> with the specified exception.`](#TaskFromException)
 
 * [`TaskFromCanceled method - creates a completed instance of the Task<T> in the Canceled state.`](#TaskFromCanceled)
+
+* [`ConfigureAwait method - configures if the 'co_await continuation' is resumed in the specific synchronization context. See also the SynchronizationContext class below.`](#ConfigureAwait)
+
+* [`GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior configuration key - set the key to true if you want to enforce the equivalent of the 'co_await someTask.ConfigureAwait(false)' for all 'co_await someTask{anything}' expressions in the application - synchronization context is then never used when resuming the 'co_await continuation'`](#GlobalTaskSettings-UseOnlyConfigureAwaitFalseBehavior)
+
+
   
   ## **TaskCompletionSource&lt;T&gt;.** 
   The TaskCompletionSource class explicitly controls the state and result of the Task that is provided to the consumer. TaskCompletionSource has relation to the Task class similar to the relation which exists between std::future and std::promise types. This class is very useful in situations when you call to a library that uses different asynchronous pattern and you would like to use only the Task class in your API. Different asynchronous patterns can be simply converted to the Task-based world using the TaskCompletionSource.
@@ -457,6 +463,116 @@ TEST_F(TaskTest, WaitAnyWhenSecondTaskCompletedThenReturnsIndex1)
     ASSERT_EQ(EXPECTED_TASK_VALUE, taskResult);
   }
 ```
+# ConfigureAwait
+```c++
+//ConfigureAwait(false) ignores SynchronizationContext
+
+
+  TEST_F(TaskTest,
+         ConfigureAwaitWhenNonDefaultContextAndNotRunContinuationInContextThenContinuationNotRunInSynchronizationContext)
+  {
+    auto continuationRunOnCapturedContext =
+        ConfigureAwaitWhenNonDefaultContextAndNotRunContinuationInContextThenContinuationNotRunInSynchronizationContextImpl().Result();
+
+    ASSERT_FALSE(continuationRunOnCapturedContext);
+  }
+
+
+ Task<bool> ConfigureAwaitWhenNonDefaultContextAndNotRunContinuationInContextThenContinuationNotRunInSynchronizationContextImpl()
+    {
+
+      TestSynchronizationContextMock mockSyncContext;
+      
+      //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
+      {
+        //Install specific synchronization context
+        SynchronizationContextScope scs(mockSyncContext);
+        //[...] Irrelevant code
+        co_await TaskFactory::Run([]
+        {
+          return 42;
+          //Ignore synchronization context
+        }).ConfigureAwait(false);
+
+      }
+      co_return mockSyncContext.WasPostCalled();
+    }
+```
+## GlobalTaskSettings-UseOnlyConfigureAwaitFalseBehavior
+
+```c++
+
+class GlobalTaskSettings
+{
+public:
+  /// <summary>
+  /// If the key has the value false (default) and SynchronizationContext.Current() returns default ('none')
+  /// synchronization context when the 'co_await someTask' expression is reached,
+  /// then 'co_await continuation' is resumed in the captured synchronization context.
+  /// This is a good default behavior for applications that uses special synchronization context - for example synchronization context for the UI thread.
+  /// It is possible to override this behavior on a per case basis using the 'co_await someTask.ConfigureAwait(false)' instead of the 'co_await someTask'.
+  /// Set the key to true if you want to globally disable this behavior.
+  /// In other words, setting this value to true causes that synchronization context is always ignored and resumed 
+  /// 'co_await continuation' is scheduled using the scheduler returned from the Scheduler::DefaultScheduler() method.
+  /// The program then behaves as if every 'co_await someTask'expression (and also 'co_await someTask.ConfigureAwait(true)'!)
+  /// expression has the form 'co_await task.ConfigureAwait(false)'.
+  /// </summary>
+  /// <remarks>
+  /// The value of the key is irrelevant for an application that does not use own synchronization context.
+  /// Also, the value of the key is irrelevant for continuations registered using the Task.ContinueWith method.
+  /// </remarks>
+  inline static int UseOnlyConfigureAwaitFalseBehavior = false;
+[...]
+}
+
+```
+
+```c++
+
+  TEST_F(TaskTest,
+         ConfigureAwaitWhenNonDefaultContextAndNotRunContinuationInContextThenContinuationNotRunInSynchronizationContext)
+  {
+    auto continuationRunOnCapturedContext =
+        ConfigureAwaitWhenNonDefaultContextAndNotRunContinuationInContextThenContinuationNotRunInSynchronizationContextImpl().Result();
+
+    ASSERT_FALSE(continuationRunOnCapturedContext);
+  }
+
+  
+    Task<bool> ConfigureAwaitWhenNonDefaultContextAndNotRunContinuationInContextThenContinuationNotRunInSynchronizationContextImpl()
+    {
+      TestSynchronizationContextMock mockSyncContext;
+
+      //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
+      {
+        //Specifixc 
+        SynchronizationContextScope scs(mockSyncContext);
+
+        //Restore default behavior after test
+        Utils::FinallyBlock finally
+        {
+            []
+            {
+              GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
+            }
+        };
+
+
+        GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
+
+        co_await TaskFactory::Run([]
+        {
+          return 42;
+        }).ConfigureAwait(false);
+      }
+      co_return mockSyncContext.WasPostCalled();
+    }
+
+
+```
+
+## TaskCompletionSource SetResult
+
 ```c++
 
   // Trying to set already completed TaskCompletionSource throws logic_error.

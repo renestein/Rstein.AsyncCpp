@@ -1,7 +1,10 @@
 #pragma once
+#include "GlobalTaskSettings.h"
 #include "../AsyncPrimitives/CancellationToken.h"
 #include "TaskState.h"
 #include "../Detail/Tasks/TaskHelpers.h"
+#include "../Threading/SynchronizationContext.h"
+
 
 #include <any>
 #include <exception>
@@ -120,28 +123,49 @@ namespace RStein::AsyncCpp::Tasks
     std::exception_ptr Exception() const;
 
     auto operator co_await() const
+    {           
+      return ConfigureAwait(!Threading::SynchronizationContext::Current()->IsDefault());      
+    }
+
+    auto ConfigureAwait(bool continueOnCapturedContext) const
     {
-      struct TaskAwaiter
+      struct SyncContextAwareTaskAwaiter
       {
          Task<TResult> _task;
+         bool _continueOnCapturedContext;
 
-         TaskAwaiter(Task<TResult> task): _task(task)
+         SyncContextAwareTaskAwaiter(Task<TResult> task, bool continueOnCapturedContext): _task(task),
+                                                                                          _continueOnCapturedContext(continueOnCapturedContext)
          {
            
          }
 
          [[nodiscard]] bool await_ready() const
          {
-           return _task.IsCompleted();
+           return !GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse && _task.IsCompleted();
          }
 
         [[nodiscard]] bool await_suspend(std::experimental::coroutine_handle<> continuation)
         {
-          if (_task.IsCompleted())
+          if (!GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse && _task.IsCompleted())
           {
             return false;
           }
-          _task.ContinueWith([continuation=continuation](const auto& _) {continuation();});
+           auto syncContext = Threading::SynchronizationContext::Current();
+           if (GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior ||
+             !_continueOnCapturedContext ||
+             syncContext->IsDefault())
+           {
+             _task.ContinueWith([continuation=continuation](const auto& _) {continuation();});
+           }
+           else
+           {
+             _task.ContinueWith([continuation=continuation, syncContext](const auto& _)
+             {
+               syncContext->Post(continuation);
+             });
+           }
+
            return true;
         }
 
@@ -159,11 +183,9 @@ namespace RStein::AsyncCpp::Tasks
         }
       };
 
-      TaskAwaiter awaiter{*this};
+      SyncContextAwareTaskAwaiter awaiter{*this, continueOnCapturedContext};
       return awaiter;
-
     }
-
     template<typename TResultCopy=TResult>
     std::enable_if_t<is_task_returning_nested_task_v, TResultCopy> Unwrap()
     {
