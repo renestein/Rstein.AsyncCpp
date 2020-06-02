@@ -32,7 +32,7 @@ variables:
 
 steps:
 - script: |
-    vcpkg install gtest:x64-windows
+    vcpkg install gtest:$(buildPlatform)-windows
     vcpkg integrate install
   displayName: vcpkg
 
