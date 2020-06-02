@@ -24,7 +24,7 @@ namespace RStein::AsyncCpp::DataFlow
                                                                                   std::enable_shared_from_this<ActionBlock<TInputItem, TState>>{},
                                                                                   _innerBlock{std::make_shared<InnerDataFlowBlock>([actionFunc](const TInputItem& inputItem, TState*& state) ->Tasks::Task<Detail::NoOutput>
                                                                                               {
-                                                                                                co_await actionFunc(inputItem, state);
+                                                                                                co_await actionFunc(inputItem, state).ConfigureAwait(false);
                                                                                                 co_return Detail::NoOutput::Default();
                                                                                               },
                                                                                               canAcceptFunc)}

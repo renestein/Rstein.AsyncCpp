@@ -16,14 +16,14 @@ namespace RStein::AsyncCpp::Tasks
       Task<Ret_Task_Type> outerTask{std::forward<TFunc>(func), scheduler, std::move(cancellationToken)};
       outerTask.Start();
 
-      auto nestedTask = co_await outerTask;
+      auto nestedTask = co_await outerTask.ConfigureAwait(false);
       if constexpr (decltype(nestedTask)::IsTaskReturningVoid())
       {
-        co_await nestedTask;
+        co_await nestedTask.ConfigureAwait(false);
       }
       else
       { 
-        auto result = co_await nestedTask;
+        auto result = co_await nestedTask.ConfigureAwait(false);
         co_return result;
       }
     }

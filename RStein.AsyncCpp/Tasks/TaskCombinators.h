@@ -25,7 +25,7 @@ namespace RStein::AsyncCpp::Tasks
     {
       try
       {
-        co_await task;
+        co_await task.ConfigureAwait(false);
       }
       catch (...) 
       {
@@ -39,8 +39,8 @@ namespace RStein::AsyncCpp::Tasks
                           const TTaskSecond& task2,
                           TTaskRest&&... tasksRest)
     {
-      co_await awaitTask(exceptions, task);
-      co_await awaitTask(exceptions, task2, std::forward<TTaskRest>(tasksRest)...);
+      co_await awaitTask(exceptions, task).ConfigureAwait(false);;
+      co_await awaitTask(exceptions, task2, std::forward<TTaskRest>(tasksRest)...).ConfigureAwait(false);;
     }
 
     template <typename TTask>
@@ -68,7 +68,7 @@ namespace RStein::AsyncCpp::Tasks
   {
     std::vector<std::exception_ptr> exceptions;
 
-    co_await Detail::awaitTask(exceptions, std::forward<TTask>(tasks)...);
+    co_await Detail::awaitTask(exceptions, std::forward<TTask>(tasks)...).ConfigureAwait(false);
 
     if (!exceptions.empty())
     {
@@ -162,13 +162,13 @@ namespace RStein::AsyncCpp::Tasks
   template<typename TSource, typename TMapFunc>
   auto Fmap(Task<TSource> srcTask, TMapFunc mapFunc)->Task<decltype(mapFunc(srcTask.Result()))>
   {    
-    co_return mapFunc(co_await srcTask);
+    co_return mapFunc(co_await srcTask.ConfigureAwait(false));
   }
 
   template<typename TSource, typename TMapFunc>
   auto Fbind(Task<TSource> srcTask, TMapFunc mapFunc)->Task<decltype(mapFunc(srcTask.Result()).Result())>
   {    
-    co_return co_await mapFunc(co_await srcTask);
+    co_return co_await mapFunc(co_await srcTask).ConfigureAwait(false);
     
   }
 

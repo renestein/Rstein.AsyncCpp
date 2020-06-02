@@ -2,9 +2,14 @@
 #include "../../RStein.AsyncCpp/AsyncPrimitives/OperationCanceledException.h"
 #include "../../RStein.AsyncCpp/Schedulers/SimpleThreadPool.h"
 #include "../../RStein.AsyncCpp/Schedulers/ThreadPoolScheduler.h"
+#include "../../RStein.AsyncCpp/Tasks/GlobalTaskSettings.h"
 #include "../../RStein.AsyncCpp/Tasks/Task.h"
 #include "../../RStein.AsyncCpp/Tasks/TaskCombinators.h"
 #include "../../RStein.AsyncCpp/Tasks/TaskFactory.h"
+#include "../../RStein.AsyncCpp/Threading/SynchronizationContextScope.h"
+#include "../../RStein.AsyncCpp/Utils/FinallyBlock.h"
+#include "../Mocks/SynchronizationContextMock.h"
+
 #include <gtest/gtest.h>
 #include <future>
 #include <string>
@@ -13,6 +18,9 @@ using namespace testing;
 using namespace RStein::AsyncCpp::Tasks;
 using namespace RStein::AsyncCpp::AsyncPrimitives;
 using namespace RStein::AsyncCpp::Schedulers;
+using namespace RStein::AsyncCpp::Threading;
+using namespace RStein::AsyncCpp::Mocks;
+
 using namespace std;
 
 namespace RStein::AsyncCpp::TasksTest
@@ -39,6 +47,7 @@ namespace RStein::AsyncCpp::TasksTest
       {
         return expectedValue;
       });
+
       co_return result;
     }
 
@@ -122,19 +131,161 @@ namespace RStein::AsyncCpp::TasksTest
       co_return taskIndex;
     }
 
-    Task<Scheduler::SchedulerPtr> RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFuncImpl(Scheduler::SchedulerPtr taskScheduler)
+    Task<Scheduler::SchedulerPtr> RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFuncImpl(
+        Scheduler::SchedulerPtr taskScheduler)
     {
-
       auto task = TaskFactory::Run([]
-                  {
-                    //capture used scheduler
-                    return Scheduler::CurrentScheduler();
-                    
-                  },
-                  //run on explicit scheduler
-                 taskScheduler);
+                                   {
+                                     //capture used scheduler
+                                     return Scheduler::CurrentScheduler();
+                                   },
+                                   //run on explicit scheduler
+                                   taskScheduler);
 
       co_return co_await task;
+    }
+
+    Task<bool> AwaitWhenNonDefaultContextThenContinuationRunInSynchronizationContextImpl()
+    {
+      TestSynchronizationContextMock mockSyncContext;
+
+      //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
+      {
+        SynchronizationContextScope scs(mockSyncContext);
+
+        Utils::FinallyBlock finally
+        {
+            []
+            {
+              GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
+            }
+        };
+
+        GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
+        //Task continuation uses captured non-default synchronization context
+        co_await TaskFactory::Run([]
+        {
+          return 42;
+        });
+      }
+
+      co_return mockSyncContext.WasPostCalled();
+    }
+
+
+    Task<bool>
+    ConfigureAwaitWhenNonDefaultContextAndRunContinuationInContextThenContinuationRunInSynchronizationContextImpl()
+    {
+      TestSynchronizationContextMock mockSyncContext;
+      //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
+      {
+        SynchronizationContextScope scs(mockSyncContext);
+
+        Utils::FinallyBlock finally
+        {
+            []
+            {
+              GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
+            }
+        };
+
+        GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
+
+        //Task continuation uses captured non-default synchronization context
+        co_await TaskFactory::Run([]
+        {
+          return 42;
+        }).ConfigureAwait(true);
+      }
+
+      co_return mockSyncContext.WasPostCalled();
+    }
+
+
+    Task<bool> ConfigureAwaitWhenNonDefaultContextAndNotRunContinuationInContextThenContinuationNotRunInSynchronizationContextImpl()
+    {
+      TestSynchronizationContextMock mockSyncContext;
+
+      //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
+      {
+        SynchronizationContextScope scs(mockSyncContext);
+
+        Utils::FinallyBlock finally
+        {
+            []
+            {
+              GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
+            }
+        };
+
+        GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
+
+        co_await TaskFactory::Run([]
+        {
+          return 42;
+        }).ConfigureAwait(false);
+      }
+      co_return mockSyncContext.WasPostCalled();
+    }
+
+
+    Task<bool>
+    ConfigureAwaitWhenNonDefaultContextAndCaptureArgTrueAndCaptureContextGloballyDisabledThenContinuationNotRunInSynchronizationContextImpl()
+    {
+      TestSynchronizationContextMock mockSyncContext;
+      auto oldDisableSyncContextUseValue = GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior;
+      //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
+      {
+        Utils::FinallyBlock finally{
+            [oldDisableSyncContextUseValue]
+            {
+              GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
+              GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior = oldDisableSyncContextUseValue;
+            }
+        };
+
+        GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
+        GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior = true;
+        SynchronizationContextScope scs(mockSyncContext);
+
+        co_await TaskFactory::Run([]
+        {
+          return 42;
+        }).ConfigureAwait(true);
+      }
+
+      co_return mockSyncContext.WasPostCalled();
+    }
+
+
+    Task<bool>
+    AwaitWhenNonDefaultContextAndCaptureContextGloballyDisabledThenContinuationNotRunInSynchronizationContextImpl()
+    {
+      TestSynchronizationContextMock mockSyncContext;
+
+      auto oldDisableSyncContextUseValue = GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior;
+      //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
+      {
+        Utils::FinallyBlock finally
+        {
+            [oldDisableSyncContextUseValue]
+            {
+              GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
+              GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior = oldDisableSyncContextUseValue;
+            }
+        };
+
+        GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
+        //Use of the synchronization context for 'co_await' continuation is globally disabled
+        GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior = true;
+        SynchronizationContextScope scs(mockSyncContext);
+
+        co_await TaskFactory::Run([]
+        {
+          return 42;
+        });
+      }
+      co_return mockSyncContext.WasPostCalled();
     }
   };
 
@@ -155,11 +306,10 @@ namespace RStein::AsyncCpp::TasksTest
 
   TEST_F(TaskTest, RunWhenReturnValueIsNestedTaskThenTaskIsUnwrapped)
   {
-    
-     int EXPECTED_VALUE  = 10;
+    int EXPECTED_VALUE = 10;
     //TaskFactory detects that return value of the Run would be Task<Task<int>>
     //and unwraps inner Task. Real return type is Task<int>.
-    Task<int> task = TaskFactory::Run([value = EXPECTED_VALUE]()->Task<int>
+    Task<int> task = TaskFactory::Run([value = EXPECTED_VALUE]()-> Task<int>
     {
       co_await GetCompletedTask();
       co_return value;
@@ -169,18 +319,17 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_EQ(EXPECTED_VALUE, taskValue);
   }
 
-   struct TestValue
-   {
-   };
+  struct TestValue
+  {
+  };
 
   TEST_F(TaskTest, RunWhenHotRefTaskCreatedThenReturnsReference)
   {
-      
-    auto taskResultPtr = make_unique<TestValue>();   
+    auto taskResultPtr = make_unique<TestValue>();
 
-    auto task = TaskFactory::Run([rawPtr = taskResultPtr.get()]()->TestValue&
+    auto task = TaskFactory::Run([rawPtr = taskResultPtr.get()]()-> TestValue&
     {
-      return *rawPtr; 
+      return *rawPtr;
     });
 
 
@@ -190,14 +339,13 @@ namespace RStein::AsyncCpp::TasksTest
 
   TEST_F(TaskTest, RunWhenHotPtrTaskCreatedThenReturnsPtr)
   {
-      
     auto taskResultPtr = make_unique<TestValue>();
     bool taskRun = false;
 
-    
+
     auto task = TaskFactory::Run([rawPtr = taskResultPtr.get()]()
     {
-      return rawPtr; 
+      return rawPtr;
     });
 
 
@@ -222,14 +370,15 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_EQ(taskScheduler.get(), explicitTaskScheduler.get());
   }
 
-  
+
   TEST_F(TaskTest, RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFunc)
   {
     SimpleThreadPool threadPool{1};
     auto explicitTaskScheduler{make_shared<ThreadPoolScheduler>(threadPool)};
     explicitTaskScheduler->Start();
-    auto usedScheduler = RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFuncImpl(explicitTaskScheduler)
-                                          .Result();
+    auto usedScheduler =
+        RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFuncImpl(explicitTaskScheduler)
+        .Result();
     explicitTaskScheduler->Stop();
 
     ASSERT_EQ(explicitTaskScheduler.get(), usedScheduler.get());
@@ -352,15 +501,15 @@ namespace RStein::AsyncCpp::TasksTest
     //Capture CancellationToken
     auto task = TaskFactory::Run([cancellationToken = cts.Token()]
     {
-        while(true)
-        {
-          //Simulate work;
-          this_thread::sleep_for(1000ms);
+      while (true)
+      {
+        //Simulate work;
+        this_thread::sleep_for(1000ms);
 
-          //Monitor CancellationToken
-          //When cancellationToken is canceled, then following call throws OperationCanceledException.
-          cancellationToken.ThrowIfCancellationRequested();
-        }
+        //Monitor CancellationToken
+        //When cancellationToken is canceled, then following call throws OperationCanceledException.
+        cancellationToken.ThrowIfCancellationRequested();
+      }
     }, cts.Token());
 
     //Signalize "Cancel operation"
@@ -587,8 +736,8 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_TRUE(task2.State() == TaskState::RunToCompletion);
   }
 
-//TODO: Problem in Release mode. Compiler?
-#ifdef DEBUG  
+  //TODO: Problem in Release mode. Compiler?
+#ifdef DEBUG
   TEST_F(TaskTest, WhenAllWhenTaskThrowsExceptionThenAllTasksCompleted)
   {
     auto allTasksCompleted = WhenAllWhenTaskThrowsExceptionThenAllTasksCompletedImpl().Result();
@@ -847,51 +996,85 @@ namespace RStein::AsyncCpp::TasksTest
 
   TEST_F(TaskTest, FMapPipeOperatorWhenComposingThenReturnsExpectedResult)
   {
-    const int initialValue= 10;
-    const int EXPECTED_VALUE  = 5;
+    const int initialValue = 10;
+    const int EXPECTED_VALUE = 5;
 
     auto mappedTask = TaskFromResult(initialValue)
-                        | Fmap([](auto value) {return value * 2;}) 
-                        | Fmap([](auto value) {return value / 4;});
+                      | Fmap([](auto value)
+                      {
+                        return value * 2;
+                      })
+                      | Fmap([](auto value)
+                      {
+                        return value / 4;
+                      });
 
     ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
   }
 
   TEST_F(TaskTest, FBindPipeOperatorWhenComposingThenReturnsExpectedResult)
   {
-    const int initialValue= 10;
-    const string EXPECTED_VALUE  = "5";
+    const int initialValue = 10;
+    const string EXPECTED_VALUE = "5";
     auto initialTask = TaskFromResult(initialValue);
-    auto mappedTask = initialTask 
-                       | Fbind([](auto value) {return TaskFromResult(value * 2);})
-                       | Fbind([](auto value) {return TaskFromResult(value / 4);})
-                       | Fbind([](auto value) {return TaskFromResult(to_string(value));});
+    auto mappedTask = initialTask
+                      | Fbind([](auto value)
+                      {
+                        return TaskFromResult(value * 2);
+                      })
+                      | Fbind([](auto value)
+                      {
+                        return TaskFromResult(value / 4);
+                      })
+                      | Fbind([](auto value)
+                      {
+                        return TaskFromResult(to_string(value));
+                      });
 
     ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
   }
 
   TEST_F(TaskTest, PipeOperatorWhenMixedComposingThenReturnsExpectedResult)
   {
-    const int initialValue= 10;
-    const string EXPECTED_VALUE  = "5";
+    const int initialValue = 10;
+    const string EXPECTED_VALUE = "5";
     auto initialTask = TaskFromResult(initialValue);
-    auto mappedTask = initialTask 
-                       | Fbind([](auto value) {return TaskFromResult(value * 2);})
-                       | Fmap([](auto value) {return value / 4;})
-                       | Fbind([](auto value) {return TaskFromResult(to_string(value));});
+    auto mappedTask = initialTask
+                      | Fbind([](auto value)
+                      {
+                        return TaskFromResult(value * 2);
+                      })
+                      | Fmap([](auto value)
+                      {
+                        return value / 4;
+                      })
+                      | Fbind([](auto value)
+                      {
+                        return TaskFromResult(to_string(value));
+                      });
 
     ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
   }
 
   TEST_F(TaskTest, PipeOperatorWhenMixedComposingAndThrowsExceptionThenReturnsExpectedResult)
   {
-    const int initialValue= 10;
-    const string EXPECTED_VALUE  = "5";
+    const int initialValue = 10;
+    const string EXPECTED_VALUE = "5";
     auto initialTask = TaskFromResult(initialValue);
-    auto mappedTask = initialTask 
-      | Fbind([](auto value) {throw std::invalid_argument{""}; return TaskFromResult(value * 2);})
-                       | Fmap([](auto value) {return value / 4;})
-                       | Fbind([](auto value) {return TaskFromResult(to_string(value));});
+    auto mappedTask = initialTask
+                      | Fbind([](auto value)
+                      {
+                        throw std::invalid_argument{""};
+                        return TaskFromResult(value * 2);
+                      })
+                      | Fmap([](auto value)
+                      {
+                        return value / 4;
+                      })
+                      | Fbind([](auto value)
+                      {
+                        return TaskFromResult(to_string(value));
+                      });
 
     ASSERT_THROW(mappedTask.Result(), invalid_argument);
   }
@@ -899,11 +1082,13 @@ namespace RStein::AsyncCpp::TasksTest
   TEST_F(TaskTest, UnwrapWhenNestedTaskThenReturnsNestedTaskWithExpectedValue)
   {
     const int EXPECTED_RESULT = 42;
-    Task<Task<int>> task{[value=EXPECTED_RESULT]()->Task<int>
-                    {
-                        co_await GetCompletedTask();
-                        co_return value;
-                    }};
+    Task<Task<int>> task{
+        [value=EXPECTED_RESULT]()-> Task<int>
+        {
+          co_await GetCompletedTask();
+          co_return value;
+        }
+    };
     task.Start();
     auto innerTask = task.Unwrap();
 
@@ -912,61 +1097,129 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_EQ(EXPECTED_RESULT, result);
   }
 
-  
+
   TEST_F(TaskTest, UnwrapWhenNestedVoidTaskThenNestedVoidTaskIsCompleted)
   {
-    Task<Task<void>> task{[]()->Task<void>
-                    {
-                        this_thread::sleep_for(100ms);
-                        co_await GetCompletedTask();                  
-                    }};
+    Task<Task<void>> task{
+        []()-> Task<void>
+        {
+          this_thread::sleep_for(100ms);
+          co_await GetCompletedTask();
+        }
+    };
     task.Start();
     auto innerTask = task.Unwrap();
 
     innerTask.Wait();
 
-    ASSERT_EQ(TaskState::RunToCompletion,  innerTask.State());
+    ASSERT_EQ(TaskState::RunToCompletion, innerTask.State());
   }
 
   TEST_F(TaskTest, FJoinWhenNestedTaskThenReturnsNestedTaskWithExpectedValue)
   {
     const int EXPECTED_RESULT = 42;
 
-    Task<Task<int>> task{[value=EXPECTED_RESULT]()->Task<int>
-                    {
-                        co_await GetCompletedTask();
-                        co_return value;
-                    }};
+    Task<Task<int>> task{
+        [value=EXPECTED_RESULT]()-> Task<int>
+        {
+          co_await GetCompletedTask();
+          co_return value;
+        }
+    };
     task.Start();
     auto innerTask = Fjoin(task);
 
     auto result = innerTask.Result();
 
-   ASSERT_EQ(EXPECTED_RESULT, result);
+    ASSERT_EQ(EXPECTED_RESULT, result);
   }
 
-  
+
   TEST_F(TaskTest, PipeOperatorWhenUsingJoinThenReturnsExpectedResult)
   {
-    const int initialValue= 10;
-    const string EXPECTED_VALUE  = "5";
+    const int initialValue = 10;
+    const string EXPECTED_VALUE = "5";
     auto initialTask = TaskFromResult(initialValue);
-    auto mappedTask = initialTask 
-                       | Fbind([](auto value) {return TaskFromResult(value * 2);})
-    //Wrap Task<Task<int>>
-                       | Fmap([](auto value) {return TaskFromResult(value / 4);})
-    //Unwrap Task<Task<int>> -> Task<int>
-                       | Fjoin()
-    //Wrap Task<int> -> Task<Task<int>>
-                       | Fmap([](auto value) {return TaskFromResult(value);})
-    //Wrap Task<Task<int>> -> Task<Task<Task<int>>>
-                       | Fmap([](auto value) {return TaskFromResult(value);})
-    //Unwrap Task<Task<Task<int>>> -> Task<Task<int>>
-                       | Fjoin()
-    //Unwrap  Task<Task<int>> -> Task<int>
-                       | Fjoin()
-                       | Fbind([](auto value) {return TaskFromResult(to_string(value));});
+    auto mappedTask = initialTask
+                      | Fbind([](auto value)
+                      {
+                        return TaskFromResult(value * 2);
+                      })
+                      //Wrap Task<Task<int>>
+                      | Fmap([](auto value)
+                      {
+                        return TaskFromResult(value / 4);
+                      })
+                      //Unwrap Task<Task<int>> -> Task<int>
+                      | Fjoin()
+                      //Wrap Task<int> -> Task<Task<int>>
+                      | Fmap([](auto value)
+                      {
+                        return TaskFromResult(value);
+                      })
+                      //Wrap Task<Task<int>> -> Task<Task<Task<int>>>
+                      | Fmap([](auto value)
+                      {
+                        return TaskFromResult(value);
+                      })
+                      //Unwrap Task<Task<Task<int>>> -> Task<Task<int>>
+                      | Fjoin()
+                      //Unwrap  Task<Task<int>> -> Task<int>
+                      | Fjoin()
+                      | Fbind([](auto value)
+                      {
+                        return TaskFromResult(to_string(value));
+                      });
 
     ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
+  }
+
+  TEST_F(TaskTest, AwaitWhenNonDefaultContextThenContinuationRunInSynchronizationContext)
+  {
+    auto continuationRunOnCapturedContext = AwaitWhenNonDefaultContextThenContinuationRunInSynchronizationContextImpl().Result();        
+
+    ASSERT_TRUE(continuationRunOnCapturedContext);
+  }
+
+
+  TEST_F(TaskTest,
+         ConfigureAwaitWhenNonDefaultContextAndRunContinuationInContextThenContinuationRunInSynchronizationContext)
+  {
+    auto continuationRunOnCapturedContext =
+        ConfigureAwaitWhenNonDefaultContextAndRunContinuationInContextThenContinuationRunInSynchronizationContextImpl().
+        Result();
+
+
+    ASSERT_TRUE(continuationRunOnCapturedContext);
+  }
+
+
+  TEST_F(TaskTest,
+         ConfigureAwaitWhenNonDefaultContextAndNotRunContinuationInContextThenContinuationNotRunInSynchronizationContext)
+  {
+    auto continuationRunOnCapturedContext =
+        ConfigureAwaitWhenNonDefaultContextAndNotRunContinuationInContextThenContinuationNotRunInSynchronizationContextImpl().Result();
+
+    ASSERT_FALSE(continuationRunOnCapturedContext);
+  }
+
+  TEST_F(TaskTest,
+         ConfigureAwaitWhenNonDefaultContextAndCaptureContextGloballyDisabledThenContinuationNotRunInSynchronizationContext)
+  {
+    auto continuationRunOnCapturedContext =
+        ConfigureAwaitWhenNonDefaultContextAndCaptureArgTrueAndCaptureContextGloballyDisabledThenContinuationNotRunInSynchronizationContextImpl()
+        .Result();
+
+    ASSERT_FALSE(continuationRunOnCapturedContext);
+  }
+
+  TEST_F(TaskTest,
+         AwaitWhenNonDefaultContextAndCaptureContextGloballyDisabledThenContinuationNotRunInSynchronizationContext)
+  {
+    auto continuationRunOnCapturedContext =
+        AwaitWhenNonDefaultContextAndCaptureContextGloballyDisabledThenContinuationNotRunInSynchronizationContextImpl()
+        .Result();
+
+    ASSERT_FALSE(continuationRunOnCapturedContext);
   }
 }

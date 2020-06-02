@@ -20,7 +20,7 @@ class DataFlowAsyncFactory
       static typename IInputBlock<TInput>::InputBlockPtr CreateActionBlock(std::function<Tasks::Task<void>(const TInput& input)> actionFunc,
                                                                           typename Detail::DataFlowBlockCommon<TInput, Detail::NoOutput, Detail::NoState>::CanAcceptFuncType canAcceptFunc = [](auto& _){return true;})
       {
-        return CreateActionBlock<TInput, Detail::NoState>([actionFunc=std::move(actionFunc)] (const TInput& input, auto _)->Tasks::Task<void> {co_await actionFunc(input);},
+        return CreateActionBlock<TInput, Detail::NoState>([actionFunc=std::move(actionFunc)] (const TInput& input, auto _)->Tasks::Task<void> {co_await actionFunc(input).ConfigureAwait(false);},
                                                           std::move(canAcceptFunc));
       }
 
@@ -37,7 +37,7 @@ class DataFlowAsyncFactory
       {
         return CreateTransformBlock<TInput, TOutput, Detail::NoState>([transformFunc=std::move(transformFunc)] (const TInput& input, auto _)-> Tasks::Task<TOutput>
         {
-          auto result  = co_await transformFunc(input);
+          auto result  = co_await transformFunc(input).ConfigureAwait(false);
           co_return result;
         },
        std::move(canAcceptFunc));

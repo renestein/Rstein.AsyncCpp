@@ -76,7 +76,7 @@ RStein::AsyncCpp::Tasks::Task<void> RStein::AsyncCpp::AsyncPrimitives::SimpleAsy
 template <typename TItem>
 RStein::AsyncCpp::Tasks::Task<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::TakeAsync()
 {
-  co_await _asyncSemaphore.WaitAsync();
+  co_await _asyncSemaphore.WaitAsync().ConfigureAwait(false);
   auto retValue = _innerCollection.TryPop();
   if (!retValue)
   {
@@ -89,7 +89,7 @@ RStein::AsyncCpp::Tasks::Task<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAs
 template <typename TItem>
 RStein::AsyncCpp::Tasks::Task<TItem> RStein::AsyncCpp::AsyncPrimitives::SimpleAsyncProducerConsumerCollection<TItem>::TakeAsync(CancellationToken cancellationToken)
 {
-  co_await _asyncSemaphore.WaitAsync(cancellationToken);
+  co_await _asyncSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
   auto retValue = _innerCollection.TryPop();
   if (!retValue)
   {
