@@ -115,12 +115,23 @@ namespace RStein::AsyncCpp::Tasks
       return _sharedTaskState->GetResult();
     }
 
+    template <class TContinuation>
+    auto ContinueWith(TContinuation continuation,
+                      const AsyncPrimitives::CancellationToken& cancellationToken);
     
     template<typename TContinuation>
     auto ContinueWith(TContinuation continuation);
+
     template <class TContinuation>
-    auto ContinueWith(TContinuation continuation, const Schedulers::Scheduler::SchedulerPtr& continuationScheduler);
-    std::exception_ptr Exception() const;
+    auto ContinueWith(TContinuation continuation,
+                      const Schedulers::Scheduler::SchedulerPtr& continuationScheduler);
+
+    template <class TContinuation>
+    auto ContinueWith(TContinuation continuation,
+                      const Schedulers::Scheduler::SchedulerPtr& continuationScheduler,
+                      const AsyncPrimitives::CancellationToken& cancellationToken);
+
+  std::exception_ptr Exception() const;
 
     auto operator co_await() const
     {           
@@ -369,18 +380,44 @@ namespace RStein::AsyncCpp::Tasks
 
   template<typename TResult>
   template<typename TContinuation>
+  auto Task<TResult>::ContinueWith(TContinuation continuation,
+                                   const AsyncPrimitives::CancellationToken& cancellationToken)
+  {
+    return ContinueWith(std::move(continuation),
+                          Schedulers::Scheduler::DefaultScheduler(),
+                          cancellationToken);
+  }
+
+  template<typename TResult>
+  template<typename TContinuation>
   auto Task<TResult>::ContinueWith(TContinuation continuation)
   {
-    return ContinueWith(std::move(continuation), Schedulers::Scheduler::DefaultScheduler());
+    return ContinueWith(std::move(continuation),
+                          Schedulers::Scheduler::DefaultScheduler(),
+                          AsyncPrimitives::CancellationToken::None());
   }
 
   template<typename TResult>
   template<typename TContinuation>
   auto Task<TResult>::ContinueWith(TContinuation continuation, const Schedulers::Scheduler::SchedulerPtr& continuationScheduler)
   {
+    return ContinueWith(std::move(continuation),
+                        continuationScheduler,
+                        AsyncPrimitives::CancellationToken::None());
+  }
+
+  
+  template<typename TResult>
+  template<typename TContinuation>
+  auto Task<TResult>::ContinueWith(TContinuation continuation,
+                                   const Schedulers::Scheduler::SchedulerPtr& continuationScheduler,
+                                   const AsyncPrimitives::CancellationToken& cancellationToken)
+  {
     using Continuation_Return_Type = decltype(continuation(*this));
     auto continuationFunc = [continuation = std::move(continuation), thisCopy=*this] () mutable {return continuation(thisCopy);};
-    Task<Continuation_Return_Type> continuationTask{continuationFunc, continuationScheduler};
+    Task<Continuation_Return_Type> continuationTask{continuationFunc,
+                                                    continuationScheduler,
+                                                    cancellationToken};
     addContinuation(continuationTask);  
     return continuationTask;
   }
