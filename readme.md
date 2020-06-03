@@ -63,9 +63,9 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
  ## **Async primitives**
  * [`AsyncSemaphore - asynchronous variant of the Semaphore synchronization primitive.`](#AsyncSemaphore)
  * [`CancellationTokensource and CancellationToken - types used for the cooperative cancellation.`](#CancellationToken)
- * [`AsyncMutex` - asynchronous variant of the mutex synchronization primitive.](#AsyncMutex)
- * [`SynchronizationContext` - provides a mechanism to queue work to a specialized context. (useful for marshaling calls to UI thread, event loop etc.)](#SynchronizationContext)
- * [`SynchronizationContextScope` - RAII class for SynchronizationContext. Instance of this class captures current synchronization context in constructor (now 'old' context), installs new synchronization context provided by the user and restores 'old' synchronization context in destructor.)](#SynchronizationContextScope)
+ * [`AsyncMutex` - asynchronous variant of the mutex synchronization primitive.`](#AsyncMutex)
+ * [`SynchronizationContext` - provides a mechanism to queue work to a specialized context. (useful for marshaling calls to UI thread, event loop, etc.)`](#SynchronizationContext)
+ * [`SynchronizationContextScope` - RAII class for SynchronizationContext. An instance of this class captures the current synchronization context in the constructor (now 'old' context), installs new synchronization context provided by the user, and restores 'old' synchronization context in the destructor.`](#SynchronizationContextScope)
 
   ## TaskFactory Run
   Create Task<T> using the TaskFactory (uses default scheduler - ThreadPoolScheduler).
