@@ -35,7 +35,7 @@ namespace RStein::AsyncCpp::Schedulers
 	  std::function<void()> wrapFunctionInStrand(std::function<void()>&& originalFunction);
 	  void tryDequeItem();
 	  void tryRunItem(std::function<void()>&& originalFunction);
-	  void runOnOriginalScheduler(std::function<void()>&& originalFunction);
+	  void runOnOriginalScheduler(std::function<void()>&& originalFunction) const;
   };
 }
 

@@ -2,7 +2,8 @@
 #include "../../RStein.AsyncCpp/AsyncPrimitives/OperationCanceledException.h"
 #include "../../RStein.AsyncCpp/AsyncPrimitives/SimpleAsyncProducerConsumerCollection.h"
 
-#include <experimental/coroutine>
+
+#include <future>
 #include <gtest/gtest.h>
 #include <numeric>
 
@@ -23,7 +24,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
   protected:
     [[nodiscard]] future<int> takeAsyncWhenCollectionHaveValueThenReturnValueImpl(int expectedItem) const
     {
-      Collection collection{};    
+      Collection collection{};
       
       co_await collection.AddAsync(expectedItem);
       auto value = co_await collection.TakeAsync();
@@ -39,7 +40,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       
       cts.Cancel();
       try
-      {       
+      {
         co_await futureValue;
       }
       catch(OperationCanceledException&)

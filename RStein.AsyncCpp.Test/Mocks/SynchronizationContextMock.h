@@ -1,8 +1,6 @@
 #pragma once
 #include "../../RStein.AsyncCpp/Threading/SynchronizationContext.h"
 
-#include <cassert>
-
 namespace RStein::AsyncCpp::Mocks
 {
   class TestSynchronizationContextMock : public RStein::AsyncCpp::Threading::SynchronizationContext
@@ -18,7 +16,7 @@ namespace RStein::AsyncCpp::Mocks
 
     void Post(PostSendFunc postSendFunc) override
     {
-      ++_postCallsCount;     
+      ++_postCallsCount;
       SynchronizationContext::Post(postSendFunc);
     }
 
@@ -49,7 +47,7 @@ namespace RStein::AsyncCpp::Mocks
     }
 
   private:
-    volatile int _postCallsCount = 0;
-    volatile int _sendCallsCount = 0;
+    int _postCallsCount = 0;
+    int _sendCallsCount = 0;
   };
 }

@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "AsyncSemaphore.h"
-#include "FutureEx.h"
 #include "IAsyncProducerConsumerCollection.h"
 #include "../Collections/ThreadSafeMinimalisticQueue.h"
 #include "../Tasks/TaskCombinators.h"

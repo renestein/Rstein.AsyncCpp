@@ -14,24 +14,27 @@ namespace RStein::Utils
       FinallyBlock& operator=(const FinallyBlock& other) = delete;
       FinallyBlock& operator=(FinallyBlock&& other) = delete;
       //TODO: Resolve ambiguous call - VS 2010?
-      explicit FinallyBlock(std::function<void (void)> function) : m_function(std::move(function))
+      explicit FinallyBlock(std::function<void (void)> function) : _function(std::move(function))
       {
       }
 
-      explicit FinallyBlock(const DisposablePtr& disposable) : m_function([disposable]
+      explicit FinallyBlock(const DisposablePtr& disposable) : _function([disposable]
+                                                              {
+                                                                if (disposable)
+                                                                {
+                                                                  disposable->Dispose();
+                                                                }
+                                                              })
       {
-        if (disposable)
-          disposable->Dispose();
-      })
-      {
+
       }
       
       ~FinallyBlock(void)
       {
-        m_function();
+        _function();
       }
 
     private:
-      std::function<void (void)> m_function;
+      std::function<void (void)> _function;
     };
 }

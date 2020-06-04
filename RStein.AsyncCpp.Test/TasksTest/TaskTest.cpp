@@ -29,7 +29,7 @@ namespace RStein::AsyncCpp::TasksTest
   {
   public:
 
-    future<void> ContinueWithWhenUsingAwaiterThenTaskIsResumedImpl()
+    future<void> ContinueWithWhenUsingAwaiterThenTaskIsResumedImpl() const
     {
       auto func = []
       {
@@ -41,7 +41,7 @@ namespace RStein::AsyncCpp::TasksTest
       co_await task;
     }
 
-    future<string> ContinueWithWhenUsingTaskTAwaiterThenTaskIsCompletedWithExpectedValueImpl(string expectedValue)
+    future<string> ContinueWithWhenUsingTaskTAwaiterThenTaskIsCompletedWithExpectedValueImpl(string expectedValue) const
     {
       auto result = co_await TaskFactory::Run([expectedValue]
       {
@@ -51,7 +51,7 @@ namespace RStein::AsyncCpp::TasksTest
       co_return result;
     }
 
-    Task<bool> WhenAllWhenTaskThrowsExceptionThenAllTasksCompletedImpl()
+    Task<bool> WhenAllWhenTaskThrowsExceptionThenAllTasksCompletedImpl() const
     {
       auto task1 = TaskFactory::Run([]
       {
@@ -76,7 +76,7 @@ namespace RStein::AsyncCpp::TasksTest
       co_return task1.IsCompleted() && task2.IsCompleted();
     }
 
-    Task<void> WhenAllWhenTaskThrowsExceptionThenThrowsAggregateExceptionImpl()
+    Task<void> WhenAllWhenTaskThrowsExceptionThenThrowsAggregateExceptionImpl() const
     {
       auto task1 = TaskFactory::Run([]
       {
@@ -93,7 +93,7 @@ namespace RStein::AsyncCpp::TasksTest
       co_await WhenAll(task1, task2);
     }
 
-    Task<int> WhenAnyWhenFirstTaskCompletedThenRetunsIndex0Impl()
+    Task<int> WhenAnyWhenFirstTaskCompletedThenReturnsIndex0Impl() const
     {
       TaskCompletionSource<void> waitSecondTaskTcs;
       auto task1 = TaskFactory::Run([]
@@ -112,7 +112,7 @@ namespace RStein::AsyncCpp::TasksTest
       co_return taskIndex;
     }
 
-    Task<int> WhenAnyWhenSecondTaskCompletedThenReturnsIndex1Impl()
+    Task<int> WhenAnyWhenSecondTaskCompletedThenReturnsIndex1Impl() const
     {
       TaskCompletionSource<void> waitFirstTaskTcs;
       auto task1 = TaskFactory::Run([waitFirstTaskTcs]
@@ -132,7 +132,7 @@ namespace RStein::AsyncCpp::TasksTest
     }
 
     Task<Scheduler::SchedulerPtr> RunWhenUsingExplicitSchedulerAndCoAwaitThenExplicitSchedulerRunTaskFuncImpl(
-        Scheduler::SchedulerPtr taskScheduler)
+        Scheduler::SchedulerPtr taskScheduler) const
     {
       auto task = TaskFactory::Run([]
                                    {
@@ -145,13 +145,13 @@ namespace RStein::AsyncCpp::TasksTest
       co_return co_await task;
     }
 
-    Task<bool> AwaitWhenNonDefaultContextThenContinuationRunInSynchronizationContextImpl()
+    Task<bool> AwaitWhenNonDefaultContextThenContinuationRunInSynchronizationContextImpl() const
     {
       TestSynchronizationContextMock mockSyncContext;
 
       //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
       {
-        SynchronizationContextScope scs(mockSyncContext);
+        SynchronizationContextScope scs{mockSyncContext};
 
         Utils::FinallyBlock finally
         {
@@ -163,7 +163,7 @@ namespace RStein::AsyncCpp::TasksTest
 
         GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
         //Task continuation uses captured non-default synchronization context
-        co_await TaskFactory::Run([]
+        co_await TaskFactory::Run([]  // NOLINT(clang-diagnostic-unused-result)
         {
           return 42;
         });
@@ -174,12 +174,12 @@ namespace RStein::AsyncCpp::TasksTest
 
 
     Task<bool>
-    ConfigureAwaitWhenNonDefaultContextAndRunContinuationInContextThenContinuationRunInSynchronizationContextImpl()
+    ConfigureAwaitWhenNonDefaultContextAndRunContinuationInContextThenContinuationRunInSynchronizationContextImpl() const
     {
       TestSynchronizationContextMock mockSyncContext;
       //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
       {
-        SynchronizationContextScope scs(mockSyncContext);
+        SynchronizationContextScope scs{mockSyncContext};
 
         Utils::FinallyBlock finally
         {
@@ -202,13 +202,13 @@ namespace RStein::AsyncCpp::TasksTest
     }
 
 
-    Task<bool> ConfigureAwaitWhenNonDefaultContextAndNotRunContinuationInContextThenContinuationNotRunInSynchronizationContextImpl()
+    Task<bool> ConfigureAwaitWhenNonDefaultContextAndNotRunContinuationInContextThenContinuationNotRunInSynchronizationContextImpl() const
     {
       TestSynchronizationContextMock mockSyncContext;
 
       //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
       {
-        SynchronizationContextScope scs(mockSyncContext);
+        SynchronizationContextScope scs{mockSyncContext};
 
         Utils::FinallyBlock finally
         {
@@ -230,7 +230,7 @@ namespace RStein::AsyncCpp::TasksTest
 
 
     Task<bool>
-    ConfigureAwaitWhenNonDefaultContextAndCaptureArgTrueAndCaptureContextGloballyDisabledThenContinuationNotRunInSynchronizationContextImpl()
+    ConfigureAwaitWhenNonDefaultContextAndCaptureArgTrueAndCaptureContextGloballyDisabledThenContinuationNotRunInSynchronizationContextImpl() const
     {
       TestSynchronizationContextMock mockSyncContext;
       auto oldDisableSyncContextUseValue = GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior;
@@ -259,7 +259,7 @@ namespace RStein::AsyncCpp::TasksTest
 
 
     Task<bool>
-    AwaitWhenNonDefaultContextAndCaptureContextGloballyDisabledThenContinuationNotRunInSynchronizationContextImpl()
+    AwaitWhenNonDefaultContextAndCaptureContextGloballyDisabledThenContinuationNotRunInSynchronizationContextImpl() const
     {
       TestSynchronizationContextMock mockSyncContext;
 
@@ -291,7 +291,7 @@ namespace RStein::AsyncCpp::TasksTest
 
   TEST_F(TaskTest, RunWhenHotTaskCreatedThenTaskIsCompleted)
   {
-    bool taskRun = false;
+    auto taskRun = false;
 
     auto task = TaskFactory::Run([&taskRun]
     {
@@ -306,7 +306,7 @@ namespace RStein::AsyncCpp::TasksTest
 
   TEST_F(TaskTest, RunWhenReturnValueIsNestedTaskThenTaskIsUnwrapped)
   {
-    int EXPECTED_VALUE = 10;
+    const int EXPECTED_VALUE = 10;
     //TaskFactory detects that return value of the Run would be Task<Task<int>>
     //and unwraps inner Task. Real return type is Task<int>.
     Task<int> task = TaskFactory::Run([value = EXPECTED_VALUE]()-> Task<int>
@@ -340,8 +340,6 @@ namespace RStein::AsyncCpp::TasksTest
   TEST_F(TaskTest, RunWhenHotPtrTaskCreatedThenReturnsPtr)
   {
     auto taskResultPtr = make_unique<TestValue>();
-    bool taskRun = false;
-
 
     auto task = TaskFactory::Run([rawPtr = taskResultPtr.get()]()
     {
@@ -403,7 +401,7 @@ namespace RStein::AsyncCpp::TasksTest
   {
     std::promise<void> startTaskPromise;
 
-    bool continuationRun = false;
+    auto continuationRun = false;
 
     auto task = TaskFactory::Run([future=startTaskPromise.get_future().share()]
     {
@@ -429,7 +427,7 @@ namespace RStein::AsyncCpp::TasksTest
 
   TEST_F(TaskTest, ContinueWithWhenAntecedentTaskAlreadyCompletedThenContinuationRun)
   {
-    bool continuationRun = false;
+    auto continuationRun = false;
 
     auto task = TaskFactory::Run([]
     {
@@ -816,7 +814,7 @@ namespace RStein::AsyncCpp::TasksTest
   {
     const int EXPECTED_TASK_INDEX = 0;
 
-    auto taskIndex = WhenAnyWhenFirstTaskCompletedThenRetunsIndex0Impl().Result();
+    auto taskIndex = WhenAnyWhenFirstTaskCompletedThenReturnsIndex0Impl().Result();
     ASSERT_EQ(EXPECTED_TASK_INDEX, taskIndex);
   }
 
@@ -956,8 +954,8 @@ namespace RStein::AsyncCpp::TasksTest
 
     auto selector = [](int value)
     {
-      auto transformedvalue = value * 100;
-      return TaskFromResult(transformedvalue);
+      auto transformedValue = value * 100;
+      return TaskFromResult(transformedValue);
     };
 
     auto rightMonad = selector(initialValue);

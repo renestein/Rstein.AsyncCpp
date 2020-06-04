@@ -1,7 +1,9 @@
 #include "Disposable.h"
 
-
-void RStein::Utils::IDisposable::Dispose()
+namespace RStein::Utils
 {
-  //Ignore call
+  void IDisposable::Dispose()
+  {
+    //Ignore call
+  }
 }

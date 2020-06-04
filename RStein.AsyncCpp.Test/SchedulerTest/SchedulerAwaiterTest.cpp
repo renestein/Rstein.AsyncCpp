@@ -83,8 +83,6 @@ namespace RStein::AsyncCpp::SchedulersTest
           _currentThreadScheduler->Stop();
         }
       }
-
-    private:
   };
 
   class ThreadPoolSchedulerFactory

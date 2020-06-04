@@ -99,7 +99,6 @@ namespace RStein::AsyncCpp::TasksTest
 
   TEST(TaskCompletionSourceTest, SetResultVoidWhenCalledThenTaskStateIsRunToCompletion)
   {
-    const int EXPECTED_TASK_VALUE = 1000;
     TaskCompletionSource<void> tcs{};
 
     tcs.SetResult();
