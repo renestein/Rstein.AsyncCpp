@@ -2,7 +2,10 @@
 
 #include "../../RStein.AsyncCpp/AsyncPrimitives/AsyncSemaphore.h"
 #include "../../RStein.AsyncCpp/AsyncPrimitives/OperationCanceledException.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/CancellationTokenSource.h"
 
+
+#include <future>
 #include <xutility>
 #include <experimental/generator>
 #include <experimental/resumable>
@@ -70,7 +73,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       std::vector<future<future<int>>> futures;
       futures.reserve(taskCount);
 
-      int result = 0;
+      auto result = 0;
       for (auto i : generate(taskCount))
       {
         /*Action action {&semaphore, &result, i};*/
@@ -170,7 +173,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       
     generator<int> generate(int count)
     {
-      for (int i = 0; i < count; ++i)
+      for (auto i = 0; i < count; ++i)
       {
         co_yield i;
       }

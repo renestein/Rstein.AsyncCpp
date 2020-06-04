@@ -91,7 +91,7 @@ namespace RStein::AsyncCpp::Schedulers
     _strandQueue.push(move(originalFunction));
   }
 
-  void StrandSchedulerDecorator::runOnOriginalScheduler(std::function<void()>&& originalFunction)
+  void StrandSchedulerDecorator::runOnOriginalScheduler(std::function<void()>&& originalFunction) const
   {
     _scheduler->EnqueueItem(move(originalFunction));
   }

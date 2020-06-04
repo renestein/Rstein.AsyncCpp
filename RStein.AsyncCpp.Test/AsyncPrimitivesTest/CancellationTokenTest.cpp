@@ -79,7 +79,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
   {
     auto cts = CancellationTokenSource{};
     auto token = cts.Token();
-    bool wasCancelActionCalled = false;
+    auto wasCancelActionCalled = false;
 
     auto _ = token.Register([&wasCancelActionCalled]
       {
@@ -96,7 +96,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
   {
     auto cts = CancellationTokenSource{};
     auto token = cts.Token();
-    bool wasCancelActionCalled = false;
+    auto wasCancelActionCalled = false;
 
     auto _ = token.Register([&wasCancelActionCalled]
       {
@@ -111,7 +111,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
   {
     auto cts = CancellationTokenSource{};
     auto token = cts.Token();
-    bool wasCancelActionCalled = false;
+    auto wasCancelActionCalled = false;
 
     auto _ = token.Register([&wasCancelActionCalled]
       {
@@ -125,10 +125,10 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
 
   TEST(CancellationTokenTest, RegisterWhenTokenCanceledAndOneCanceledActionThenAllActionsAreCalled)
   {
-    const int CANCEL_ACTION_COUNT = 3;
+    const auto CANCEL_ACTION_COUNT = 3;
     auto cts = CancellationTokenSource{};
     auto token = cts.Token();
-    int cancelActionCalls = 0;
+    auto cancelActionCalls = 0;
 
     auto t1 = token.Register([&cancelActionCalls]
       {
@@ -154,10 +154,10 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
   
   TEST(CancellationTokenTest, RegisterWhenTokenCanceledAndRegisteredMoreActionsThenAllActionsAreCalled)
   {
-    const int CANCEL_ACTION_COUNT = 3;
+    const auto CANCEL_ACTION_COUNT = 3;
     auto cts = CancellationTokenSource{};
     auto token = cts.Token();
-    int cancelActionCalls = 0;
+    auto cancelActionCalls = 0;
 
     auto cancellationAction = [&cancelActionCalls]
     {
@@ -176,10 +176,10 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
   
   TEST(CancellationTokenTest, RegisterWhenTokenCanceledAndRegisteredMoreActionsAndOneActionUnregisteredThenCallsRemainingActions)
   {
-    const int CANCEL_ACTION_COUNT = 2;
+    const auto CANCEL_ACTION_COUNT = 2;
     auto cts = CancellationTokenSource{};
     auto token = cts.Token();
-    int cancelActionCalls = 0;
+    auto cancelActionCalls = 0;
 
     auto cancellationAction = [&cancelActionCalls]
     {
@@ -206,7 +206,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
   {
     auto cts = CancellationTokenSource{};
     auto token = cts.Token();
-    bool wasCancelActionCalled = false;
+    auto wasCancelActionCalled = false;
 
     cts.Cancel();
     auto _ = token.Register([&wasCancelActionCalled]
@@ -222,7 +222,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
   {
     auto cts = CancellationTokenSource{};
     auto token = cts.Token();
-    bool wasCancelActionCalled = false;
+    auto wasCancelActionCalled = false;
 
     auto registration = token.Register([&wasCancelActionCalled]
       {
@@ -238,7 +238,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
   {
     auto cts = CancellationTokenSource{};
     auto token = cts.Token();
-    bool wasCancelActionCalled = false;
+    auto wasCancelActionCalled = false;
 
     auto registration = token.Register([&wasCancelActionCalled]
       {

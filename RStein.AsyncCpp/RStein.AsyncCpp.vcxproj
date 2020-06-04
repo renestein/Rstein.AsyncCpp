@@ -159,38 +159,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AsyncPrimitives\AggregateException.cpp" />
     <ClCompile Include="AsyncPrimitives\AsyncMutex.cpp" />
     <ClCompile Include="AsyncPrimitives\AsyncSemaphore.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationRegistration.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationToken.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationTokenSource.cpp" />
-    <ClCompile Include="AsyncPrimitives\IAsyncProducerConsumerCollection.cpp" />
-    <ClCompile Include="AsyncPrimitives\SimpleAsyncProducerConsumerCollection.cpp" />
-    <ClCompile Include="Collections\ThreadSafeMinimalisticQueue.cpp" />
     <ClCompile Include="Detail\AsyncPrimitives\CtsSharedState.cpp" />
-    <ClCompile Include="DataFlow\ActionBlock.cpp" />
-    <ClCompile Include="DataFlow\DataflowAsyncFactory.cpp" />
-    <ClCompile Include="DataFlow\DataFlowSyncFactory.cpp" />
-    <ClCompile Include="Detail\DataFlow\DataFlowBlockCommon.cpp" />
-    <ClCompile Include="DataFlow\IDataFlowBlock.cpp" />
-    <ClCompile Include="DataFlow\IInputBlock.cpp" />
-    <ClCompile Include="DataFlow\IInputOutputBlock.cpp" />
-    <ClCompile Include="DataFlow\TransformBlock.cpp" />
-    <ClCompile Include="Collections\ThreadSafeMinimalisticVector.cpp" />
-    <ClCompile Include="Detail\Tasks\IdGenerator.cpp" />
-    <ClCompile Include="Detail\Tasks\TaskTag.cpp" />
     <ClCompile Include="Schedulers\CurrentThreadScheduler.cpp" />
     <ClCompile Include="Schedulers\Scheduler.cpp" />
     <ClCompile Include="Schedulers\SimpleThreadPool.cpp" />
     <ClCompile Include="Schedulers\StrandSchedulerDecorator.cpp" />
     <ClCompile Include="Schedulers\ThreadPoolScheduler.cpp" />
-    <ClCompile Include="Detail\Tasks\TaskHelpers.cpp" />
     <ClCompile Include="Threading\SynchronizationContext.cpp" />
-    <ClCompile Include="Tasks\Task.cpp" />
     <ClCompile Include="Tasks\TaskCombinators.cpp" />
-    <ClCompile Include="Tasks\TaskCompletionSource.cpp" />
-    <ClCompile Include="Tasks\TaskFactory.cpp" />
     <ClCompile Include="Threading\SynchronizationContextScope.cpp" />
     <ClCompile Include="Utils\Disposable.cpp" />
   </ItemGroup>

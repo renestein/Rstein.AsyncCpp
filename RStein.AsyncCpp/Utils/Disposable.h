@@ -1,23 +1,20 @@
 #pragma once
 #include <memory>
 
-namespace RStein
+namespace RStein::Utils
 {
-  namespace Utils
+  class IDisposable
   {
-    class IDisposable
-    {
-    public:
-      IDisposable() = default;
+  public:
+    IDisposable() = default;
 
-      IDisposable(const IDisposable& other) = default;
-      IDisposable(IDisposable&& other) noexcept = default;
-      IDisposable& operator=(const IDisposable& other) = default;
-      IDisposable& operator=(IDisposable&& other) noexcept = default;
-      virtual ~IDisposable() = default;
-      virtual void Dispose() = 0;
-    };
+    IDisposable(const IDisposable& other) = default;
+    IDisposable(IDisposable&& other) noexcept = default;
+    IDisposable& operator=(const IDisposable& other) = default;
+    IDisposable& operator=(IDisposable&& other) noexcept = default;
+    virtual ~IDisposable() = default;
+    virtual void Dispose() = 0;
+  };
 
-    typedef std::shared_ptr<IDisposable> DisposablePtr;
-  }
+  typedef std::shared_ptr<IDisposable> DisposablePtr;
 }

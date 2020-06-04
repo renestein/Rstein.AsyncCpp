@@ -17,7 +17,7 @@ class Environment : public ::testing::Environment {
 
 int main(int argc, char** argv)
 {
-     auto environment = new Environment;
+     auto* environment = new Environment;
      ::testing::AddGlobalTestEnvironment(environment);
      ::testing::InitGoogleTest(&argc, argv);
     RUN_ALL_TESTS();

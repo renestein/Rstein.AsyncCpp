@@ -51,7 +51,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
       return cancellationRegistration;
     }
 
-    cancellationRegistration._disposeAction = _sharedState->Register(cancellationAction);
+    cancellationRegistration._disposeAction = _sharedState->Register(std::move(cancellationAction));
     return cancellationRegistration;
   }
 }

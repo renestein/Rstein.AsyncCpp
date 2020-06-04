@@ -97,7 +97,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       co_return true;
     }
 
-    Task<int> WhenUsingThreadPoolAndSumVariableThenAccessToSumVariableIsSychronizedImpl(int tasksCount)
+    Task<int> WhenUsingThreadPoolAndSumVariableThenAccessToSumVariableIsSynchronizedImpl(int tasksCount)
     {
 
       struct TaskDataHolder
@@ -206,7 +206,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
     const int TasksCount = 1000;
     const int EXPECTED_SUM = TasksCount;
 
-    auto result = WhenUsingThreadPoolAndSumVariableThenAccessToSumVariableIsSychronizedImpl(TasksCount).Result();
+    auto result = WhenUsingThreadPoolAndSumVariableThenAccessToSumVariableIsSynchronizedImpl(TasksCount).Result();
 
     ASSERT_EQ(EXPECTED_SUM, result);
   }

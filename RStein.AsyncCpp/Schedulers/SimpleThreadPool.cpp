@@ -17,7 +17,7 @@ namespace RStein::AsyncCpp::Schedulers
                                                                   _quitRequest(false)
 
   {
-    if (numberOfThreads < 0)
+    if (numberOfThreads == 0)
     {
       invalid_argument numberOfThreadsInvalidEx("numberOfThreads");
       throw numberOfThreadsInvalidEx;

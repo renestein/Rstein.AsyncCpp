@@ -5,7 +5,6 @@
 
 
 #include <deque>
-#include <future>
 #include <optional>
 
 namespace RStein::AsyncCpp::AsyncPrimitives

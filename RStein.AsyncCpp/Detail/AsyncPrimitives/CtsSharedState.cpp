@@ -2,8 +2,6 @@
 
 #include "../../AsyncPrimitives/OperationCanceledException.h"
 
-
-
 #include <cassert>
 #include <iostream>
 
@@ -29,7 +27,7 @@ namespace RStein::AsyncCpp::Detail
   {
     if (_isCanceled)
     {
-      throw RStein::AsyncCpp::AsyncPrimitives::OperationCanceledException();
+      throw AsyncPrimitives::OperationCanceledException();
     }
   }
 
