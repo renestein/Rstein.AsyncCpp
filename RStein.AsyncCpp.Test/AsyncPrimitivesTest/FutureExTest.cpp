@@ -2,6 +2,7 @@
 #include "../../RStein.AsyncCpp/AsyncPrimitives/FutureEx.h"
 
 #include <future>
+#include <experimental/coroutine>
 #include <gtest/gtest.h>
 #include <chrono>
 
@@ -207,6 +208,65 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
     ASSERT_EQ(EXPECTED_VALUE, retValue);
   }
 
+  static bool NakedValue = false;
+  
+  struct RaiiFlag
+  {
+    
+    RaiiFlag()
+    {
+      NakedValue = true;
+    }
 
+    ~RaiiFlag()
+    {
+      NakedValue = false;
+    }
+   
+  };
+
+  
+  future<void> WhenUsingRaiiObjectThenObjectIsDestroyedVoidImpl()
+  {
+    RaiiFlag flag;
+
+    co_await std::async(launch::async, [](){this_thread::sleep_for(10ms);});
+  }
+
+  future<bool> WhenUsingRaiiObjectThenObjectIsDestroyedImpl()
+  {
+    RaiiFlag flag;
+   
+    //Sleep is used to increase the  probability that await_ready returns false.
+    co_await std::async(launch::async, [](){this_thread::sleep_for(10ms);});
+    co_return true;
+  }
+ 
+
+  TEST(FutureVoidTest, WhenUsingRaiiObjectAndVoidReturnThenObjectIsDestroyedRepeat)
+  {
+    for (int i = 0; i < 1000; ++i)
+    {
+      ASSERT_FALSE(NakedValue);
+      WhenUsingRaiiObjectThenObjectIsDestroyedVoidImpl().wait();
+    }
+  }
+
+  
+  TEST(FutureBoolTest, WhenUsingRaiiObjectThenObjectIsDestroyedRepeat)
+  {
+    for (int i = 0; i < 1000; ++i)
+    {
+      cout << "iteration: " << i;
+
+      ASSERT_FALSE(NakedValue);
+      WhenUsingRaiiObjectThenObjectIsDestroyedImpl().wait();
+    }
+  }
+
+ 
+
+
+  
 
 }
