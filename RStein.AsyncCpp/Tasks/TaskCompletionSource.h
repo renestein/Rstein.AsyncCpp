@@ -8,12 +8,18 @@
 
 namespace RStein::AsyncCpp::Tasks
 {
+   template<typename TPType>
+   struct TaskPromise;
+
+   struct TaskVoidPromise;
   template<typename TResult>
   class TaskCompletionSource
   {
 
   public:
-    TaskCompletionSource() : _task{}
+    friend struct TaskPromise<TResult>;
+    friend struct TaskVoidPromise;
+    TaskCompletionSource() : TaskCompletionSource(/*delayPropagationOfTheResult*/ false)
     {
    
     }
@@ -31,7 +37,7 @@ namespace RStein::AsyncCpp::Tasks
    
     void SetException(std::exception_ptr exception)
     {
-      _task._sharedTaskState->SetException(exception);
+      _task._sharedTaskState->SetException(exception, !_delayPropagationOfTheResult);
     }
 
     bool TrySetException(std::exception_ptr exception)
@@ -40,7 +46,7 @@ namespace RStein::AsyncCpp::Tasks
     }
     void SetCanceled()
     {
-      return _task._sharedTaskState->SetCanceled();
+      return _task._sharedTaskState->SetCanceled(!_delayPropagationOfTheResult);
     }
 
     bool TrySetCanceled()
@@ -52,7 +58,7 @@ namespace RStein::AsyncCpp::Tasks
     typename std::enable_if<!std::is_same<TResultCopy, void>::value, void>::type
     SetResult(TUResult&& result)
     {
-      _task._sharedTaskState->template SetResult<TUResult>(std::forward<TUResult>(result));
+      _task._sharedTaskState->template SetResult<TUResult>(std::forward<TUResult>(result), !_delayPropagationOfTheResult);
     }
 
     template <typename TUResult, typename TResultCopy = TResult>
@@ -66,7 +72,7 @@ namespace RStein::AsyncCpp::Tasks
     typename std::enable_if<std::is_same<TResultCopy, void>::value, void>::type
     SetResult()
     {
-      _task._sharedTaskState->SetResult();
+      _task._sharedTaskState->SetResult(!_delayPropagationOfTheResult);
     }
 
     template <typename TResultCopy = TResult>
@@ -78,14 +84,30 @@ namespace RStein::AsyncCpp::Tasks
 
     private:
     Task<TResult> _task;
+    bool _delayPropagationOfTheResult;
 
+    TaskCompletionSource(bool delayPropagationOfTheResult): _task{},
+                                                          _delayPropagationOfTheResult(delayPropagationOfTheResult)
+    {
+      
+    }
+
+    void publishResult() const
+    {
+      if (_task.State() != Tasks::TaskState::Created)
+      {
+        __debugbreak();
+      }
+      assert(_task.State() == Tasks::TaskState::Created);
+      _task._sharedTaskState->PublishResult();
+    }
   };
 
   template<typename TResult>
   struct TaskPromise
   {    
 
-    TaskPromise() : _tcs()
+    TaskPromise() : _tcs{true}
     {
 
     }
@@ -109,6 +131,7 @@ namespace RStein::AsyncCpp::Tasks
     //TODO return suspend_always, capture and destroy coroutine_handle in Task?
     [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
     {
+      _tcs.publishResult();
       return {};
     }
 
@@ -120,22 +143,24 @@ namespace RStein::AsyncCpp::Tasks
       }
       catch(AsyncPrimitives::OperationCanceledException&)
       {
-        _tcs.TrySetCanceled();
+        _tcs.SetCanceled();
       }
       catch(...)
       {
-        _tcs.TrySetException(std::current_exception());
+        _tcs.SetException(std::current_exception());
       }
     }
 
     private:
+   
       TaskCompletionSource<TResult> _tcs;  
   };
 
+  
   struct TaskVoidPromise
   {    
 
-    TaskVoidPromise() : _tcs()
+    TaskVoidPromise() : _tcs{true}
     {
 
     }
@@ -159,6 +184,7 @@ namespace RStein::AsyncCpp::Tasks
     //TODO return suspend_always, capture and destroy coroutine_handle in Task?
     [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
     {
+      _tcs.publishResult();
       return {};
     }
 
@@ -170,16 +196,16 @@ namespace RStein::AsyncCpp::Tasks
       }
       catch(AsyncPrimitives::OperationCanceledException&)
       {
-        _tcs.TrySetCanceled();
+        _tcs.SetCanceled();
       }
       catch(...)
       {
-        _tcs.TrySetException(std::current_exception());
+        _tcs.SetException(std::current_exception());
       }
     }
 
     private:
-      TaskCompletionSource<void> _tcs;  
+      TaskCompletionSource<void> _tcs;
   };
 }
 
