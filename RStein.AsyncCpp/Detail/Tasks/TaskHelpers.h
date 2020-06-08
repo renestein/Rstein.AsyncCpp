@@ -42,7 +42,8 @@ namespace RStein::AsyncCpp::Detail
                     _taskId{::Detail::IdGenerator<TaskTag>::Counter++},
                     _state{Tasks::TaskState::Created },
                     _continuations{ std::vector<ContinuationFunc>{} },
-                    _exceptionPtr{ nullptr }
+                    _exceptionPtr{ nullptr },
+                    _preparedNextState{Tasks::TaskState::Created}
     {
       if constexpr(!std::is_same<TResult, void>::value)
       {
@@ -232,7 +233,7 @@ namespace RStein::AsyncCpp::Detail
       
     }
 
-    void SetException(std::exception_ptr exception)
+    void SetException(std::exception_ptr exception, bool completeTask)
     {
        if(exception == nullptr)
        {
@@ -243,10 +244,20 @@ namespace RStein::AsyncCpp::Detail
         std::lock_guard lock{ _lockObject };
         throwIfTaskCompleted();
         _exceptionPtr = exception;
-        _state = Tasks::TaskState::Faulted;
+         if (completeTask)
+         {
+          _state = Tasks::TaskState::Faulted;
+         }
+         else
+         {
+           _preparedNextState = Tasks::TaskState::Faulted;
+         }
       }
-      _waitTaskCv.notify_all();
-      runContinuations();
+      if (completeTask)
+      {
+        _waitTaskCv.notify_all();
+        runContinuations();
+      }
     }
 
     bool TrySetException(std::exception_ptr exception)
@@ -271,16 +282,27 @@ namespace RStein::AsyncCpp::Detail
     }
 
 
-    void SetCanceled()
+    void SetCanceled(bool completeTask)
     {
       {
         std::lock_guard lock{ _lockObject };
         throwIfTaskCompleted();
-        _state = Tasks::TaskState::Canceled;
+
+        if (completeTask)
+        {
+          _state = Tasks::TaskState::Canceled;
+        }
+        else
+        {
+          _preparedNextState = Tasks::TaskState::Canceled;
+        }
       }
 
-      _waitTaskCv.notify_all();
-      runContinuations();
+      if (completeTask)
+      { 
+        _waitTaskCv.notify_all();
+        runContinuations();
+      }
     }
 
     bool TrySetCanceled()
@@ -301,17 +323,27 @@ namespace RStein::AsyncCpp::Detail
     }
 
     template <typename TUResult, typename TResultCopy = TResult>
-    void SetResult(typename std::enable_if<!std::is_same<TResultCopy, void>::value, TUResult>::type result)
+    void SetResult(typename std::enable_if<!std::is_same<TResultCopy, void>::value, TUResult>::type result, bool completeTask)
     {
       {
         std::lock_guard lock{ _lockObject };
         throwIfTaskCompleted();
         _func = [taskResult = std::move(result)]{ return taskResult; };
+       if (completeTask)
+       {
         _state = Tasks::TaskState::RunToCompletion;
+       }
+       else
+       {
+         _preparedNextState = Tasks::TaskState::RunToCompletion;
+       }
       }
 
-      _waitTaskCv.notify_all();
-      runContinuations();
+      if (completeTask)
+      {
+        _waitTaskCv.notify_all();
+        runContinuations();
+      }
     }
 
     
@@ -336,16 +368,26 @@ namespace RStein::AsyncCpp::Detail
     
     template <typename TResultCopy = TResult>
     typename std::enable_if<std::is_same<TResultCopy, void>::value, void>::type
-    SetResult()
+    SetResult(bool completeTask)
     {
       {
         std::lock_guard lock{ _lockObject };
         throwIfTaskCompleted();
-        _state = Tasks::TaskState::RunToCompletion;
+        if (completeTask)
+        {
+          _state = Tasks::TaskState::RunToCompletion;
+        }
+        else
+        {
+          _preparedNextState = Tasks::TaskState::RunToCompletion;
+        }
       }
 
-      _waitTaskCv.notify_all();
-      runContinuations();
+      if (completeTask)
+      {
+        _waitTaskCv.notify_all();
+        runContinuations();
+      }
     }
 
     template <typename TResultCopy = TResult>
@@ -365,6 +407,22 @@ namespace RStein::AsyncCpp::Detail
       _waitTaskCv.notify_all();
       runContinuations();
       return true;
+    }
+
+    void PublishResult()
+    {
+      {
+        std::lock_guard lock{ _lockObject };
+        throwIfTaskCompleted();
+        assert(_preparedNextState == Tasks::TaskState::RunToCompletion ||
+             _preparedNextState == Tasks::TaskState::Canceled ||
+             _preparedNextState == Tasks::TaskState::Faulted);
+
+        _state = _preparedNextState;
+      }
+      
+      _waitTaskCv.notify_all();
+      runContinuations();
     }
 
     ~TaskSharedState()
@@ -395,6 +453,7 @@ namespace RStein::AsyncCpp::Detail
     Tasks::TaskState _state;
     Collections::ThreadSafeMinimalisticVector<ContinuationFunc> _continuations;
     std::exception_ptr _exceptionPtr;
+    Tasks::TaskState _preparedNextState;
 
     void DoRunTaskNow()
     {

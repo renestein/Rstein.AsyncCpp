@@ -149,25 +149,22 @@ namespace RStein::AsyncCpp::TasksTest
     {
       TestSynchronizationContextMock mockSyncContext;
 
-      //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
+      SynchronizationContextScope scs{mockSyncContext};
+
+      Utils::FinallyBlock finally
       {
-        SynchronizationContextScope scs{mockSyncContext};
+          []
+          {
+            GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
+          }
+      };
 
-        Utils::FinallyBlock finally
-        {
-            []
-            {
-              GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
-            }
-        };
-
-        GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
-        //Task continuation uses captured non-default synchronization context
-        co_await TaskFactory::Run([]  // NOLINT(clang-diagnostic-unused-result)
-        {
-          return 42;
-        });
-      }
+      GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
+      //Task continuation uses captured non-default synchronization context
+      co_await TaskFactory::Run([]  // NOLINT(clang-diagnostic-unused-result)
+      {
+        return 42;
+      });      
 
       co_return mockSyncContext.WasPostCalled();
     }
@@ -177,26 +174,25 @@ namespace RStein::AsyncCpp::TasksTest
     ConfigureAwaitWhenNonDefaultContextAndRunContinuationInContextThenContinuationRunInSynchronizationContextImpl() const
     {
       TestSynchronizationContextMock mockSyncContext;
-      //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
+      
+      SynchronizationContextScope scs{mockSyncContext};
+
+      Utils::FinallyBlock finally
       {
-        SynchronizationContextScope scs{mockSyncContext};
+          []
+          {
+            GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
+          }
+      };
 
-        Utils::FinallyBlock finally
-        {
-            []
-            {
-              GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
-            }
-        };
+      GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
 
-        GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
-
-        //Task continuation uses captured non-default synchronization context
-        co_await TaskFactory::Run([]
-        {
-          return 42;
-        }).ConfigureAwait(true);
-      }
+      //Task continuation uses captured non-default synchronization context
+      co_await TaskFactory::Run([]
+      {
+        return 42;
+      }).ConfigureAwait(true);
+      
 
       co_return mockSyncContext.WasPostCalled();
     }
@@ -206,25 +202,23 @@ namespace RStein::AsyncCpp::TasksTest
     {
       TestSynchronizationContextMock mockSyncContext;
 
-      //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
+      SynchronizationContextScope scs{mockSyncContext};
+
+      Utils::FinallyBlock finally
       {
-        SynchronizationContextScope scs{mockSyncContext};
+          []
+          {
+            GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
+          }
+      };
 
-        Utils::FinallyBlock finally
-        {
-            []
-            {
-              GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
-            }
-        };
+      GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
 
-        GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
-
-        co_await TaskFactory::Run([]
-        {
-          return 42;
-        }).ConfigureAwait(false);
-      }
+      co_await TaskFactory::Run([]
+      {
+        return 42;
+      }).ConfigureAwait(false);
+      
       co_return mockSyncContext.WasPostCalled();
     }
 
@@ -234,27 +228,25 @@ namespace RStein::AsyncCpp::TasksTest
     {
       TestSynchronizationContextMock mockSyncContext;
       auto oldDisableSyncContextUseValue = GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior;
-      //Restore state before co_return is called. Problems with destruction of the coroutine variables? 
+      
+      Utils::FinallyBlock finally{
+          [oldDisableSyncContextUseValue]
+          {
+            GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
+            GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior = oldDisableSyncContextUseValue;
+          }
+      };
+
+      GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
+      GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior = true;
+      SynchronizationContextScope scs(mockSyncContext);
+
+      co_await TaskFactory::Run([]
       {
-        Utils::FinallyBlock finally{
-            [oldDisableSyncContextUseValue]
-            {
-              GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = false;
-              GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior = oldDisableSyncContextUseValue;
-            }
-        };
-
-        GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
-        GlobalTaskSettings::UseOnlyConfigureAwaitFalseBehavior = true;
-        SynchronizationContextScope scs(mockSyncContext);
-
-        co_await TaskFactory::Run([]
-        {
-          return 42;
-        }).ConfigureAwait(true);
-      }
-
-      co_return mockSyncContext.WasPostCalled();
+        return 42;
+      }).ConfigureAwait(true);
+      
+    co_return mockSyncContext.WasPostCalled();
     }
 
 
