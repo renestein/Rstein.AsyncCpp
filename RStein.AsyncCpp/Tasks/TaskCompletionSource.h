@@ -17,6 +17,7 @@ namespace RStein::AsyncCpp::Tasks
   {
 
   public:
+    using TASK_TYPE = Task<TResult>;
     friend struct TaskPromise<TResult>;
     friend struct TaskVoidPromise;
     TaskCompletionSource() : TaskCompletionSource(/*delayPropagationOfTheResult*/ false)
@@ -83,7 +84,7 @@ namespace RStein::AsyncCpp::Tasks
     }
 
     private:
-    Task<TResult> _task;
+    TASK_TYPE _task;
     bool _delayPropagationOfTheResult;
 
     TaskCompletionSource(bool delayPropagationOfTheResult): _task{},
