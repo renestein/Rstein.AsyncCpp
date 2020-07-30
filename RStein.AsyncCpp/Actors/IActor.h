@@ -1,16 +1,19 @@
 ﻿#pragma once
+namespace RStein::AsyncCpp::Actors
+{
 
-template<typename TMessage>
+  template<typename TMessage>
 class IActor
 {
-public:
-  virtual ~IActor() = default;
+  public:
 
-  IActor() = default;
+    IActor() = default;
+    IActor(const IActor& other) = delete;
+    IActor(IActor&& other) noexcept = delete;
+    IActor& operator=(const IActor& other) = delete;
+    IActor& operator=(IActor&& other) noexcept = delete;
+    virtual ~IActor() = default;
 
-  IActor(const IActor& other) = delete;
-  IActor(IActor&& other) noexcept = delete;
-  IActor& operator=(const IActor& other) = delete;
-  IActor& operator=(IActor&& other) noexcept = delete;
-  virtual void Tell(TMessage message) = 0;
-};
+    virtual void Tell(TMessage message) = 0;
+  };
+}

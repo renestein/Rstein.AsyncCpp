@@ -160,7 +160,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Actors\IActor.cpp" />
-    <ClCompile Include="Actors\_del.cpp" />
     <ClCompile Include="AsyncPrimitives\AsyncMutex.cpp" />
     <ClCompile Include="AsyncPrimitives\AsyncSemaphore.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationRegistration.cpp" />
@@ -206,6 +205,8 @@
     <ClInclude Include="Detail\Tasks\IdGenerator.h" />
     <ClInclude Include="Detail\Tasks\TaskTag.h" />
     <ClInclude Include="Functional\F.h" />
+    <ClInclude Include="Actors\IReplyActor.h" />
+    <ClInclude Include="Actors\ReplyActor.h" />
     <ClInclude Include="Schedulers\CurrentThreadScheduler.h" />
     <ClInclude Include="Schedulers\Scheduler.h" />
     <ClInclude Include="Schedulers\SimpleThreadPool.h" />

@@ -9,7 +9,7 @@
 using namespace RStein::AsyncCpp::Actors;
 using namespace RStein::AsyncCpp::Tasks;
 using namespace std;
-namespace RStein::AsyncCpp::SimpleActorTest
+namespace RStein::AsyncCpp::ActorsTest
 {
   TEST(SimpleActorTest, WhenUsingSyncStatelessActorThenAllMessagesAreProcessed)
   {
@@ -65,7 +65,7 @@ namespace RStein::AsyncCpp::SimpleActorTest
   }
 
 
-  TEST(SimpleActorTest, WhenUsingASyncStatefulActorThenAllMessagesAreProcessed)
+  TEST(SimpleActorTest, WhenUsingAsyncStatefulActorThenAllMessagesAreProcessed)
   {
     const int EXPECTED_MESSAGES = 101;
     auto seenMessages = 0;
@@ -93,7 +93,7 @@ namespace RStein::AsyncCpp::SimpleActorTest
     auto seenMessages = 0;
     auto testState = 0;
     {
-      auto stateFullActor = CreateSimpleActor<int, int>([&seenMessages, &testState](const int& state, const int& message)
+      auto stateFullActor = CreateSimpleActor<int, int>([&seenMessages, &testState](const int& message, const int& state)
         {
           seenMessages++;
           auto newState = state + 1;
@@ -118,7 +118,7 @@ namespace RStein::AsyncCpp::SimpleActorTest
     auto seenMessages = 0;
     auto testState = 0;
     {
-      auto stateFullActor = RStein::AsyncCpp::Actors::CreateAsyncSimpleActor<int, int>([&seenMessages, &testState](const int& state, const int& message)->Task<int>
+      auto stateFullActor = RStein::AsyncCpp::Actors::CreateAsyncSimpleActor<int, int>([&seenMessages, &testState](const int& message, const int& state)->Task<int>
         {
           seenMessages++;
           co_await GetCompletedTask().ConfigureAwait(false);
@@ -146,7 +146,7 @@ namespace RStein::AsyncCpp::SimpleActorTest
       cout << message << endl;
     });
 
-    thomasAquinas = CreateSimpleActor<string, int>([PINGS_COUNT, &sigerus, &logger](const int& pingsSent, const string& message)
+    thomasAquinas = CreateSimpleActor<string, int>([PINGS_COUNT, &sigerus, &logger](const string& message, const int& pingsSent)
       {
         if (message == "start" || message.starts_with("pong"))
         {
@@ -160,7 +160,7 @@ namespace RStein::AsyncCpp::SimpleActorTest
         return pingsSent;
       }, 0)
     ;
-    sigerus = CreateSimpleActor<string, int>([PINGS_COUNT, &thomasAquinas, &logger](const int& pongsSent, const string& message)
+    sigerus = CreateSimpleActor<string, int>([PINGS_COUNT, &thomasAquinas, &logger](const string& message, const int& pongsSent)
       {
 
         if (message.starts_with("ping"))

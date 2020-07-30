@@ -157,7 +157,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Actors\SimpleActorTest.cpp" />
+    <ClCompile Include="ActorsTest\ReplyActorTest.cpp" />
+    <ClCompile Include="ActorsTest\SimpleActorTest.cpp" />
     <ClCompile Include="AsyncPrimitivesTest\AsyncMutexTest.cpp" />
     <ClCompile Include="AsyncPrimitivesTest\AsyncSemaphoreTest.cpp" />
     <ClCompile Include="AsyncPrimitivesTest\CancellationTokenSourceTest.cpp" />

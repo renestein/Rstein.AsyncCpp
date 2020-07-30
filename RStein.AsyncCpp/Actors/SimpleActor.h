@@ -13,9 +13,11 @@ namespace RStein::AsyncCpp::Actors
   class StatelessActor : public IActor<TMessage>
   {
   public:
-    explicit StatelessActor(std::function<void(const TMessage&)> processMessageFunc);
-    explicit StatelessActor(std::function<Tasks::Task<void>(const TMessage&)> processMessageFunc);
+    using Sync_Func_Type = std::function<void(const TMessage&)>;
+    using Async_Func_Type = std::function<Tasks::Task<void>(const TMessage&)>;
 
+    explicit StatelessActor(Sync_Func_Type processMessageFunc);
+    explicit StatelessActor(Async_Func_Type processMessageFunc);
 
     StatelessActor(const StatelessActor& other) = delete;
     StatelessActor(StatelessActor&& other) noexcept = delete;
@@ -28,16 +30,18 @@ namespace RStein::AsyncCpp::Actors
     typename DataFlow::ActionBlock<TMessage>::InputBlockPtr _actorQueue;
   };
 
+
   template <typename TMessage>
-  StatelessActor<TMessage>::StatelessActor(std::function<void(const TMessage&)> processMessageFunc) : IActor<TMessage>{},
-                                                                                               _actorQueue{DataFlow::DataFlowSyncFactory::CreateActionBlock<TMessage>(processMessageFunc)}
+  StatelessActor<TMessage>::StatelessActor(Sync_Func_Type processMessageFunc) : IActor<TMessage>{},
+                                                                                _actorQueue{DataFlow::DataFlowSyncFactory::CreateActionBlock<TMessage>(processMessageFunc)}
   {
     _actorQueue->Start();
   }
 
+
   template <typename TMessage>
-  StatelessActor<TMessage>::StatelessActor(std::function<Tasks::Task<void>(const TMessage&)> processMessageFunc) : IActor<TMessage>{},
-                                                                                                          _actorQueue{DataFlow::DataFlowAsyncFactory::CreateActionBlock(processMessageFunc)}
+  StatelessActor<TMessage>::StatelessActor(Async_Func_Type processMessageFunc) : IActor<TMessage>{},
+                                                                                _actorQueue{DataFlow::DataFlowAsyncFactory::CreateActionBlock(processMessageFunc)}
   {
     _actorQueue->Start();
   }
@@ -65,8 +69,11 @@ namespace RStein::AsyncCpp::Actors
   class StatefulActor : public IActor<TMessage>
   {
   public:
-    StatefulActor(std::function<TState(const TState&, const TMessage&)> processMessageFunc, TState initialState);
-    StatefulActor(std::function<Tasks::Task<TState>(const TState&, const TMessage&)> processMessageFunc, TState initialState);
+    using Sync_Func_Type = std::function<TState(const TMessage&, const TState&)>;
+    using Async_Func_Type = std::function<Tasks::Task<TState>(const TMessage&, const TState&)>;
+
+    StatefulActor(Sync_Func_Type processMessageFunc, TState initialState);
+    StatefulActor(Async_Func_Type processMessageFunc, TState initialState);
 
 
     StatefulActor(const StatefulActor& other) = delete;
@@ -83,27 +90,27 @@ namespace RStein::AsyncCpp::Actors
   };
 
   template <typename TMessage, typename TState>
-  StatefulActor<TMessage, TState>::StatefulActor(std::function<TState(const TState&, const TMessage&)> processMessageFunc,
-                                                   TState initialState) : IActor<TMessage>{},
-                                                                          _actorQueue{DataFlow::DataFlowSyncFactory::CreateActionBlock<TMessage>([processMessageFunc, this](const TMessage& message)
-                                                                                                                               {
-                                                                                                                                 _state = processMessageFunc(_state, message);
-                                                                                                                               })
-                                                                          },
-                                                                          _state{initialState}
+  StatefulActor<TMessage, TState>::StatefulActor(Sync_Func_Type processMessageFunc,
+                                                 TState initialState) : IActor<TMessage>{},
+                                                                        _actorQueue{DataFlow::DataFlowSyncFactory::CreateActionBlock<TMessage>([processMessageFunc, this](const TMessage& message)
+                                                                              {
+                                                                                _state = processMessageFunc(message, _state);
+
+                                                                              })},
+                                                                        _state{initialState}
   {
     _actorQueue->Start();
   }
 
   template <typename TMessage, typename TState>
-  StatefulActor<TMessage, TState>::StatefulActor(std::function<Tasks::Task<TState>(const TState&, const TMessage&)> processMessageFunc,
-                                                   TState initialState) : IActor<TMessage>{},
-                                                   _actorQueue{ DataFlow::DataFlowAsyncFactory::CreateActionBlock<TMessage>([processMessageFunc, this](const TMessage& message) -> Tasks::Task<void>
-                                                                                                         {
-                                                                                                           _state = co_await  processMessageFunc(_state,message);
-                                                                                                         })
-                                                   },
-                                                   _state{initialState}
+  StatefulActor<TMessage, TState>::StatefulActor(Async_Func_Type processMessageFunc,
+                                                 TState initialState) : IActor<TMessage>{},
+                                                                        _actorQueue{ DataFlow::DataFlowAsyncFactory::CreateActionBlock<TMessage>([processMessageFunc, this](const TMessage& message) -> Tasks::Task<void>
+                                                                        {
+                                                                          _state = co_await  processMessageFunc(message, _state);
+
+                                                                        })},
+                                                                        _state{initialState}
   {
     _actorQueue->Start();
   }
@@ -128,25 +135,25 @@ namespace RStein::AsyncCpp::Actors
   }
 
   template<typename TMessage>
-  std::unique_ptr<IActor<TMessage>> CreateSimpleActor(std::function<void(const TMessage&)> processMessageFunc)
+  std::unique_ptr<IActor<TMessage>> CreateSimpleActor(typename StatelessActor<TMessage>::Sync_Func_Type processMessageFunc)
   {
     return std::make_unique<StatelessActor<TMessage>>(processMessageFunc);
   }
    
   template<typename TMessage>
-  std::unique_ptr<IActor<TMessage>> CreateAsyncSimpleActor(std::function<Tasks::Task<void>(const TMessage&)> processMessageFunc)
+  std::unique_ptr<IActor<TMessage>> CreateAsyncSimpleActor(typename StatelessActor<TMessage>::Async_Func_Type processMessageFunc)
   {
     return std::make_unique<StatelessActor<TMessage>>(processMessageFunc);
   }
 
   template<typename TMessage, typename TState>
-  std::unique_ptr<IActor<TMessage>> CreateSimpleActor(std::function<TState(const TState&, const TMessage&)> processMessageFunc, TState initialState)
+  std::unique_ptr<IActor<TMessage>> CreateSimpleActor(typename StatefulActor<TMessage, TState>::Sync_Func_Type processMessageFunc, TState initialState)
   {
     return std::make_unique<StatefulActor<TMessage, TState>>(processMessageFunc, initialState);
   }
 
   template<typename TMessage, typename TState>
-  std::unique_ptr<IActor<TMessage>> CreateAsyncSimpleActor(std::function<Tasks::Task<TState>(const TState&, const TMessage&)> processMessageFunc, TState initialState)
+  std::unique_ptr<IActor<TMessage>> CreateAsyncSimpleActor(typename StatefulActor<TMessage, TState>::Async_Func_Type processMessageFunc, TState initialState)
   {
     return std::make_unique<StatefulActor<TMessage, TState>>(processMessageFunc, initialState);
   }

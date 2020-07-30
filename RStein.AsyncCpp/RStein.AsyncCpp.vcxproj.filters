@@ -60,9 +60,6 @@
     <ClCompile Include="Threading\SynchronizationContextScope.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Actors\_del.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Actors\IActor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -195,6 +192,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Actors\IActor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Actors\IReplyActor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Actors\ReplyActor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
