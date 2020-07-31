@@ -437,7 +437,7 @@ namespace RStein::AsyncCpp::Detail
         _state != Tasks::TaskState::Faulted &&
         _state != Tasks::TaskState::Canceled)
       {
-        assert(false);
+        //assert(false);
       }
     }
 

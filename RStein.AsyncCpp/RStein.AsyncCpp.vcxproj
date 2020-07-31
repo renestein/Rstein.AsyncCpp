@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Actors\IActor.cpp" />
     <ClCompile Include="AsyncPrimitives\AsyncMutex.cpp" />
     <ClCompile Include="AsyncPrimitives\AsyncSemaphore.cpp" />
     <ClCompile Include="AsyncPrimitives\CancellationRegistration.cpp" />
@@ -176,6 +177,9 @@
     <ClCompile Include="Utils\Disposable.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Actors\ActorPolicy.h" />
+    <ClInclude Include="Actors\IActor.h" />
+    <ClInclude Include="Actors\SimpleActor.h" />
     <ClInclude Include="AsyncPrimitives\AggregateException.h" />
     <ClInclude Include="AsyncPrimitives\AsyncMutex.h" />
     <ClInclude Include="AsyncPrimitives\AsyncSemaphore.h" />
@@ -201,6 +205,8 @@
     <ClInclude Include="Detail\Tasks\IdGenerator.h" />
     <ClInclude Include="Detail\Tasks\TaskTag.h" />
     <ClInclude Include="Functional\F.h" />
+    <ClInclude Include="Actors\IReplyActor.h" />
+    <ClInclude Include="Actors\ReplyActor.h" />
     <ClInclude Include="Schedulers\CurrentThreadScheduler.h" />
     <ClInclude Include="Schedulers\Scheduler.h" />
     <ClInclude Include="Schedulers\SimpleThreadPool.h" />

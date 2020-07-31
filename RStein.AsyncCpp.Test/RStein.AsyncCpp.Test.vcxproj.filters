@@ -60,6 +60,12 @@
     <ClCompile Include="SchedulerTest\SynchronizationContextSchedulerTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ActorsTest\ReplyActorTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ActorsTest\SimpleActorTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mocks\SynchronizationContextMock.h">
