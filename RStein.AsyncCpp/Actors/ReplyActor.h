@@ -25,6 +25,8 @@ namespace RStein::AsyncCpp::Actors
     StatelessReplyActor& operator=(StatelessReplyActor&& other) noexcept = delete;
     virtual ~StatelessReplyActor();
     Tasks::Task<TResult> Ask(TMessage message) override;
+    Tasks::Task<void> Completion() override;
+    void Complete() override;
 
   private:
     typename DataFlow::ActionBlock<std::pair<TMessage, Tasks::TaskCompletionSource<TResult>>>::InputBlockPtr _actorQueue;
@@ -97,6 +99,18 @@ namespace RStein::AsyncCpp::Actors
 
   }
 
+  template <typename TMessage, typename TResult>
+  Tasks::Task<void> StatelessReplyActor<TMessage, TResult>::Completion()
+  {
+    return _actorQueue->Completion();
+  }
+
+  template <typename TMessage, typename TResult>
+  void StatelessReplyActor<TMessage, TResult>::Complete()
+  {
+    return _actorQueue->Complete();
+  }
+
   template<typename TMessage, typename TResult, typename TState>
   class StatefulReplyActor : public IReplyActor<TMessage, TResult>
   {
@@ -115,6 +129,8 @@ namespace RStein::AsyncCpp::Actors
 
     Tasks::Task<TResult> Ask(TMessage message) override;
 
+    Tasks::Task<void> Completion() override;
+    void Complete() override;
    private:
      typename DataFlow::ActionBlock<std::tuple<TMessage, Tasks::TaskCompletionSource<TResult>>>::InputBlockPtr _actorQueue;
      TState _state;
@@ -192,7 +208,19 @@ namespace RStein::AsyncCpp::Actors
     return tcs.GetTask();
   }
 
-  
+  template <typename TMessage, typename TResult, typename TState>
+  Tasks::Task<void> StatefulReplyActor<TMessage, TResult, TState>::Completion()
+  {
+    return _actorQueue->Completion();
+  }
+
+  template <typename TMessage, typename TResult, typename TState>
+  void StatefulReplyActor<TMessage, TResult, TState>::Complete()
+  {
+    return _actorQueue->Complete();
+  }
+
+
   template<typename TMessage, typename TResult>
   std::unique_ptr<IReplyActor<TMessage, TResult>> CreateReplyActor(typename StatelessReplyActor<TMessage, TResult>::Sync_Func_Type processMessageFunc)
   {
