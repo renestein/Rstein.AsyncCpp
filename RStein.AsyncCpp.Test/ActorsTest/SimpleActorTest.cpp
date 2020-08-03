@@ -50,7 +50,7 @@ namespace RStein::AsyncCpp::ActorsTest
     const int EXPECTED_MESSAGES = 101;
     auto seenMessages = 0;
     {
-      auto stateFullActor = CreateSimpleActor<int, int>([&seenMessages](const int& state, const int& message)
+      auto stateFulActor = CreateSimpleActor<int, int>([&seenMessages](const int& state, const int& message)
         {
           seenMessages++;
           return state;
@@ -58,7 +58,7 @@ namespace RStein::AsyncCpp::ActorsTest
 
       for (int i = 0; i < EXPECTED_MESSAGES; i++)
       {
-        stateFullActor->Tell(i);
+        stateFulActor->Tell(i);
       }
     }
     ASSERT_EQ(EXPECTED_MESSAGES, seenMessages);
@@ -70,7 +70,7 @@ namespace RStein::AsyncCpp::ActorsTest
     const int EXPECTED_MESSAGES = 101;
     auto seenMessages = 0;
     {
-      auto stateFullActor = CreateAsyncSimpleActor<int, int>([&seenMessages](const int& state, const int& message)->Task<int>
+      auto stateFulActor = CreateAsyncSimpleActor<int, int>([&seenMessages](const int& state, const int& message)->Task<int>
         {
           seenMessages++;
           co_await GetCompletedTask().ConfigureAwait(false);
@@ -79,7 +79,7 @@ namespace RStein::AsyncCpp::ActorsTest
 
       for (int i = 0; i < EXPECTED_MESSAGES; i++)
       {
-        stateFullActor->Tell(i);
+        stateFulActor->Tell(i);
       }
     }
     ASSERT_EQ(EXPECTED_MESSAGES, seenMessages);
@@ -93,7 +93,7 @@ namespace RStein::AsyncCpp::ActorsTest
     auto seenMessages = 0;
     auto testState = 0;
     {
-      auto stateFullActor = CreateSimpleActor<int, int>([&seenMessages, &testState](const int& message, const int& state)
+      auto stateFulActor = CreateSimpleActor<int, int>([&seenMessages, &testState](const int& message, const int& state)
         {
           seenMessages++;
           auto newState = state + 1;
@@ -103,7 +103,7 @@ namespace RStein::AsyncCpp::ActorsTest
 
       for (int i = 0; i < MESSAGES_COUNT; i++)
       {
-        stateFullActor->Tell(i);
+        stateFulActor->Tell(i);
       }
     }
 
@@ -136,15 +136,107 @@ namespace RStein::AsyncCpp::ActorsTest
     ASSERT_EQ(EXPECTED_STATE, testState);
   }
 
+  TEST(SimpleActorTest, CompleteWhenUsingAsyncStatelessActorThenAllMessagesAreProcessed)
+  {
+    const int EXPECTED_MESSAGES = 101;
+    auto seenMessages = 0;
+
+    auto stateLessActor = CreateAsyncSimpleActor<int>([&seenMessages](const int& message)->Task<void>
+    {
+        co_await GetCompletedTask().ConfigureAwait(false);
+        seenMessages++;
+    });
+
+    for (int i = 0; i < EXPECTED_MESSAGES; i++)
+    {
+      stateLessActor->Tell(i);
+    }
+
+    stateLessActor->Complete();
+    stateLessActor->Completion().Wait();
+
+    ASSERT_EQ(EXPECTED_MESSAGES, seenMessages);
+  }
+
+
+  TEST(SimpleActorTest, CompleteWhenUsingSyncStatelessActorThenAllMessagesAreProcessed)
+  {
+    const int EXPECTED_MESSAGES = 101;
+    auto seenMessages = 0;
+
+    auto stateLessActor = CreateSimpleActor<int>([&seenMessages](const int& message)
+    {
+        seenMessages++;
+    });
+
+    for (int i = 0; i < EXPECTED_MESSAGES; i++)
+    {
+      stateLessActor->Tell(i);
+    }
+
+    stateLessActor->Complete();
+    stateLessActor->Completion().Wait();
+
+    ASSERT_EQ(EXPECTED_MESSAGES, seenMessages);
+  }
+
+  
+  TEST(SimpleActorTest, CompleteWhenUsingAsyncStatefulActorThenAllMessagesAreProcessed)
+  {
+    const int EXPECTED_MESSAGES = 101;
+    auto seenMessages = 0;
+
+    auto stateFulActor = CreateAsyncSimpleActor<int>([&seenMessages](const int& message, const int& state)->Task<int>
+    {
+        co_await GetCompletedTask().ConfigureAwait(false);
+        seenMessages++;
+        co_return state;
+    }, 0);
+
+    for (int i = 0; i < EXPECTED_MESSAGES; i++)
+    {
+      stateFulActor->Tell(i);
+    }
+
+    stateFulActor->Complete();
+    stateFulActor->Completion().Wait();
+
+    ASSERT_EQ(EXPECTED_MESSAGES, seenMessages);
+  }
+
+    
+  TEST(SimpleActorTest, CompleteWhenUsingSyncStatefulActorThenAllMessagesAreProcessed)
+  {
+    const int EXPECTED_MESSAGES = 101;
+    auto seenMessages = 0;
+
+    auto stateFulActor = CreateSimpleActor<int>([&seenMessages](const int& message, const int& state)
+    {
+        seenMessages++;
+        return state;
+    }, 0);
+
+    for (int i = 0; i < EXPECTED_MESSAGES; i++)
+    {
+      stateFulActor->Tell(i);
+    }
+
+    stateFulActor->Complete();
+    stateFulActor->Completion().Wait();
+
+    ASSERT_EQ(EXPECTED_MESSAGES, seenMessages);
+  }
+
+
   TEST(SimpleActorTest, PingPongTest)
   {
     const int PINGS_COUNT = 5;
     std::unique_ptr<IActor<string>> sigerus;
     std::unique_ptr<IActor<string>> thomasAquinas;
     auto logger = CreateSimpleActor<string>([](const string& message)
-    {
-      cout << message << endl;
-    });
+      {
+        cout << message << endl;
+      });
 
     thomasAquinas = CreateSimpleActor<string, int>([PINGS_COUNT, &sigerus, &logger](const string& message, const int& pingsSent)
       {
@@ -159,27 +251,27 @@ namespace RStein::AsyncCpp::ActorsTest
         cout << message << endl;
         return pingsSent;
       }, 0)
-    ;
-    sigerus = CreateSimpleActor<string, int>([PINGS_COUNT, &thomasAquinas, &logger](const string& message, const int& pongsSent)
-      {
-
-        if (message.starts_with("ping"))
+      ;
+      sigerus = CreateSimpleActor<string, int>([PINGS_COUNT, &thomasAquinas, &logger](const string& message, const int& pongsSent)
         {
-          logger->Tell(message);
-          auto newState = pongsSent + 1;
 
-          thomasAquinas->Tell(newState < 5
-            ? "pong " + to_string(newState)
-            : "stop");
-          //missing Task.Delay
-          this_thread::sleep_for(500ms);
-          return newState;
-        }
-        return pongsSent;
-      }, 0);
+          if (message.starts_with("ping"))
+          {
+            logger->Tell(message);
+            auto newState = pongsSent + 1;
 
-    thomasAquinas->Tell("start");
-    this_thread::sleep_for(5s);
+            thomasAquinas->Tell(newState < 5
+              ? "pong " + to_string(newState)
+              : "stop");
+            //missing Task.Delay
+            this_thread::sleep_for(500ms);
+            return newState;
+          }
+          return pongsSent;
+        }, 0);
+
+      thomasAquinas->Tell("start");
+      this_thread::sleep_for(5s);
   }
 
 }
