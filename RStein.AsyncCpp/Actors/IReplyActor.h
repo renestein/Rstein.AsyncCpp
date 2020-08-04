@@ -17,7 +17,8 @@ namespace RStein::AsyncCpp::Actors
     virtual ~IReplyActor() = default;
 
     virtual Tasks::Task<TResult> Ask(TMessage message) = 0;
-
+    virtual Tasks::Task<void> Completion() = 0;
+    virtual void Complete() = 0;
   };
 }
 

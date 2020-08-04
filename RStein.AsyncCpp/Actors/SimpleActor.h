@@ -26,6 +26,9 @@ namespace RStein::AsyncCpp::Actors
     virtual ~StatelessActor();
 
     void Tell(TMessage message) override;
+
+    Tasks::Task<void> Completion() override;
+    void Complete() override;
   private:
     typename DataFlow::ActionBlock<TMessage>::InputBlockPtr _actorQueue;
   };
@@ -65,6 +68,18 @@ namespace RStein::AsyncCpp::Actors
     _actorQueue->AcceptInputAsync(std::move(message)).Wait();
   }
 
+  template <typename TMessage>
+  Tasks::Task<void> StatelessActor<TMessage>::Completion()
+  {
+    return _actorQueue->Completion();
+  }
+
+  template <typename TMessage>
+  void StatelessActor<TMessage>::Complete()
+  {
+    _actorQueue->Complete();
+  }
+
   template <typename TMessage, typename TState>
   class StatefulActor : public IActor<TMessage>
   {
@@ -83,6 +98,8 @@ namespace RStein::AsyncCpp::Actors
     virtual ~StatefulActor();
 
 
+    Tasks::Task<void> Completion() override;
+    void Complete() override;
     void Tell(TMessage message) override;
   private:
     typename DataFlow::ActionBlock<TMessage>::InputBlockPtr _actorQueue;
@@ -126,6 +143,18 @@ namespace RStein::AsyncCpp::Actors
     catch (...)
     {
     }
+  }
+
+  template <typename TMessage, typename TState>
+  Tasks::Task<void> StatefulActor<TMessage, TState>::Completion()
+  {
+    return _actorQueue->Completion();
+  }
+
+  template <typename TMessage, typename TState>
+  void StatefulActor<TMessage, TState>::Complete()
+  {
+    _actorQueue->Complete();
   }
 
   template <typename TMessage, typename TState>

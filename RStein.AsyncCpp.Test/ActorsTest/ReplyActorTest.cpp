@@ -23,7 +23,88 @@ namespace RStein::AsyncCpp::ActorsTest
       ASSERT_EQ(to_string(i), response);
     }
   }
-    
+
+  TEST(ReplyActorTest, CompleteWhenUsingSyncStalessActorThenAllMessagesAreProcessed)
+  {
+    const int MESSAGES_COUNT = 99;
+    auto syncStatelessReplyActor = CreateReplyActor<int, string>([](const int& message)
+    {
+      return to_string(message);
+    });
+
+    auto replyTask = Task<string>::InvalidPlaceholderTaskCreator()();
+    for (auto i = 0; i < MESSAGES_COUNT; i++)
+    {
+       replyTask = syncStatelessReplyActor->Ask(i);
+    }
+
+      syncStatelessReplyActor->Complete();
+      syncStatelessReplyActor->Completion().Wait();
+
+      ASSERT_TRUE(replyTask.IsCompleted());
+   }
+
+  TEST(ReplyActorTest, CompleteWhenUsingAsyncStalessActorThenAllMessagesAreProcessed)
+  {
+    const int MESSAGES_COUNT = 99;
+    auto syncStatelessReplyActor = CreateAsyncReplyActor<int, string>([](const int& message)->Task<string>
+    {
+      co_await GetCompletedTask().ConfigureAwait(false);
+      co_return to_string(message);
+    });
+
+    auto replyTask = Task<string>::InvalidPlaceholderTaskCreator()();
+    for (auto i = 0; i < MESSAGES_COUNT; i++)
+    {
+       replyTask = syncStatelessReplyActor->Ask(i);
+    }
+
+      syncStatelessReplyActor->Complete();
+      syncStatelessReplyActor->Completion().Wait();
+
+      ASSERT_TRUE(replyTask.IsCompleted());
+   }
+
+  TEST(ReplyActorTest, CompleteWhenUsingSyncStatefulActorThenAllMessagesAreProcessed)
+  {
+    const int MESSAGES_COUNT = 99;
+    auto syncStatelessReplyActor = CreateReplyActor<int, string>([](const int& message, const int& state)
+    {
+        return std::pair{to_string(message), state};
+    }, 0);
+
+    auto replyTask = Task<string>::InvalidPlaceholderTaskCreator()();
+    for (auto i = 0; i < MESSAGES_COUNT; i++)
+    {
+       replyTask = syncStatelessReplyActor->Ask(i);
+    }
+
+      syncStatelessReplyActor->Complete();
+      syncStatelessReplyActor->Completion().Wait();
+
+      ASSERT_TRUE(replyTask.IsCompleted());
+   }
+
+   TEST(ReplyActorTest, CompleteWhenUsingAsyncStafulActorThenAllMessagesAreProcessed)
+  {
+    const int MESSAGES_COUNT = 99;
+    auto syncStatelessReplyActor = CreateAsyncReplyActor<int, string>([](const int& message, const int& state)->Task<pair<string, int>>
+    {
+      co_await GetCompletedTask().ConfigureAwait(false);
+      co_return pair{to_string(message), 0};
+    }, 0);
+
+    auto replyTask = Task<string>::InvalidPlaceholderTaskCreator()();
+    for (auto i = 0; i < MESSAGES_COUNT; i++)
+    {
+       replyTask = syncStatelessReplyActor->Ask(i);
+    }
+
+      syncStatelessReplyActor->Complete();
+      syncStatelessReplyActor->Completion().Wait();
+
+      ASSERT_TRUE(replyTask.IsCompleted());
+   }
   TEST(ReplyActorTest, AskWhenUsingAsyncStalessActorThenReturnsExpectedResponse)
   {
     const int MESSAGES_COUNT = 99;
