@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RStein.AsyncCpp", "RStein.A
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RStein.AsyncCpp.Test", "RStein.AsyncCpp.Test\RStein.AsyncCpp.Test.vcxproj", "{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Samples", "Samples\Samples.vcxproj", "{C3DA1846-6BC2-45CD-A17C-B15D3861DD10}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}.Release|x64.Build.0 = Release|x64
 		{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}.Release|x86.ActiveCfg = Release|Win32
 		{DD71BBE8-0566-46AE-ACCA-F665A718D4EF}.Release|x86.Build.0 = Release|Win32
+		{C3DA1846-6BC2-45CD-A17C-B15D3861DD10}.Debug|x64.ActiveCfg = Debug|x64
+		{C3DA1846-6BC2-45CD-A17C-B15D3861DD10}.Debug|x64.Build.0 = Debug|x64
+		{C3DA1846-6BC2-45CD-A17C-B15D3861DD10}.Debug|x86.ActiveCfg = Debug|Win32
+		{C3DA1846-6BC2-45CD-A17C-B15D3861DD10}.Debug|x86.Build.0 = Debug|Win32
+		{C3DA1846-6BC2-45CD-A17C-B15D3861DD10}.Release|x64.ActiveCfg = Release|x64
+		{C3DA1846-6BC2-45CD-A17C-B15D3861DD10}.Release|x64.Build.0 = Release|x64
+		{C3DA1846-6BC2-45CD-A17C-B15D3861DD10}.Release|x86.ActiveCfg = Release|Win32
+		{C3DA1846-6BC2-45CD-A17C-B15D3861DD10}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

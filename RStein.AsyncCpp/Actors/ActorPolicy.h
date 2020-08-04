@@ -13,55 +13,84 @@ namespace RStein::AsyncCpp::Actors
     public:
 
     ActorPolicy();
-
+    
     ActorPolicy(const ActorPolicy& other) = delete;
     ActorPolicy(ActorPolicy&& other) noexcept = delete;
     ActorPolicy& operator=(const ActorPolicy& other) = delete;
     ActorPolicy& operator=(ActorPolicy&& other) noexcept = delete;
     virtual ~ActorPolicy();
-
+    bool Complete();
+    Tasks::Task<void> Completion() const;
+    
   protected:
     template <typename TFunc>
-    auto AddFuncMessage(TFunc&& func) -> Tasks::Task<decltype(func())>;
+    auto ScheduleFunction(TFunc&& func) -> Tasks::Task<decltype(func())>;
+
+    virtual bool CanCompleteNow();
+    virtual void OnCompleted();
 
     private:
     using Actor_Queue_Type  = DataFlow::ActionBlock<std::function<void()>>::InputBlockPtr;
     Actor_Queue_Type _actorQueue;
+    Tasks::Task<void> _completionTask;
   };
 
-  inline ActorPolicy::ActorPolicy() : _actorQueue{DataFlow::DataFlowSyncFactory::CreateActionBlock<std::function<void()>>([](const std::function<void()>& message){message();})}
+  inline ActorPolicy::ActorPolicy() : _actorQueue{DataFlow::DataFlowSyncFactory::CreateActionBlock<std::function<void()>>([](const std::function<void()>& message){message();})},
+                                      _completionTask{_actorQueue->Completion().ContinueWith([this](auto& _) {OnCompleted();})}
   {
     _actorQueue->Start();
   }
 
-  inline ActorPolicy::~ActorPolicy()
+  inline bool ActorPolicy::Complete()
   {
+    if(!CanCompleteNow())
+    {
+      return false;
+    }
+
     try
     {
       _actorQueue->Complete();
-      _actorQueue->Completion().Wait();
+     _completionTask.Wait();
     }
     catch(...)
-    {      
+    {
     }
+
+    return true;
+  }
+
+  inline Tasks::Task<void> ActorPolicy::Completion() const
+  {
+    return _completionTask;
+  }
+
+  inline ActorPolicy::~ActorPolicy()
+  {
+    Complete();
+  }
+
+  inline bool ActorPolicy::CanCompleteNow()
+  {
+    return true;
+  }
+
+  inline void ActorPolicy::OnCompleted()
+  {
   }
 
   template <typename TFunc>
-  auto ActorPolicy::AddFuncMessage(TFunc&& func) -> Tasks::Task<decltype(func())>
-  {
-    if (!func)
-    {
-      throw std::invalid_argument("func");
-    }
+  auto ActorPolicy::ScheduleFunction(TFunc&& func) -> Tasks::Task<decltype(func())>
+  {    
 
     using Ret_Task_Type = decltype(func());
     using TaskCompletionSource_Type = Tasks::TaskCompletionSource<Ret_Task_Type>;
     TaskCompletionSource_Type tcs{};
-    co_await _actorQueue->AcceptInputAsync([func=func, tcs]
+    co_await _actorQueue->AcceptInputAsync([func=func, tcs] () mutable
     {
       try
       {
-        if constexpr (typename TaskCompletionSource_Type::Task_Type::IsTaskReturningVoid())
+        if constexpr (Tasks::Task<Ret_Task_Type>::IsTaskReturningVoid())
         {
           func();
           tcs.SetResult();
