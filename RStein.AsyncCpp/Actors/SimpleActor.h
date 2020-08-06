@@ -124,7 +124,7 @@ namespace RStein::AsyncCpp::Actors
                                                  TState initialState) : IActor<TMessage>{},
                                                                         _actorQueue{ DataFlow::DataFlowAsyncFactory::CreateActionBlock<TMessage>([processMessageFunc, this](const TMessage& message) -> Tasks::Task<void>
                                                                         {
-                                                                          _state = co_await  processMessageFunc(message, _state);
+                                                                          _state = co_await  processMessageFunc(message, _state).ConfigureAwait(false);
 
                                                                         })},
                                                                         _state{initialState}
