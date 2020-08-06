@@ -66,6 +66,9 @@
     <ClCompile Include="ActorsTest\SimpleActorTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ActorsTest\ActorPolicyTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mocks\SynchronizationContextMock.h">
