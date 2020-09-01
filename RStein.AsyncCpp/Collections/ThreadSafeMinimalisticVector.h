@@ -3,6 +3,7 @@
 #include <mutex>
 #include <optional>
 #include <vector>
+#include <iterator>
 
 namespace RStein::AsyncCpp::Collections
 {
