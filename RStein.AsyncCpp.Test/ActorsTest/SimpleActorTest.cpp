@@ -250,8 +250,8 @@ namespace RStein::AsyncCpp::ActorsTest
         }
         cout << message << endl;
         return pingsSent;
-      }, 0)
-      ;
+      }, 0);
+
       sigerus = CreateSimpleActor<string, int>([PINGS_COUNT, &thomasAquinas, &logger](const string& message, const int& pongsSent)
         {
 

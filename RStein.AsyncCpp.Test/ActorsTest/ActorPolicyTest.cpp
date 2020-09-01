@@ -2,17 +2,17 @@
 #include "../../RStein.AsyncCpp/Tasks/TaskCompletionSource.h"
 #include "../../RStein.AsyncCpp/Tasks/TaskFactory.h"
 
-
-
 #include <gtest/gtest.h>
+using namespace RStein::AsyncCpp::Actors;
 namespace RStein::AsyncCpp::ActorsTest
 {
-  class TestActor : public Actors::ActorPolicy
+  class TestActor : public ActorPolicy
   {
   public:
 
-    TestActor(std::function<bool()> canCompleteNow = [] {return true; }, std::function<void()> completeLogic = [] {}) : _canCompleteNow(std::move(canCompleteNow)),
-      _completeLogic(std::move(completeLogic))
+    TestActor(std::function<bool()> canCompleteNow = [] {return true; }, std::function<void()> completeLogic = [] {}) : ActorPolicy{},
+                                                                                                                                 _canCompleteNow(std::move(canCompleteNow)),
+                                                                                                                                  _completeLogic(std::move(completeLogic))
     {
 
     }
