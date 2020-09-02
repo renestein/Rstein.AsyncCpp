@@ -1,6 +1,6 @@
 # RStein.AsyncCpp (C++ library)
 [![Build Status](https://dev.azure.com/rene0884/RStein.AsyncCpp/_apis/build/status/renestein.Rstein.AsyncCpp?branchName=master)](https://dev.azure.com/rene0884/RStein.AsyncCpp/_build/latest?definitionId=2&branchName=master)
-- The RStein.AsyncCpp library is a set of types that should be familiar for anyone who knows the Task Parallel Library (TPL) for .NET (C#). In addition, this library contains simple DataFlow, actors (agents), functional combinators for the Task<T> class, useful async primitives (AsyncSemaphore, AsyncProducerConsumerCollection, CancellationToken, CancellationTokenSource, AsyncMutex, SynchronizationContext, SynchronizationContextScope ...).
+- The RStein.AsyncCpp library is a set of types that should be familiar for anyone who knows the Task Parallel Library (TPL) for .NET (C#). In addition, this library contains simple DataFlow, threadless actors (agents), functional combinators for the Task<T> class, useful async primitives (AsyncSemaphore, AsyncProducerConsumerCollection, CancellationToken, CancellationTokenSource, AsyncMutex, SynchronizationContext, SynchronizationContextScope ...).
 
 - The library is my playground for testing coroutine support in C++.
 - The library supports compilation in the VS 2019. Support for other compilers is planned.
@@ -60,15 +60,14 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
 * [`Flat DataFlow.`](#Flat-Dataflow)
 * [`Fork-Join DataFlow.`](#Fork-Join-Dataflow)
 
-## **Actors (in-process agents)**
+## **Threadless actors (in-process agents)**
 * [`Simple actor - functional style/synchronous logic/without state/no reply.`](#Actor-I)
 
 * [`Simple actor - functional style/asynchronous logic/with state/no reply.`](#Actor-II)
 
-* [`Reply actor - functional style/asynchronous logic/with state/returns reply task which eventually contains the result of the message processing.`](#Actor-III)
+* [`Reply actor - functional style/asynchronous logic/with state/returns reply task, which eventually contains the result of the message processing.`](#Actor-III)
 
-* [`ActorPolicy base class - object oriented style.`](#Actor-IV)
-* [`PingPong.`](#Actor-V)
+* [`ActorPolicy base class - OOP style.`](#Actor-IV)
 * [`Map/Reduce actors - counting word frequency in Shakespeare (sample).`](https://github.com/renestein/Rstein.AsyncCpp/tree/master/Samples/MapReduceActors)
 
 ![](https://snipboard.io/TSxCQb.jpg)
@@ -1021,7 +1020,7 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
       //Start dataflow
       transform1->Start();
 
-      //Add input data to the first block.
+      //Add the input data to the first block.
       for (int i = 0; i < inputItemsCount; ++i)
       {
         co_await transform1->AcceptInputAsync(i);
@@ -1047,15 +1046,15 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
     const int EXPECTED_MESSAGES = 101;
     auto seenMessages = 0;
     {
-      //Create actor (synchronous logic/without state/no reply).
+      //Create the actor (synchronous logic/without state/no reply).
       auto stateLessActor = CreateSimpleActor<int>([&seenMessages](const int& message) {seenMessages++; });
       for (int i = 0; i < EXPECTED_MESSAGES; i++)
       {
-        //Send message to the actor.
+        //Send the message to the actor queue.
         stateLessActor->Tell(i);
       }
 
-    } // Actor logic completes and actor is destroyed. Alternatively you can call Complete method and wait for the actor Completion task.
+    }// The actor logic completes and the actor is destroyed. Alternatively, you can call the Complete method and wait for the actor Completion task.
 
     ASSERT_EQ(EXPECTED_MESSAGES, seenMessages);
   }
@@ -1071,19 +1070,19 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
     auto seenMessages = 0;
     auto testState = 0;
     {
-      //Create actor (asynchronous logic/with state/no reply).
+      //Create the actor (asynchronous logic/with state/no reply).
       auto stateFullActor = RStein::AsyncCpp::Actors::CreateAsyncSimpleActor<int, int>([&seenMessages, &testState](const int& message, const int& state)->Task<int>
         {
-          //Process argument message.
+          //Process the message argument.
           seenMessages++;
 
-          //We can se co_await keyword.
+          //We can use the co_await keyword in the asynchronous method.
           co_await GetCompletedTask().ConfigureAwait(false);
           
-          //Update actor state, argument state is an old actor state
+          //Update the actor state, the argument state is an old (last) actor state.
           auto newState = state + 1;
           testState = newState;
-          //Return new state.
+          //Return the new state.
           co_return newState;
         }, testState);
 
@@ -1091,8 +1090,8 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
       {
         stateFullActor->Tell(i);
       }
-    }  // Actor logic completes and actor is destroyed. Alternatively you can call Complete method and wait for the actor Completion task.
-
+    }// The actor logic completes and the actor is destroyed. Alternatively, you can call the Complete method and wait for the actor Completion task.
+    
     ASSERT_EQ(EXPECTED_STATE, testState);
   }
 ```
@@ -1103,33 +1102,33 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
   {
     const int MESSAGES_COUNT = 99;
 
-    //Create actor. Functional style/asynchronous logic/with state/returns reply task which eventually contains result of the message processing.`
+    //Create the actor. Functional style/asynchronous logic/with state/returns reply task which eventually contains a result of the message processing.
     auto asyncStatefulReplyActor = CreateAsyncReplyActor<int, string, int>([](const int& message, const int& state)->Task<pair<string, int>>
     {
-      //Use asynchronous method 
+       //We can use the co_await keyword in the asynchronous method.
       co_await GetCompletedTask().ConfigureAwait(false);
 
-      //Argument message (int) converted to string is a result of the processing  - first member of the returned pair.
-      //Second member of the returnd pair is a new actor state (always 0 in this case).
+      //The argument message (int) converted to a string is a result of the processing  - the first member of the returned pair.
+      //Second member of the returned pair is a new actor state (always 0 in this case).
       co_return make_pair(to_string(message), 0);
     }, 0);
 
     for (auto i = 0; i < MESSAGES_COUNT; i++)
     {
-      //Ask actor and save the task.
+      //Ask the actor and save the reply task.
       auto replyTask = asyncStatefulReplyActor->Ask(i);
       
-      //Wait (better co_await) the result task.
-      auto response= replyTask.Result();
+      //Wait for (better co_await) the reply  task.
+      auto response = replyTask.Result();
       
       ASSERT_EQ(to_string(i), response);
     }
-  }  // Actor logic completes and actor is destroyed. Alternatively you can call Complete method and wait for the actor Completion task.
+  }// The actor logic completes and the actor is destroyed. Alternatively, you can call the Complete method and wait for the actor Completion task.
 ```
 ## Actor IV
 ``` C++
 
-  //Actor inherits from ActorPolicy class
+  //Actor inherits from the ActorPolicy class.
   class TestActor : public Actors::ActorPolicy
   {
   public:
@@ -1139,10 +1138,10 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
 
     }
 
-    //fire & forget method in actor
+    //Fire & forget method runs in the actor message loop.
     void RunVoidMethod(std::function<void()> scheduleFunction)
     {
-      //Use inherited ScheduleFunction method form ActorPolicy to add the message to the actor queue.
+      //Use the inherited ScheduleFunction method from the ActorPolicy to add the message to the actor queue.
 
       ScheduleFunction([scheduleFunction]
         {
@@ -1151,20 +1150,45 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
         });
     }
 
-    //Method returns result of the processing wrapped in Task<int>
+    //Method returns result of the processing wrapped in the Task<int>.
     Tasks::Task<int> ProcessInt(int number)
     {
-       //Use inherited ScheduleFunction method form ActorPolicy to add the message to the actor queue.
+       //Use the inherited ScheduleFunction method from the ActorPolicy to add the message to the actor queue.
        //ScheduleFunction returns Task<T>.
       return ScheduleFunction([number] {
+        //Simply return the argument.
         return number;
+        });
+    }
+
+     //Method returns result of the processing wrapped in the Task<int>.
+    Tasks::Task<int> ProcessInt(std::function<int(int)> processIntFunc, int number)
+    {
+        //Use the inherited ScheduleFunction method from the ActorPolicy to add the message to the actor queue.
+       //ScheduleFunction returns Task<T>.
+      return ScheduleFunction([number, processIntFunc] {
+        //Run the function in the actor 'logical' thread.
+        return processIntFunc(number);
         });
     }
 
     [...] 
   };
 
-  //Sum data in actor
+  //Check that the message in the actor qeueue is processed.
+  TEST(ActorPolicy, ScheduleFunctionWhenMethodCalledThenTaskIsCompletedWithExpectedResult)
+  {
+    const int EXPECTED_RESULT = 10;
+    TestActor actor;
+    //Add message to the actor queue.
+    auto intTask = actor.ProcessInt(EXPECTED_RESULT);
+    //Wait for the actor task.
+    intTask.Wait();
+     //Check that the actor method returns expected value.
+    ASSERT_EQ(EXPECTED_RESULT, intTask.Result());
+  }
+
+  //Sum the data in the actor.
   TEST(ActorPolicy, ScheduleFunctionWhenCalledThenAllFunctionsAreProcessedSequentially)
   {
     const int SUM_TO = 100;
@@ -1175,7 +1199,7 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
 
     for (int i = 0; i <= SUM_TO; ++i)
     {
-      //Call actor method ProcessInt
+      //Call the actor method ProcessInt (std::function<int(int)> processIntFunc, int number) overload.
       intTask = actor.ProcessInt([&sumResult](int number)
         {
           sumResult += number;
@@ -1183,7 +1207,7 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
         }, i);
     }
 
-    //Wait for last processing result
+    //Wait for the last processing result.
     intTask.Wait();
 
     auto lastTaskResult = intTask.Result();
@@ -1191,7 +1215,7 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
     ASSERT_EQ(EXPECTED_RESULT, lastTaskResult);
     ASSERT_EQ(EXPECTED_RESULT, sumResult);
   }
-
+```
 ## Actor V
 ``` C++
 TEST(SimpleActorTest, PingPongTest)
@@ -1200,7 +1224,7 @@ TEST(SimpleActorTest, PingPongTest)
     std::unique_ptr<IActor<string>> sigerus;
     std::unique_ptr<IActor<string>> thomasAquinas;
 
-    //Logger is an actor
+    //The logger is an actor
     auto logger = CreateSimpleActor<string>([](const string& message)
       {
         cout << message << endl;
@@ -1211,13 +1235,13 @@ TEST(SimpleActorTest, PingPongTest)
       {
         if (message == "start" || message.starts_with("pong"))
         {
-          //Log message.
+          //Log the message.
           logger->Tell(message);
 
-          //Update state
+          //Update an actor state.
           auto newState = pingsSent + 1;
 
-          //send ping
+          //Send the 'ping' message.
           sigerus->Tell("ping " + to_string(newState));
 
           return newState;
@@ -1231,17 +1255,18 @@ TEST(SimpleActorTest, PingPongTest)
 
           if (message.starts_with("ping"))
           {
-            //Log meessage
+             //Log the message.
             logger->Tell(message);
-            //Update state
+
+            //Update an actor state.
             auto newState = pongsSent + 1;
 
-            //send pong message or stop message if the game is over.
+            //Send the 'pong' message or send the 'stop' message when the game is over.
             thomasAquinas->Tell(newState < 5
               ? "pong " + to_string(newState)
               : "stop");
               
-            //simulate wait.
+            //Simulate wait.
             //missing Task.Delay
             this_thread::sleep_for(500ms);
             return newState;
