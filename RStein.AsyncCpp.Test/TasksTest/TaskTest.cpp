@@ -1,5 +1,6 @@
 #include "../../RStein.AsyncCpp/AsyncPrimitives/CancellationTokenSource.h"
 #include "../../RStein.AsyncCpp/AsyncPrimitives/OperationCanceledException.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/FutureEx.h"
 #include "../../RStein.AsyncCpp/Schedulers/SimpleThreadPool.h"
 #include "../../RStein.AsyncCpp/Schedulers/ThreadPoolScheduler.h"
 #include "../../RStein.AsyncCpp/Tasks/GlobalTaskSettings.h"
@@ -29,7 +30,7 @@ namespace RStein::AsyncCpp::TasksTest
   {
   public:
 
-    future<void> ContinueWithWhenUsingAwaiterThenTaskIsResumedImpl() const
+    shared_future<void> ContinueWithWhenUsingAwaiterThenTaskIsResumedImpl() const
     {
       auto func = []
       {
@@ -41,7 +42,7 @@ namespace RStein::AsyncCpp::TasksTest
       co_await task;
     }
 
-    future<string> ContinueWithWhenUsingTaskTAwaiterThenTaskIsCompletedWithExpectedValueImpl(string expectedValue) const
+    shared_future<string> ContinueWithWhenUsingTaskTAwaiterThenTaskIsCompletedWithExpectedValueImpl(string expectedValue) const
     {
       auto result = co_await TaskFactory::Run([expectedValue]
       {

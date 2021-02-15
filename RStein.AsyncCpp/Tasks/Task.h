@@ -10,7 +10,11 @@
 #include <exception>
 #include <memory>
 #include <ostream>
-
+#ifdef __cpp_impl_coroutine
+#include <coroutine>
+#else
+#include <experimental/coroutine>
+#endif
 
 namespace RStein::AsyncCpp::Tasks
 {
@@ -156,7 +160,11 @@ namespace RStein::AsyncCpp::Tasks
            return !GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse && _task.IsCompleted();
          }
 
+#ifdef __cpp_impl_coroutine
+        [[nodiscard]] bool await_suspend(std::coroutine_handle<> continuation)
+#else
         [[nodiscard]] bool await_suspend(std::experimental::coroutine_handle<> continuation)
+#endif
         {
           if (!GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse && _task.IsCompleted())
           {

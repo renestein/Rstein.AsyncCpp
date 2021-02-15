@@ -5,8 +5,13 @@
 #include "../Threading/SynchronizationContext.h"
 #include "../Utils/FinallyBlock.h"
 
+#ifdef __cpp_impl_coroutine
+#include <coroutine>
+#else
 #include <experimental/coroutine>
+#endif
 #include <algorithm>
+
 #include <cassert>
 
 using namespace std;
@@ -57,7 +62,11 @@ namespace RStein::AsyncCpp::Schedulers
     return false;
   }
 
+#ifdef __cpp_impl_coroutine
+  bool Scheduler::await_suspend(std::coroutine_handle<> coroutine)
+#else
   bool Scheduler::await_suspend(std::experimental::coroutine_handle<> coroutine)
+#endif
   {
     EnqueueItem(coroutine);
     return true;
