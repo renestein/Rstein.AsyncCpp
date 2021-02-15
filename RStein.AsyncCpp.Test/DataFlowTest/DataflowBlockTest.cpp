@@ -183,7 +183,7 @@ namespace RStein::AsyncCpp::DataFlowTest
         return item + ": {string}";
       });
 
-    vector<string> _processedItems{};
+                                                                                                               vector<string> _processedItems{};
     auto finalAction = DataFlowSyncFactory::CreateActionBlock<string, Detail::NoState>([&_processedItems
     ](const string& item,
       Detail::NoState*&)
@@ -286,5 +286,42 @@ namespace RStein::AsyncCpp::DataFlowTest
 
     ASSERT_EQ(EXPECTED_PROCESSED_ITEMS, processedItems);
 
+  }
+
+  TEST_F(DataFlowTest, WhenInputClassDoesNotHaveDefaultCtorThenCanBeProcessedInDataflow)
+  {
+    const int EXPECTED_VALUE = 101;
+    class WithoutDefaultCtor
+    {
+      public:
+        WithoutDefaultCtor(int value): _value(value)
+        {
+            
+        }
+
+        int Value() const
+        {
+          return _value;
+        }
+
+      private:
+        int _value;
+    };
+
+    int processedValue  = 0;
+
+    auto ac2  = DataFlowAsyncFactory::CreateActionBlock<WithoutDefaultCtor*>([&processedValue](WithoutDefaultCtor* const& source)-> Tasks::Task<void>
+    {
+      co_await Tasks::GetCompletedTask();
+      processedValue = source->Value();
+    
+    });
+    WithoutDefaultCtor wdc1 {EXPECTED_VALUE};
+    ac2->Start();
+    ac2->AcceptInputAsync(&wdc1);
+    ac2->Complete();
+    ac2->Completion().Wait();
+
+    ASSERT_EQ(EXPECTED_VALUE, processedValue);
   }
 }
