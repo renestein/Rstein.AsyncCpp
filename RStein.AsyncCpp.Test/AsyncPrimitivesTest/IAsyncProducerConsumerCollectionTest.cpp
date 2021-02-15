@@ -10,7 +10,9 @@
 using namespace testing;
 using namespace RStein::AsyncCpp::AsyncPrimitives;
 using namespace std;
+#ifdef __cpp_impl_coroutine
 using namespace std::experimental;
+#endif
 
 namespace RStein::AsyncCpp::AsyncPrimitivesTest
 {

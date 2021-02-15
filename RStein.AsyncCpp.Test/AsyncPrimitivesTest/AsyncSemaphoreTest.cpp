@@ -7,13 +7,21 @@
 
 #include <future>
 #include <xutility>
+#ifdef __cpp_impl_coroutine
+#include <coroutine>
+#else
 #include <experimental/generator>
-#include <experimental/resumable>
+#endif
+
+
 
 using namespace RStein::AsyncCpp::AsyncPrimitives;
 using namespace testing;
 using namespace std;
+#ifdef __cpp_impl_coroutine
 using namespace std::experimental;
+#endif
+
 
 namespace RStein::AsyncCpp::AsyncPrimitivesTest
 {
