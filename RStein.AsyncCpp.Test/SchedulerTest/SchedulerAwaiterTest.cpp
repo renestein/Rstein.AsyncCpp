@@ -5,6 +5,7 @@
 #include <future>
 #include "../../RStein.AsyncCpp/Tasks/Task.h"
 #include "../../RStein.AsyncCpp/Tasks/TaskCompletionSource.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/FutureEx.h"
 
 #include <gtest/gtest.h>
 
@@ -40,7 +41,7 @@ namespace RStein::AsyncCpp::SchedulersTest
       co_return true;
     }
 
-    std::future<bool> WhenUsingAwaiterThenRepeatingOfTheAwaitOperationWorks(Scheduler& scheduler)
+    std::shared_future<bool> WhenUsingAwaiterThenRepeatingOfTheAwaitOperationWorks(Scheduler& scheduler)
     {
       cout << "\n Before awaiter: ";
       logCurrentThreadId();

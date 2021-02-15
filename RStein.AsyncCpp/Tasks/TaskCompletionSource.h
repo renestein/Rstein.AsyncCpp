@@ -4,7 +4,12 @@
 
 
 #include <exception>
+
+#ifdef __cpp_impl_coroutine
+#include <coroutine>
+#else
 #include <experimental/coroutine>
+#endif
 
 namespace RStein::AsyncCpp::Tasks
 {
@@ -118,7 +123,13 @@ namespace RStein::AsyncCpp::Tasks
       return _tcs.GetTask();
     }
 
+    
+#ifdef __cpp_impl_coroutine
+    [[nodiscard]] std::suspend_never initial_suspend() const noexcept
+#else
     [[nodiscard]] std::experimental::suspend_never initial_suspend() const noexcept
+#endif
+    
     {
       return {};
     }
@@ -130,7 +141,12 @@ namespace RStein::AsyncCpp::Tasks
     }
 
     //TODO return suspend_always, capture and destroy coroutine_handle in Task?
+    
+#ifdef __cpp_impl_coroutine
+    [[nodiscard]] std::suspend_never final_suspend() const noexcept
+#else
     [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
+#endif
     {
       _tcs.publishResult();
       return {};
@@ -170,8 +186,13 @@ namespace RStein::AsyncCpp::Tasks
     {
       return _tcs.GetTask();
     }
-
-    [[nodiscard]] std::experimental::suspend_never initial_suspend() const noexcept
+    
+#ifdef __cpp_impl_coroutine
+    [[nodiscard]] std::suspend_never initial_suspend() const noexcept
+#else
+  [[nodiscard]] std::experimental::suspend_never initial_suspend() const noexcept
+#endif
+   
     {
       return {};
     }
@@ -183,7 +204,11 @@ namespace RStein::AsyncCpp::Tasks
     }
 
     //TODO return suspend_always, capture and destroy coroutine_handle in Task?
+#ifdef __cpp_impl_coroutine
+    [[nodiscard]] std::suspend_never final_suspend() const noexcept
+#else
     [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
+#endif
     {
       _tcs.publishResult();
       return {};
@@ -210,7 +235,11 @@ namespace RStein::AsyncCpp::Tasks
   };
 }
 
+#ifdef __cpp_impl_coroutine
+ namespace std
+#else
  namespace std::experimental
+#endif
 {
   template <typename... ARGS>
   struct coroutine_traits<RStein::AsyncCpp::Tasks::Task<void>, ARGS...>

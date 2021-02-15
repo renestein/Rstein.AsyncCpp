@@ -21,6 +21,18 @@ strategy:
       x86-debug:        
           buildPlatform: x86
           buildConfiguration: debug
+      x64-release_VSAWAIT:
+          buildPlatform: x64
+          buildConfiguration: Release_VSAWAIT
+      x64-debug_VSAWAIT:
+          buildPlatform: x64
+          buildConfiguration: Debug_VSAWAIT
+      x86-release_VSAWAIT:
+          buildPlatform: x86
+          buildConfiguration: Release_VSAWAIT
+      x86-debug_VSAWAIT:        
+          buildPlatform: x86
+          buildConfiguration: Debug_VSAWAIT
 
 pool:
   vmImage: 'windows-latest'
