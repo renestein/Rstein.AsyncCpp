@@ -14,29 +14,29 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
   class SharedFutureTest : public Test
   {
   protected:
-    [[nodiscard]] future<void> awaiterWhenUsingThenCoAwaitWorksImpl() const
+    [[nodiscard]] shared_future<void> awaiterWhenUsingThenCoAwaitWorksImpl() const
     {
       promise<void> promise;
       auto sharedFuture = promise.get_future().share();
       co_await async([&promise]
       {
         promise.set_value();
-      });
+      }).share();
       co_await sharedFuture;
     }
 
-    [[nodiscard]] future<void> awaiterWhenExceptionalVoidFutureThenCoAwaitThrowsInvalidArgumentExceptionImpl() const
+    [[nodiscard]] shared_future<void> awaiterWhenExceptionalVoidFutureThenCoAwaitThrowsInvalidArgumentExceptionImpl() const
     {
       promise<void> promise;
       auto sharedFuture = promise.get_future().share();
       co_await async([&promise]
       {
         promise.set_exception(make_exception_ptr(std::invalid_argument{"test exception"}));
-      });
+      }).share();
       co_return co_await sharedFuture;
     }
 
-    [[nodiscard]] future<int> awaiterWhenResultFutureThenCoAwaitReturnsFutureValue(int expectedValue) const
+    [[nodiscard]] shared_future<int> awaiterWhenResultFutureThenCoAwaitReturnsFutureValue(int expectedValue) const
     {
       promise<int> promise;
       auto sharedFuture = promise.get_future().share();
@@ -54,7 +54,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       co_return retValue;
     }
 
-    [[nodiscard]] future<int> awaiterWhenExceptionalIntFutureThenCoAwaitThrowsOperationCanceledExceptionImpl()
+    [[nodiscard]] shared_future<int> awaiterWhenExceptionalIntFutureThenCoAwaitThrowsOperationCanceledExceptionImpl()
     {
       promise<int> promise;
       auto sharedFuture = promise.get_future().share();
@@ -83,13 +83,13 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
 
       co_await sharedFuture;
       promise<int> promise2;
-      auto uniqueFuture = promise2.get_future();
+      auto future = promise2.get_future().share();
       co_await async([&promise2]
       {
         promise2.set_value(101);
       });
 
-      co_await uniqueFuture;
+      co_await future;
     }
 
     [[nodiscard]] std::shared_future<void> sharedFutureWhenUsingPromiseReturnAndCoroutineThrowsExceptionThenPromiseThrowsSameExceptionImpl() const
@@ -103,7 +103,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
 
       co_await sharedFuture;
       promise<int> promise2;
-      auto uniqueFuture = promise2.get_future();
+      auto uniqueFuture = promise2.get_future().share();
       co_await async([&promise2]
       {
         promise2.set_exception(make_exception_ptr(OperationCanceledException{}));
@@ -122,7 +122,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
 
       co_await sharedFuture;
       promise<int> promise2;
-      auto uniqueFuture = promise2.get_future();
+      auto uniqueFuture = promise2.get_future().share();
       co_await async([&promise2]
       {
         promise2.set_exception(make_exception_ptr(OperationCanceledException{}));
@@ -144,13 +144,13 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
 
       co_await sharedFuture;
       promise<int> promise2;
-      auto uniqueFuture = promise2.get_future();
+      auto future = promise2.get_future().share();
       co_await async([&promise2, expectedValue]
       {
         promise2.set_value(expectedValue);
       });
 
-      auto retValue = co_await uniqueFuture;
+      auto retValue = co_await future;
 
       co_return retValue; 
     }

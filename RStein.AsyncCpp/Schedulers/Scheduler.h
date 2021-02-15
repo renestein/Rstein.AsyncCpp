@@ -1,7 +1,10 @@
 #pragma once
 #include "../Utils/FinallyBlock.h"
-
+#ifdef __cpp_impl_coroutine
+#include <coroutine>
+#else
 #include <experimental/resumable>
+#endif
 #include <memory>
 #include <functional>
 
@@ -35,7 +38,11 @@ class Scheduler : public std::enable_shared_from_this<Scheduler>
     
     //awaiter members
     bool await_ready() const;
+ #ifdef __cpp_impl_coroutine
+    bool await_suspend(std::coroutine_handle<> coroutine);
+#else
     bool await_suspend(std::experimental::coroutine_handle<> coroutine);
+#endif
     void await_resume() const;   
     //end awaiter members
 protected:

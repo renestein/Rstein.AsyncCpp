@@ -1,6 +1,7 @@
 #include "../../RStein.AsyncCpp/AsyncPrimitives/CancellationTokenSource.h"
 #include "../../RStein.AsyncCpp/AsyncPrimitives/OperationCanceledException.h"
 #include "../../RStein.AsyncCpp/AsyncPrimitives/SimpleAsyncProducerConsumerCollection.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/FutureEx.h"
 
 
 #include <future>
@@ -10,7 +11,11 @@
 using namespace testing;
 using namespace RStein::AsyncCpp::AsyncPrimitives;
 using namespace std;
+#ifdef __cpp_impl_coroutine
+using namespace std;
+#else
 using namespace std::experimental;
+#endif
 
 namespace RStein::AsyncCpp::AsyncPrimitivesTest
 {
@@ -22,7 +27,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
     AsyncProducerConsumerCollectionTest() = default;
 
   protected:
-    [[nodiscard]] future<int> takeAsyncWhenCollectionHaveValueThenReturnValueImpl(int expectedItem) const
+    [[nodiscard]] shared_future<int> takeAsyncWhenCollectionHaveValueThenReturnValueImpl(int expectedItem) const
     {
       Collection collection{};
       
@@ -31,7 +36,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       co_return 10;
     }
 
-     [[nodiscard]] future<void> takeAsyncWhenCollectionWhenCanceledThenThrowsOperationCanceledExceptionImpl() const
+     [[nodiscard]] shared_future<void> takeAsyncWhenCollectionWhenCanceledThenThrowsOperationCanceledExceptionImpl() const
     {
       Collection collection{};
   
