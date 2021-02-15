@@ -2,7 +2,11 @@
 #include <future>
 #include <iostream>
 #include <thread>
+#ifdef __cpp_impl_coroutine
 #include <coroutine>
+#else
+#include <experimental/coroutine>
+#endif
 
 namespace RStein::AsyncCpp::AsyncPrimitives
 {
