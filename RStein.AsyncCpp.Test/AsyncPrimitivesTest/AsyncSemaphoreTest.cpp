@@ -3,6 +3,7 @@
 #include "../../RStein.AsyncCpp/AsyncPrimitives/AsyncSemaphore.h"
 #include "../../RStein.AsyncCpp/AsyncPrimitives/OperationCanceledException.h"
 #include "../../RStein.AsyncCpp/AsyncPrimitives/CancellationTokenSource.h"
+#include "../../RStein.AsyncCpp/AsyncPrimitives/FutureEx.h"
 
 
 #include <future>
@@ -19,6 +20,8 @@ using namespace RStein::AsyncCpp::AsyncPrimitives;
 using namespace testing;
 using namespace std;
 #ifdef __cpp_impl_coroutine
+using namespace std;
+#else
 using namespace std::experimental;
 #endif
 
@@ -28,7 +31,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
   class AsyncSemaphoreTest : public testing::Test
   {
   protected:
-    [[nodiscard]] future<void> waitAsyncWhenSemaphoreIsReadyThenReturnsReadyFutureImpl() const
+    [[nodiscard]] shared_future<void> waitAsyncWhenSemaphoreIsReadyThenReturnsReadyFutureImpl() const
     {
       const auto maxCount{1};
       const auto initialCount{1};
@@ -41,7 +44,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       semaphore.Release();
     }
 
-    [[nodiscard]] future<void> waitAsyncWhenSemaphoreIsNotReadyThenFutureIsCompletedLaterImpl() const
+    [[nodiscard]] shared_future<void> waitAsyncWhenSemaphoreIsNotReadyThenFutureIsCompletedLaterImpl() const
     {
       const auto maxCount{1};
       const auto initialCount{0};
@@ -53,7 +56,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       co_await async(launch::async, [&semaphore]()
       {
         semaphore.Release();
-      });
+      }).share();
       co_await waitFuture;
       semaphore.Release();
     }
@@ -78,17 +81,17 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       const auto initialCount{0};
 
       AsyncSemaphore semaphore{maxCount, initialCount};
-      std::vector<future<future<int>>> futures;
+      std::vector<future<shared_future<int>>> futures;
       futures.reserve(taskCount);
 
       auto result = 0;
-      for (auto i : generate(taskCount))
+      for (auto i = 0; i < taskCount; i++)
       {
         /*Action action {&semaphore, &result, i};*/
         //lambda and nested futures/struct Action causes access violation
 
-        packaged_task<future<int>(int*, AsyncSemaphore*, int)> task{
-            [](int* result, AsyncSemaphore* semaphore, int i)-> future<int>
+        packaged_task<shared_future<int>(int*, AsyncSemaphore*, int)> task{
+            [](int* result, AsyncSemaphore* semaphore, int i)-> shared_future<int>
             {
               co_await semaphore->WaitAsync();
               (*result)++;
@@ -127,7 +130,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       return result;
     }
 
-    [[nodiscard]] future<void> disposeWhenCalledThenAllWaitersAreReleasedImpl() const
+    [[nodiscard]] shared_future<void> disposeWhenCalledThenAllWaitersAreReleasedImpl() const
     {
       const auto WAITERS = 1000;
       const auto maxCount{1};
@@ -153,7 +156,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       }
     }
 
-    [[nodiscard]] future<void> waitAsyncWhenOneWaiterCanceledThenNextWaiterSucceedImpl()
+    [[nodiscard]] shared_future<void> waitAsyncWhenOneWaiterCanceledThenNextWaiterSucceedImpl()
     {
       const auto maxCount{100};
       const auto initialCount{0};
@@ -179,13 +182,6 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       semaphore.Dispose();
     }
       
-    generator<int> generate(int count)
-    {
-      for (auto i = 0; i < count; ++i)
-      {
-        co_yield i;
-      }
-    }
   };
 
   TEST_F(AsyncSemaphoreTest, CtorWhenMaxCountLessThanZeroThenThrowsInvalidArgument)
