@@ -6,7 +6,7 @@ namespace Samples::MapReduceActors
 {
   void WriteTopWordsActor::ProcessAggregatedWords(std::vector<std::pair<std::wstring, int>> aggregatedWords)
   {
-    ScheduleFunction([this, aggregatedWords=std::move(aggregatedWords)]()
+    ScheduleFunction([aggregatedWords=std::move(aggregatedWords)]()
       {
         const int MAX_WORDS = 50;
         auto index = 0;

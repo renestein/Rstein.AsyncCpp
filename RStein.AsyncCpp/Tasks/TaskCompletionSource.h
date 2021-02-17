@@ -5,7 +5,9 @@
 
 #include <exception>
 
-#ifdef __cpp_impl_coroutine
+#if defined(__clang__)
+#include "../ClangWinSpecific/Coroutine.h"
+#elif defined(__cpp_impl_coroutine)
 #include <coroutine>
 #else
 #include <experimental/coroutine>
@@ -124,7 +126,7 @@ namespace RStein::AsyncCpp::Tasks
     }
 
     
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
     [[nodiscard]] std::suspend_never initial_suspend() const noexcept
 #else
     [[nodiscard]] std::experimental::suspend_never initial_suspend() const noexcept
@@ -142,7 +144,7 @@ namespace RStein::AsyncCpp::Tasks
 
     //TODO return suspend_always, capture and destroy coroutine_handle in Task?
     
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
     [[nodiscard]] std::suspend_never final_suspend() const noexcept
 #else
     [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
@@ -187,7 +189,7 @@ namespace RStein::AsyncCpp::Tasks
       return _tcs.GetTask();
     }
     
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
     [[nodiscard]] std::suspend_never initial_suspend() const noexcept
 #else
   [[nodiscard]] std::experimental::suspend_never initial_suspend() const noexcept
@@ -204,7 +206,7 @@ namespace RStein::AsyncCpp::Tasks
     }
 
     //TODO return suspend_always, capture and destroy coroutine_handle in Task?
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
     [[nodiscard]] std::suspend_never final_suspend() const noexcept
 #else
     [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
@@ -235,7 +237,7 @@ namespace RStein::AsyncCpp::Tasks
   };
 }
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
  namespace std
 #else
  namespace std::experimental

@@ -1,6 +1,10 @@
 #pragma once
+
 #include "../Utils/FinallyBlock.h"
-#ifdef __cpp_impl_coroutine
+
+#if defined(__clang__)
+#include "../ClangWinSpecific/Coroutine.h"
+#elif defined(__cpp_impl_coroutine) 
 #include <coroutine>
 #else
 #include <experimental/resumable>
@@ -38,7 +42,8 @@ class Scheduler : public std::enable_shared_from_this<Scheduler>
     
     //awaiter members
     bool await_ready() const;
- #ifdef __cpp_impl_coroutine
+ 
+ #if defined(__cpp_impl_coroutine) && !defined(__clang__)
     bool await_suspend(std::coroutine_handle<> coroutine);
 #else
     bool await_suspend(std::experimental::coroutine_handle<> coroutine);
@@ -57,7 +62,7 @@ void Scheduler::EnqueueItem(TFunc originalFunction)
 {
   Utils::FinallyBlock finally{[]{_currentScheduler = SchedulerPtr{};}};
 
-    OnEnqueueItem([originalFunction = std::move(originalFunction), scheduler = shared_from_this()]()
+    OnEnqueueItem([originalFunction = std::move(originalFunction), scheduler = shared_from_this()]() mutable
     {
       _currentScheduler = scheduler;
       Utils::FinallyBlock finally{[]{_currentScheduler = SchedulerPtr{};}};

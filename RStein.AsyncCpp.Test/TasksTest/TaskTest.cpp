@@ -161,8 +161,10 @@ namespace RStein::AsyncCpp::TasksTest
       };
 
       GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse = true;
+
       //Task continuation uses captured non-default synchronization context
-      co_await TaskFactory::Run([]  // NOLINT(clang-diagnostic-unused-result)
+     
+      co_await TaskFactory::Run([]
       {
         return 42;
       });      
@@ -545,7 +547,7 @@ namespace RStein::AsyncCpp::TasksTest
   {
     const int EXPECTED_VALUE = 42;
 
-    auto task = TaskFactory::Run([EXPECTED_VALUE]()
+    auto task = TaskFactory::Run([]()
     {
       return EXPECTED_VALUE;
     });
@@ -560,7 +562,7 @@ namespace RStein::AsyncCpp::TasksTest
   {
     const int EXPECTED_VALUE = 42;
 
-    auto continuationTask = TaskFactory::Run([EXPECTED_VALUE]()
+    auto continuationTask = TaskFactory::Run([]()
         {
           return EXPECTED_VALUE;
         })
@@ -1125,7 +1127,8 @@ namespace RStein::AsyncCpp::TasksTest
     ASSERT_EQ(EXPECTED_RESULT, result);
   }
 
-
+//clang x86 - >fatal error: error in backend: Coroutines cannot handle non static allocas yet
+#if !defined(__clang__) || defined(_WIN64)
   TEST_F(TaskTest, PipeOperatorWhenUsingJoinThenReturnsExpectedResult)
   {
     const int initialValue = 10;
@@ -1164,6 +1167,7 @@ namespace RStein::AsyncCpp::TasksTest
 
     ASSERT_EQ(EXPECTED_VALUE, mappedTask.Result());
   }
+#endif
 
   TEST_F(TaskTest, AwaitWhenNonDefaultContextThenContinuationRunInSynchronizationContext)
   {
