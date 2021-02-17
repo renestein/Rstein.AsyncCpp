@@ -11,7 +11,7 @@
 using namespace testing;
 using namespace RStein::AsyncCpp::AsyncPrimitives;
 using namespace std;
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) || defined(__clang__)
 using namespace std;
 #else
 using namespace std::experimental;
@@ -32,7 +32,14 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       Collection collection{};
       
       co_await collection.AddAsync(expectedItem);
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
+#endif
       auto value = co_await collection.TakeAsync();
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
       co_return 10;
     }
 
@@ -79,7 +86,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
   }
 #endif
   
-  TYPED_TEST(AsyncProducerConsumerCollectionTest, TakeAAllWhenHasItemsThenReturnsAllItems)
+  TYPED_TEST(AsyncProducerConsumerCollectionTest, TakeAllWhenHasItemsThenReturnsAllItems)
   {
     const int ITEMS_IN_COLLECTION = 1000;
     vector<int> items(ITEMS_IN_COLLECTION);

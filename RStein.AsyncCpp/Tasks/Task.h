@@ -5,12 +5,14 @@
 #include "../Detail/Tasks/TaskHelpers.h"
 #include "../Threading/SynchronizationContext.h"
 
-
 #include <any>
 #include <exception>
 #include <memory>
 #include <ostream>
-#ifdef __cpp_impl_coroutine
+
+#if defined(__clang__)
+#include "../ClangWinSpecific/Coroutine.h"
+#elif defined(__cpp_impl_coroutine)
 #include <coroutine>
 #else
 #include <experimental/coroutine>
@@ -135,16 +137,14 @@ namespace RStein::AsyncCpp::Tasks
                       const Schedulers::Scheduler::SchedulerPtr& continuationScheduler,
                       const AsyncPrimitives::CancellationToken& cancellationToken);
 
-  std::exception_ptr Exception() const;
+    std::exception_ptr Exception() const;
 
     auto operator co_await() const
     {           
       return ConfigureAwait(!Threading::SynchronizationContext::Current()->IsDefault());      
     }
 
-    auto ConfigureAwait(bool continueOnCapturedContext) const
-    {
-      struct SyncContextAwareTaskAwaiter
+     struct SyncContextAwareTaskAwaiter
       {
          Task<TResult> _task;
          bool _continueOnCapturedContext;
@@ -160,7 +160,7 @@ namespace RStein::AsyncCpp::Tasks
            return !GlobalTaskSettings::TaskAwaiterAwaitReadyAlwaysReturnsFalse && _task.IsCompleted();
          }
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
         [[nodiscard]] bool await_suspend(std::coroutine_handle<> continuation)
 #else
         [[nodiscard]] bool await_suspend(std::experimental::coroutine_handle<> continuation)
@@ -175,7 +175,7 @@ namespace RStein::AsyncCpp::Tasks
              !_continueOnCapturedContext ||
              syncContext->IsDefault())
            {
-             _task.ContinueWith([continuation=continuation](const auto& _) {continuation();});
+             _task.ContinueWith([continuation=continuation](const auto& _) mutable {continuation();});
            }
            else
            {
@@ -188,7 +188,7 @@ namespace RStein::AsyncCpp::Tasks
            return true;
         }
 
-        [[nodiscard]] Ret_Type await_resume() const
+        Ret_Type await_resume() const
         {
           if constexpr(IsTaskReturningVoid())
           {
@@ -202,6 +202,9 @@ namespace RStein::AsyncCpp::Tasks
         }
       };
 
+    auto ConfigureAwait(bool continueOnCapturedContext) const 
+    {
+     
       SyncContextAwareTaskAwaiter awaiter{*this, continueOnCapturedContext};
       return awaiter;
     }
@@ -225,7 +228,7 @@ namespace RStein::AsyncCpp::Tasks
             {
               case TaskState::RunToCompletion:
               {
-               proxyTask._sharedTaskState->TrySetResult();
+               proxyTask._sharedTaskState->template TrySetResult<void>();
                 break;
               }
               case TaskState::Faulted:

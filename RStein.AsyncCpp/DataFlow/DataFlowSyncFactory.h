@@ -19,7 +19,7 @@ namespace RStein::AsyncCpp::DataFlow
       static typename IInputBlock<TInput>::InputBlockPtr CreateActionBlock(std::function<void(const TInput& input)> actionFunc,
                                                                           typename Detail::DataFlowBlockCommon<TInput, Detail::NoOutput, Detail::NoState>::CanAcceptFuncType canAcceptFunc = [](auto& _){return true;})
       {
-        return CreateActionBlock<TInput, Detail::NoState>([actionFunc=std::move(actionFunc)] (const TInput& input, auto _){actionFunc(input);},
+        return CreateActionBlock<TInput, Detail::NoState>([actionFunc=std::move(actionFunc)] (const TInput& input, auto _) mutable {actionFunc(input);},
                                                           std::move(canAcceptFunc));
       }
 

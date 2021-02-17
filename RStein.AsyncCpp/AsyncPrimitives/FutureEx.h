@@ -2,7 +2,10 @@
 #include <future>
 #include <iostream>
 #include <thread>
-#ifdef __cpp_impl_coroutine
+
+#if defined(__clang__)
+#include "../ClangWinSpecific/Coroutine.h"
+#elif defined(__cpp_impl_coroutine)
 #include <coroutine>
 #else
 #include <experimental/coroutine>
@@ -47,7 +50,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
         return Future._Is_ready();
       }
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
     [[nodiscard]] bool await_suspend(std::coroutine_handle<> coroutine) const
 #else
       [[nodiscard]] bool await_suspend(std::experimental::coroutine_handle<> coroutine) const
@@ -100,7 +103,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
         return Future._Is_ready();
       }
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
       [[nodiscard]] bool await_suspend(std::coroutine_handle<> coroutine) const
 #else
       [[nodiscard]] bool await_suspend(std::experimental::coroutine_handle<> coroutine) const
@@ -159,7 +162,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
       return _future;
     }
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
     [[nodiscard]] std::suspend_never initial_suspend() const noexcept
 #else
     [[nodiscard]] std::experimental::suspend_never initial_suspend() const noexcept
@@ -173,7 +176,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
       _promise.set_value();
     }
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
     [[nodiscard]] std::suspend_never final_suspend() const noexcept
 #else
     [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
@@ -204,7 +207,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
       return _future;
     }
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
     [[nodiscard]] std::suspend_never initial_suspend() const noexcept
 #else
     [[nodiscard]] std::experimental::suspend_never initial_suspend() const noexcept
@@ -219,7 +222,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
       _promise.set_value(std::forward<TU>(retValue));
     }
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
     [[nodiscard]] std::suspend_never final_suspend() const noexcept
 #else
     [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
@@ -236,7 +239,7 @@ namespace RStein::AsyncCpp::AsyncPrimitives
 }
 
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
 namespace std
 #else
 namespace std::experimental

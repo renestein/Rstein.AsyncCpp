@@ -21,7 +21,7 @@ namespace Samples::MapReduceActors
   {
     const size_t LINE_BATCH_SIZE = 1000;
 
-    MeasureTime([LINE_BATCH_SIZE] {
+    MeasureTime([] {
       cout << "Creating actors..." << endl;
       auto numberOfWordsMapActors = thread::hardware_concurrency();
       WriteTopWordsActor topWordsActor{};

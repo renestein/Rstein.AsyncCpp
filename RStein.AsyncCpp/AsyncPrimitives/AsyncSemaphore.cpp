@@ -120,17 +120,17 @@ namespace RStein::AsyncCpp::AsyncPrimitives
     try
     {
       //Do not lock in the destructor/Dispose.
-      for (auto& [promise, cancellation] : _waiters)
+      for (auto& promiseCancellationPair: _waiters)
       {
-        FinallyBlock finally([&cancellation]
+        FinallyBlock finally([&promiseCancellationPair]()
           {
-            if (cancellation)
+            if (promiseCancellationPair.second)
             {
-                cancellation->Dispose();
+                promiseCancellationPair.second->Dispose();
             }
           });
 
-          promise.TrySetException(make_exception_ptr(OperationCanceledException{}));        
+          promiseCancellationPair.first.TrySetException(make_exception_ptr(OperationCanceledException{}));        
       }
 
       _waiters.clear();

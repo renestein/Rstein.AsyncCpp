@@ -238,7 +238,7 @@ namespace RStein::AsyncCpp::ActorsTest
         cout << message << endl;
       });
 
-    thomasAquinas = CreateSimpleActor<string, int>([PINGS_COUNT, &sigerus, &logger](const string& message, const int& pingsSent)
+    thomasAquinas = CreateSimpleActor<string, int>([&sigerus, &logger](const string& message, const int& pingsSent)
       {
         if (message == "start" || message.starts_with("pong"))
         {
@@ -252,7 +252,7 @@ namespace RStein::AsyncCpp::ActorsTest
         return pingsSent;
       }, 0);
 
-      sigerus = CreateSimpleActor<string, int>([PINGS_COUNT, &thomasAquinas, &logger](const string& message, const int& pongsSent)
+      sigerus = CreateSimpleActor<string, int>([&thomasAquinas, &logger](const string& message, const int& pongsSent)
         {
 
           if (message.starts_with("ping"))
@@ -260,7 +260,7 @@ namespace RStein::AsyncCpp::ActorsTest
             logger->Tell(message);
             auto newState = pongsSent + 1;
 
-            thomasAquinas->Tell(newState < 5
+            thomasAquinas->Tell(newState < PINGS_COUNT
               ? "pong " + to_string(newState)
               : "stop");
             //missing Task.Delay

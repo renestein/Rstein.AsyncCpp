@@ -195,7 +195,7 @@ namespace RStein::AsyncCpp::Detail
 
     _processingTask = runProcessingTask(_processingCts.Token());
 
-    for (auto& nextBlock : _outputNodes.MapSnapshot<DataFlow::IInputBlock<TOutputItem>::InputBlockPtr>([](auto &weakPtr){return weakPtr.lock();}))
+    for (auto& nextBlock : _outputNodes.template MapSnapshot<typename DataFlow::IInputBlock<TOutputItem>::InputBlockPtr>([](auto &weakPtr){return weakPtr.lock();}))
     {
       
       if (!nextBlock)
@@ -297,7 +297,7 @@ namespace RStein::AsyncCpp::Detail
   typename DataFlowBlockCommon<TInputItem, TOutputItem, TState>::TaskVoidType DataFlowBlockCommon<
     TInputItem, TOutputItem, TState>::propagateOutput(TOutputItem outputItem)
   {
-    auto outputNodesSnapshot = _outputNodes.MapSnapshot<DataFlow::IInputBlock<TOutputItem>::InputBlockPtr>([](auto& weakPtr){return weakPtr.lock();});
+    auto outputNodesSnapshot = _outputNodes.template MapSnapshot<typename DataFlow::IInputBlock<TOutputItem>::InputBlockPtr>([](auto& weakPtr){return weakPtr.lock();});
     
     //Todo: Do not copy nodes
     //TODO: Optimize cycle
@@ -315,7 +315,7 @@ namespace RStein::AsyncCpp::Detail
       if (!inputNodePtr->CanAcceptInput(outputItem))
       {
 
-        *nodeIterator = DataFlow::IInputBlock<TOutputItem>::InputBlockPtr();
+        *nodeIterator = typename DataFlow::IInputBlock<TOutputItem>::InputBlockPtr();
       }
     }
 
@@ -417,7 +417,7 @@ namespace RStein::AsyncCpp::Detail
         {
           _state = BlockState::Stopped;
 
-          for (auto& nextBlock : _outputNodes.MapSnapshot<DataFlow::IInputBlock<TOutputItem>::InputBlockPtr>([](auto &weakPtr){return weakPtr.lock();}))
+          for (auto& nextBlock : _outputNodes.template MapSnapshot<typename DataFlow::IInputBlock<TOutputItem>::InputBlockPtr>([](auto &weakPtr){return weakPtr.lock();}))
           {
             //TODO: Handle failing output node;
             if (!nextBlock)

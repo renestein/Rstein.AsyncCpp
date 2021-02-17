@@ -8,7 +8,7 @@
 
 #include <future>
 #include <xutility>
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) || defined(__clang__)
 #include <coroutine>
 #else
 #include <experimental/generator>
@@ -19,7 +19,7 @@
 using namespace RStein::AsyncCpp::AsyncPrimitives;
 using namespace testing;
 using namespace std;
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) || defined(__clang__)
 using namespace std;
 #else
 using namespace std::experimental;

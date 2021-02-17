@@ -200,5 +200,8 @@
     <ClInclude Include="Actors\ReplyActor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ClangWinSpecific\Coroutine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

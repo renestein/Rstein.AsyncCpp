@@ -5,7 +5,9 @@
 #include "../Threading/SynchronizationContext.h"
 #include "../Utils/FinallyBlock.h"
 
-#ifdef __cpp_impl_coroutine
+#if defined(__clang__)
+#include "../ClangWinSpecific/Coroutine.h"
+#elif defined(__cpp_impl_coroutine)
 #include <coroutine>
 #else
 #include <experimental/coroutine>
@@ -62,7 +64,7 @@ namespace RStein::AsyncCpp::Schedulers
     return false;
   }
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(__clang__)
   bool Scheduler::await_suspend(std::coroutine_handle<> coroutine)
 #else
   bool Scheduler::await_suspend(std::experimental::coroutine_handle<> coroutine)

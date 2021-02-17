@@ -67,9 +67,7 @@ namespace RStein::AsyncCpp::Tasks
   Task<void> WhenAll(TTask&&... tasks)
   {
     std::vector<std::exception_ptr> exceptions;
-
     co_await Detail::awaitTask(exceptions, std::forward<TTask>(tasks)...).ConfigureAwait(false);
-
     if (!exceptions.empty())
     {
       throw AggregateException{exceptions};
