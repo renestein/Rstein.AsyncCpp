@@ -8,7 +8,7 @@
 
 - **The library supports compilation from the Visual Studio 2019 and from the command line (compilers MSVC cl and clang). Support for other compilers is planned.**
 
-- [`How to build the library.`](#BuildAsyncCppLibrary)
+- [`How to build the library.`](#Build-Library)
 
 
 
@@ -90,7 +90,7 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
  * [`SynchronizationContext - provides a mechanism to queue work to a specialized context. (useful for marshaling calls to UI thread, event loop, etc.)`](#SynchronizationContext)
  * [`SynchronizationContextScope - RAII class for SynchronizationContext. An instance of this class captures the current synchronization context in the constructor (now 'old' context), installs new synchronization context provided by the user, and restores 'old' synchronization context in the destructor.`](#SynchronizationContextScope)
 
- ## BuildAsyncCppLibrary
+ ## Build library
 **Build from the command line (Windows).**
 
 _Remark: Only library Rstein.AsyncCpp will be built. Samples and tests cannot be built built from the command line (yet)._
