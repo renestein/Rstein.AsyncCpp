@@ -102,27 +102,30 @@ _Remark: Only library Rstein.AsyncCpp will be built. Samples and tests cannot be
     * x86/Debug
     * x86/Release
 * All build artifacts are located in the &lt;project root&gt;\bin directory.
-* Libraries are under &lt;Project root&gt;\bin\libs\ &lt;Platform&gt;\Configuration directory.
-  * For example &lt;Project root&gt;\bin\libs\x64\Release directory contains x64/Release version of the RStein.AsyncCpp.lib library.
-* Header files are located in &lt;Project root&gt;\bin\libs\includes.
+* Libraries are under ```<Project root>\bin\libs\<Platform>\<Configuration>``` directory.
+  * For example ```<Project root>\bin\libs\x64\Release``` directory contains x64/Release version of the RStein.AsyncCpp.lib library.
+* Header files are located in ```<Project root>\bin\libs\includes```.
 
 * Also is possible to build a static library:
-    * With legacy await support (the /await compiler switch is used, coroutines are in the std::experimental namespace) using the MSVC cl compiler. Run ```build.bat lib_cl_win_legacy_await```. [More info on Visual C++ blog](https://devblogs.microsoft.com/cppblog/c-coroutines-in-visual-studio-2019-version-16-8/)
-    This command builds Release_VSAWAIT and Debug_VSAWAIT solution configurations.
-    * With legacy await (coroutines are in the std::experimental namespaces td::experimental namespace) using the clang compiler on Windows. Run ```build.bat lib_clang_win_legacy_await```. This command builds Release_CLangWin and Debug_CLangWin configurations.
+    * With legacy await support (the /await compiler switch is used, coroutines are in the std::experimental namespace) using the MSVC cl compiler. Run ```build.bat lib_cl_win_legacy_await```. [More info on Visual C++ blog](https://devblogs.microsoft.com/cppblog/c-coroutines-in-visual-studio-2019-version-16-8/).
+    This command builds ```Release_VSAWAIT``` and ```Debug_VSAWAIT``` solution configurations.
+    * With legacy await (coroutines are in the std::experimental namespace) using the clang compiler on Windows. Run ```build.bat lib_clang_win_legacy_await```. This command builds ```Release_CLangWin``` and ```Debug_CLangWin``` configurations.
 
 
 **Build from Visual Studio 2019:**
 
 * Clone the repository. ```git clone git@github.com:renestein/Rstein.AsyncCpp.git```.
-* Open the ```<Project root>\RStein.AsyncCppLib.sln``` solution file in the Visual studio 2019. If you need tests and samples, open the ```<Project root>\RStein.AsyncCppFull.sln``` solution file instead. Test project reference [gtest/gmock](https://github.com/google/googletest).
+* Open the ```<Project root>\RStein.AsyncCppLib.sln``` solution file in the Visual studio 2019. If you need tests and samples, open the ```<Project root>\RStein.AsyncCppFull.sln``` solution file instead. 
+
+**Important**: Test project requires reference to the  [gtest/gmock](https://github.com/google/googletest) library and utilises [vcpkg package manager](https://github.com/microsoft/vcpkg) for dependencies.
+
 * In the Visual Studio select desired configuration and platforms. For details about supported configurations see above the section 'Build from the command line (Windows)'.
 * Build solution.
-* All build artifacts are located in the &lt;project root&gt;\bin directory.
-* Libraries are under &lt;Project root&gt;\bin\libs\ &lt;Platformt&gt;\Configuration directory.
-    * For example &lt;Project root&gt;\bin\libs\x64\Release directory contains x64/Release version of the RStein.AsyncCpp.lib library.
-* Test projects are under &lt;Project root&gt;\bin\tests\&lt;Platformt&gt;\Configuration\ directory.
-* Compiled samples are under &lt;Project root&gt;\bin\samples\&lt;Platformt&gt;\Configuration\ directory.
+* All build artifacts are located in the ```<Project root>\bin``` directory.
+* Libraries are under ```<Project root>\bin\libs\<Platform>\<Configuration>``` directory.
+    * For example ```<Project root>\bin\libs\x64\Release``` directory contains x64/Release version of the RStein.AsyncCpp.lib library.
+* Compiled test projects (if they were built) are under ```<Project root>\bin\tests\<Platform>\<Configuration>\``` directory.
+* Compiled samples (if they were built) are under ```<Project root>\bin\samples\<Platformt>\<Configuration>\``` directory.
 
   ## TaskFactory Run
   Create Task<T> using the TaskFactory (uses default scheduler - ThreadPoolScheduler).
