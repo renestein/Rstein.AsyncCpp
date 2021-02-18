@@ -44,7 +44,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '**/*.sln'
+  solution: '**/RStein.AsyncCppFull.sln'
   buildPlatform: $(buildPlatform)
   buildConfiguration: $(buildConfiguration)
 

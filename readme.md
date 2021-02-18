@@ -3,7 +3,15 @@
 - The RStein.AsyncCpp library is a set of types that should be familiar for anyone who knows the Task Parallel Library (TPL) for .NET (C#). In addition, this library contains simple DataFlow, threadless actors (agents), functional combinators for the Task<T> class, useful async primitives (AsyncSemaphore, AsyncProducerConsumerCollection, CancellationToken, CancellationTokenSource, AsyncMutex, SynchronizationContext, SynchronizationContextScope ...).
 
 - The library is my playground for testing coroutine support in C++.
-- The library supports compilation in the VS 2019. Support for other compilers is planned.
+
+- The library supports standard C++ 20 coroutines, legacy coroutines in the MSVC cl compiler (std::experimetal namespace, /await switch), and legacy coroutines (std::experimetal namespace in the shim header) in the clang compiler on Windows.
+
+- **The library supports compilation from the Visual Studio 2019 and from the command line (compilers MSVC cl and clang). Support for other compilers is planned.**
+
+- [`How to build the library.`](#BuildAsyncCppLibrary)
+
+
+
 ## **Task&lt;T&gt;.** 
 The Task class represents the result of the execution of the one (usually asynchronous) operation - an instance of the Task contains either return value of the operation or exception or an information that task was cancelled. Tasks created by the TaskFactory are 'hot'. 'Hot' in this context means that the Task Start method is called and the Task is immediately scheduled on Scheduler (~=executor). You can 'co_await' Task (preferred) or/and you can use methods from the Task public interface (ContinueWith, Wait, State, IsCompleted, IsFaulted, IsCanceled, Result, Unwrap...). The Task supports both the 'awaiter' and the 'promise' concepts.
 * [`Create Task<T> using the TaskFactory (uses default scheduler = ThreadPoolScheduler).`](#TaskFactory-Run)
@@ -81,6 +89,40 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
  * [`AsyncMutex - asynchronous variant of the mutex synchronization primitive.`](#AsyncMutex)
  * [`SynchronizationContext - provides a mechanism to queue work to a specialized context. (useful for marshaling calls to UI thread, event loop, etc.)`](#SynchronizationContext)
  * [`SynchronizationContextScope - RAII class for SynchronizationContext. An instance of this class captures the current synchronization context in the constructor (now 'old' context), installs new synchronization context provided by the user, and restores 'old' synchronization context in the destructor.`](#SynchronizationContextScope)
+
+ ## BuildAsyncCppLibrary
+**Build from the command line (Windows).**
+
+_Remark: Only library Rstein.AsyncCpp will be built. Samples and tests cannot be built built from the command line (yet)._
+
+* Clone the repository. ```git clone git@github.com:renestein/Rstein.AsyncCpp.git```.
+* Run the ```<Project root>\build.bat``` file. Without options the batch file builds static library for the following platforms/configurations using the MSVC cl compiler with standard C++ coroutine support enabled:
+    * x64/Debug 
+    * x64/Release
+    * x86/Debug
+    * x86/Release
+* All build artifacts are located in the &lt;project root&gt;\bin directory.
+* Libraries are under &lt;Project root&gt;\bin\libs\ &lt;Platform&gt;\Configuration directory.
+  * For example &lt;Project root&gt;\bin\libs\x64\Release directory contains x64/Release version of the RStein.AsyncCpp.lib library.
+* Header files are located in &lt;Project root&gt;\bin\libs\includes.
+
+* Also is possible to build a static library:
+    * With legacy await support (the /await compiler switch is used, coroutines are in the std::experimental namespace) using the MSVC cl compiler. Run ```build.bat lib_cl_win_legacy_await```. [More info on Visual C++ blog](https://devblogs.microsoft.com/cppblog/c-coroutines-in-visual-studio-2019-version-16-8/)
+    This command builds Release_VSAWAIT and Debug_VSAWAIT solution configurations.
+    * With legacy await (coroutines are in the std::experimental namespaces td::experimental namespace) using the clang compiler on Windows. Run ```build.bat lib_clang_win_legacy_await```. This command builds Release_CLangWin and Debug_CLangWin configurations.
+
+
+**Build from Visual Studio 2019:**
+
+* Clone the repository. ```git clone git@github.com:renestein/Rstein.AsyncCpp.git```.
+* Open the ```<Project root>\RStein.AsyncCppLib.sln``` solution file in the Visual studio 2019. If you need tests and samples, open the ```<Project root>\RStein.AsyncCppFull.sln``` solution file instead. Test project reference [gtest/gmock](https://github.com/google/googletest).
+* In the Visual Studio select desired configuration and platforms. For details about supported configurations see above the section 'Build from the command line (Windows)'.
+* Build solution.
+* All build artifacts are located in the &lt;project root&gt;\bin directory.
+* Libraries are under &lt;Project root&gt;\bin\libs\ &lt;Platformt&gt;\Configuration directory.
+    * For example &lt;Project root&gt;\bin\libs\x64\Release directory contains x64/Release version of the RStein.AsyncCpp.lib library.
+* Test projects are under &lt;Project root&gt;\bin\tests\&lt;Platformt&gt;\Configuration\ directory.
+* Compiled samples are under &lt;Project root&gt;\bin\samples\&lt;Platformt&gt;\Configuration\ directory.
 
   ## TaskFactory Run
   Create Task<T> using the TaskFactory (uses default scheduler - ThreadPoolScheduler).
