@@ -265,7 +265,7 @@
     <IntDir>bin\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
-    <VcpkgEnabled>true</VcpkgEnabled>
+    <VcpkgEnabled>false</VcpkgEnabled>
     <VcpkgAutoLink>false</VcpkgAutoLink>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
