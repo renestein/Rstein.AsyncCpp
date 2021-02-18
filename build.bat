@@ -18,7 +18,7 @@ echo %VS_LOCATION%
 if not exist "%VS_LOCATION%vcvars32.bat" (
   echo ERROR. Unable to locate Visual Studio. Exiting.
   cd %~dp0
-  exit ERROR_NO_VS
+  exit /b ERROR_NO_VS
 )
 
 echo Preparing build environment. Calling vcvars32.bat.
@@ -89,7 +89,7 @@ echo.
 echo.
 echo Build failed.
 cd %~dp0
-rem exit %ERRORLEVEL%
+exit /b %ERRORLEVEL%
 
 :showusage
 echo Usage:
@@ -97,7 +97,7 @@ echo ------
 echo build.bat [target]
 echo target: "%LIB_WIN_CL_STD20_AWAIT%|%LIB_WIN_CL_LEGACY_AWAIT%|%LIB_CLANG_WIN_LEGACY_AWAIT%. Default is %LIB_WIN_CL_STD20_AWAIT%."
 cd %~dp0
-rem exit %ERROR_BAD_OPTIONS%
+exit /b %ERROR_BAD_OPTIONS%
 
 :end
-rem exit 0
+ exit /b 0
