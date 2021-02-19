@@ -104,12 +104,12 @@ _Remark: Only library Rstein.AsyncCpp will be built. Samples and tests cannot be
 * All build artifacts are located in the &lt;project root&gt;\bin directory.
 * Libraries are under ```<Project root>\bin\libs\<Platform>\<Configuration>``` directory.
   * For example ```<Project root>\bin\libs\x64\Release``` directory contains x64/Release version of the RStein.AsyncCpp.lib library.
-* Header files are located in ```<Project root>\bin\libs\includes```.
+* Header files are located in ```<Project root>\bin\libs\includes\asynccpp``` folder.
 
 * Also is possible to build a static library:
     * With legacy await support (the /await compiler switch is used, coroutines are in the std::experimental namespace) using the MSVC cl compiler. Run ```build.bat lib_cl_win_legacy_await```. [More info on Visual C++ blog](https://devblogs.microsoft.com/cppblog/c-coroutines-in-visual-studio-2019-version-16-8/).
     This command builds ```Release_VSAWAIT``` and ```Debug_VSAWAIT``` solution configurations.
-    * With legacy await (coroutines are in the std::experimental namespace) using the clang compiler on Windows. Run ```build.bat lib_clang_win_legacy_await```. This command builds ```Release_CLangWin``` and ```Debug_CLangWin``` configurations.
+    * With legacy await (coroutines are in the std::experimental namespace) using the clang compiler on Windows. Run ```build.bat lib_clang_win_legacy_await```. This command builds ```Release_CLangWin``` and ```Debug_CLangWin``` solution configurations.
 
 
 **Build from Visual Studio 2019:**

@@ -4,7 +4,7 @@ set ERROR_BAD_OPTIONS=-2;
 set LIB_WIN_CL_STD20_AWAIT=lib_cl_win_std20_await
 set LIB_WIN_CL_LEGACY_AWAIT=lib_cl_win_legacy_await
 set LIB_CLANG_WIN_LEGACY_AWAIT=lib_clang_win_legacy_await
-set CPP_HEADERS_FOLDER=bin\libs\includes
+set CPP_HEADERS_FOLDER=bin\libs\includes\asynccpp
 set RSTEIN_ASYNC_LIB_FOLDER=RStein.AsyncCpp
 
 set TARGET=%1
