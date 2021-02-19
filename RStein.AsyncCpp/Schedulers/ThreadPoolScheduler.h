@@ -20,6 +20,7 @@ namespace RStein::AsyncCpp::Schedulers
     ThreadPoolScheduler& operator=(ThreadPoolScheduler&& other) = delete;
 
     void Start() override;
+    void stopThreadPool() const;
     void Stop() override;
     
     bool IsMethodInvocationSerialized() const override;

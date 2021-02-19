@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../Utils/FinallyBlock.h"
-
 #if defined(__clang__)
 #include "../ClangWinSpecific/Coroutine.h"
 #elif defined(__cpp_impl_coroutine) 
@@ -11,10 +10,11 @@
 #endif
 #include <memory>
 #include <functional>
+#include <xcall_once.h>
 
 namespace RStein::AsyncCpp::Schedulers
 {
-  
+  class SimpleThreadPool;
 
 class Scheduler : public std::enable_shared_from_this<Scheduler>
 {
@@ -53,8 +53,11 @@ class Scheduler : public std::enable_shared_from_this<Scheduler>
 protected:
     virtual void OnEnqueueItem(std::function<void()>&& originalFunction) = 0;
 private:
+    static std::unique_ptr<SimpleThreadPool> _defaultSchedulerThreadPool;
     static thread_local SchedulerPtr _currentScheduler;
-    static SchedulerPtr initDefaultScheduler(); 
+    static SchedulerPtr _defaultScheduler;
+    static std::once_flag _initSchedulerOnceFlag;
+    static void initDefaultScheduler(); 
 };
 
 template <typename TFunc>

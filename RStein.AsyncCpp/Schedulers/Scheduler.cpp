@@ -26,26 +26,29 @@ namespace RStein::AsyncCpp::Schedulers
 
   Scheduler::~Scheduler() = default;
 
-  thread_local Scheduler::SchedulerPtr Scheduler::_currentScheduler = SchedulerPtr{};
+  std::unique_ptr<SimpleThreadPool> Scheduler::_defaultSchedulerThreadPool{};
+  thread_local Scheduler::SchedulerPtr Scheduler::_currentScheduler{};
+  Scheduler::SchedulerPtr Scheduler::_defaultScheduler{};
+  once_flag Scheduler::_initSchedulerOnceFlag{};
 
-  Scheduler::SchedulerPtr Scheduler::initDefaultScheduler()
+  void Scheduler::initDefaultScheduler()
   {
     //TODO: Better ThreadPool
     static unsigned int MIN_THREADS = 8;
     static unsigned int HW_THREADS = std::thread::hardware_concurrency() * 2;
     const unsigned int THREADS_COUNT = max(MIN_THREADS, HW_THREADS);
 
-    static SimpleThreadPool threadPool{THREADS_COUNT};
-    static SchedulerPtr defaultScheduler = std::make_shared<ThreadPoolScheduler>(threadPool);
-    defaultScheduler->Start();
-    return defaultScheduler;
+    _defaultSchedulerThreadPool = make_unique<SimpleThreadPool>(THREADS_COUNT);
+    _defaultSchedulerThreadPool->Start();
+    _defaultScheduler = std::make_shared<ThreadPoolScheduler>(*_defaultSchedulerThreadPool);
+    _defaultScheduler->Start();   
   }
 
-  //TODO: Change Create/Start/Stop of the default scheduler
   Scheduler::SchedulerPtr Scheduler::DefaultScheduler()
   {
-     static SchedulerPtr defaultScheduler = initDefaultScheduler();
-    return defaultScheduler;
+    call_once(_initSchedulerOnceFlag, &initDefaultScheduler);  
+    assert(_defaultScheduler);
+    return _defaultScheduler;
   }
 
   void Scheduler::StopDefaultScheduler()

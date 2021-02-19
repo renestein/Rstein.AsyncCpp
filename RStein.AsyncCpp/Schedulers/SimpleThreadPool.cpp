@@ -27,10 +27,18 @@ namespace RStein::AsyncCpp::Schedulers
 
   SimpleThreadPool::~SimpleThreadPool()
   {
-    if (_threadPoolState != ThreadPoolState::Stopped)
+    if (_threadPoolState == ThreadPoolState::Started)
     {
       /*throwInvalidThreadPoolState();*/
       //Log invalid life cycle
+      try
+      {
+      Stop();
+      }
+      catch(...)
+      {
+        
+      }    
     }
   }
 
