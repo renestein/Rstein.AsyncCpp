@@ -11,7 +11,7 @@ class Environment : public ::testing::Environment {
 
   void TearDown() override
   {
-    RStein::AsyncCpp::Schedulers::Scheduler::StopDefaultScheduler();
+    //RStein::AsyncCpp::Schedulers::Scheduler::StopDefaultScheduler();
   }
 };
 

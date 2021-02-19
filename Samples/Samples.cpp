@@ -10,7 +10,7 @@ int main()
 {
   Samples::MapReduceActors::MapReduceActorRunner mapReduceActorRunner;
   mapReduceActorRunner.Run();
-  RStein::AsyncCpp::Schedulers::Scheduler::StopDefaultScheduler();
+  //RStein::AsyncCpp::Schedulers::Scheduler::StopDefaultScheduler();
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
