@@ -91,6 +91,7 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
 
  ## Build library
 
+
  **Build using the VCPKG package manager. (when PR with new port will be merged)**
 * Install VCPKG.
 ```
@@ -119,8 +120,11 @@ int main()
     auto task = RStein::AsyncCpp::Tasks::TaskFactory::Run([]{std::cout << "Hello from Rstein.AsyncCpp library.";});
     std::cin.get();
 }
-```
 
+```
+_And little remainder. Do not forget to use C++ 20 standard (Preview from the Latest C+) in **your VS project**_.
+
+  ![](https://snipboard.io/YvUDJp.jpg)_
 
 **Build from the command line (Windows).**
 
@@ -141,6 +145,10 @@ _Remark: Only Rstein.AsyncCpp library will be built. Samples and tests cannot be
     * With legacy await support (the /await compiler switch is used, coroutines are in the std::experimental namespace) using the MSVC cl compiler. Run ```build.bat lib_cl_win_legacy_await```. [More info on Visual C++ blog](https://devblogs.microsoft.com/cppblog/c-coroutines-in-visual-studio-2019-version-16-8/).
     This command builds ```Release_VSAWAIT``` and ```Debug_VSAWAIT``` solution configurations.
     * With legacy await (coroutines are in the std::experimental namespace) using the clang compiler on Windows. Run ```build.bat lib_clang_win_legacy_await```. This command builds ```Release_CLangWin``` and ```Debug_CLangWin``` solution configurations.
+    
+    Do not forget to use C++ 20 standard in _your clang project_!
+
+    ![](https://snipboard.io/8M6CJQ.jpg)
 
 
 **Build from Visual Studio 2019:**
