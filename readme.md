@@ -103,11 +103,11 @@ cd vcpkg
 ```
 vcpkg install rsasynccpp rsasynccpp:x64-Windows
 ```
-_Remark: If you need  legacy await support (the /await compiler switch is used, coroutines are in the std::experimental namespace) install Rstein.AsyncCpp library using the command._
+_Remark: If you need legacy await support (the /await compiler switch is used, coroutines are in the std::experimental namespace), install Rstein.AsyncCpp library using the following command._
 ```
 vcpkg install rsasynccpp[lib-cl-win-legacy-await] rsasynccpp[lib-cl-win-legacy-await]:x64-Windows
 ```
-* Use the library.
+* Enjoy the library.
 ``` C++
 
 #include <iostream>
@@ -157,7 +157,7 @@ _Remark: Only Rstein.AsyncCpp library will be built. Samples and tests cannot be
     * For example ```<Project root>\bin\libs\x64\Release``` directory contains x64/Release version of the RStein.AsyncCpp.lib library.
 * Header files are located in ```<Project root>\bin\libs\includes\asynccpp``` folder.
 * Compiled test projects (if they were built) are under ```<Project root>\bin\tests\<Platform>\<Configuration>\``` directory.
-* Compiled samples (if they were built) are under ```<Project root>\bin\samples\<Platformt>\<Configuration>\``` directory.
+* Compiled samples (if they were built) are under ```<Project root>\bin\samples\<Platform>\<Configuration>\``` directory.
 
   ## TaskFactory Run
   Create Task<T> using the TaskFactory (uses default scheduler - ThreadPoolScheduler).
