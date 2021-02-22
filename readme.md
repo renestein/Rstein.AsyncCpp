@@ -12,7 +12,7 @@
 
 
 ## **Task&lt;T&gt;.** 
-The Task class represents the result of the execution of the one (usually asynchronous) operation - an instance of the Task contains either return value of the operation or exception or an information that task was cancelled. Tasks created by the TaskFactory are 'hot'. 'Hot' in this context means that the Task Start method is called and the Task is immediately scheduled on Scheduler (~=executor). You can 'co_await' Task (preferred) or/and you can use methods from the Task public interface (ContinueWith, Wait, State, IsCompleted, IsFaulted, IsCanceled, Result, Unwrap...). The Task supports both the 'awaiter' and the 'promise' concepts.
+The Task class represents the result of the execution of the one (usually asynchronous) operation - an instance of the Task contains either return value of the operation or exception or information that task was canceled. Tasks created by the TaskFactory are 'hot'. 'Hot' in this context means that the Task Start method is called and the Task is immediately scheduled on Scheduler (~=executor). You can 'co_await' Task (preferred) or/and you can use methods from the Task public interface (ContinueWith, Wait, State, IsCompleted, IsFaulted, IsCanceled, Result, Unwrap...). The Task supports both the 'awaiter' and the 'promise' concepts.
 * [`Create Task<T> using the TaskFactory (uses default scheduler = ThreadPoolScheduler).`](#TaskFactory-Run)
 * [`Create Task<T> using the TaskFactory and explicit scheduler.`](#TaskFactory-Run-With-Scheduler)
 
@@ -45,7 +45,7 @@ The Task class represents the result of the execution of the one (usually asynch
 
   
   ## **TaskCompletionSource&lt;T&gt;.** 
-  The TaskCompletionSource class explicitly controls the state and result of the Task that is provided to the consumer. TaskCompletionSource has relation to the Task class similar to the relation which exists between std::future and std::promise types. This class is very useful in situations when you call to a library that uses different asynchronous pattern and you would like to use only the Task class in your API. Different asynchronous patterns can be simply converted to the Task-based world using the TaskCompletionSource.
+  The TaskCompletionSource class explicitly controls the state and result of the Task that is provided to the consumer. TaskCompletionSource has a relation to the Task class similar to the relation which exists between std::future and std::promise types. This class is very useful in situations when you call a library that uses different asynchronous patterns and you would like to use only the Task class in your API. Different asynchronous patterns can be simply converted to the Task-based world using the TaskCompletionSource.
 * [`TaskCompletion<T> SetResult method.`](#TaskCompletionSource-SetResult)
 * [`TaskCompletion<T> TrySetResult method.`](#TaskCompletionSource-TrySetResult)
 * [`TaskCompletion<T> SetException method.`](#TaskCompletionSource-SetException)
@@ -148,7 +148,7 @@ _Remark: Only Rstein.AsyncCpp library will be built. Samples and tests cannot be
 * Clone the repository. ```git clone git@github.com:renestein/Rstein.AsyncCpp.git```.
 * Open the ```<Project root>\RStein.AsyncCppLib.sln``` solution file in the Visual studio 2019. If you need tests and samples, open the ```<Project root>\RStein.AsyncCppFull.sln``` solution file instead. 
 
-**Important**: Test project requires reference to the  [gtest/gmock](https://github.com/google/googletest) library and utilises [vcpkg package manager](https://github.com/microsoft/vcpkg) for dependencies.
+**Important**: Test project in the solution file RStein.AsyncCppFull.sln requires reference to the  [gtest/gmock](https://github.com/google/googletest) library and utilises [vcpkg package manager](https://github.com/microsoft/vcpkg) for dependencies.
 
 * In the Visual Studio select desired configuration and platforms. For details about supported configurations see above the section 'Build from the command line (Windows)'.
 * Build solution.
