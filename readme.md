@@ -99,8 +99,8 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
 ```
 git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
-./bootstrap-vcpkg.sh
-./vcpkg integrate install 
+bootstrap-vcpkg.bat
+vcpkg integrate install 
 ```
 * Install Rstein.AsyncCpp library.
 ```
