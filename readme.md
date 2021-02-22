@@ -124,7 +124,7 @@ int main()
 }
 
 ```
-_And little remainder. Do not forget to use C++ 20 standard (Preview from the Latest C+) in **your VS project**_.
+_And little reminder. Do not forget to use C++ 20 standard (Preview from the Latest C+) in **your VS project**_.
 
   ![](https://snipboard.io/YvUDJp.jpg)_
 
