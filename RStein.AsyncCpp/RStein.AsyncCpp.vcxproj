@@ -267,6 +267,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(VcpkgRoot)debug\lib\manual-link\gtest_maind.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>if True==$(BuildingInsideVisualStudio) $(SolutionDir)build.bat INTERNAL_GENERATE_HEADERS</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_ClangWin|Win32'">
     <ClCompile>
@@ -284,6 +287,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(VcpkgRoot)debug\lib\manual-link\gtest_maind.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>if True==$(BuildingInsideVisualStudio) $(SolutionDir)build.bat INTERNAL_GENERATE_HEADERS</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_VSAWAIT|Win32'">
     <ClCompile>
@@ -303,6 +309,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(VcpkgRoot)debug\lib\manual-link\gtest_maind.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>if True==$(BuildingInsideVisualStudio) $(SolutionDir)build.bat INTERNAL_GENERATE_HEADERS</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -322,6 +331,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>if True==$(BuildingInsideVisualStudio) $(SolutionDir)build.bat INTERNAL_GENERATE_HEADERS</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_ClangWin|x64'">
     <ClCompile>
@@ -338,6 +350,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>if True==$(BuildingInsideVisualStudio) $(SolutionDir)build.bat INTERNAL_GENERATE_HEADERS</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_VSAWAIT|x64'">
     <ClCompile>
@@ -356,6 +371,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>if True==$(BuildingInsideVisualStudio) $(SolutionDir)build.bat INTERNAL_GENERATE_HEADERS</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -376,6 +394,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(VcpkgRoot)lib\manual-link\gtest_main.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>if True==$(BuildingInsideVisualStudio) $(SolutionDir)build.bat INTERNAL_GENERATE_HEADERS</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_CLangWin|Win32'">
     <ClCompile>
@@ -400,6 +421,9 @@
     <Lib>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
     </Lib>
+    <PostBuildEvent>
+      <Command>if True==$(BuildingInsideVisualStudio) $(SolutionDir)build.bat INTERNAL_GENERATE_HEADERS</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_VSAWAIT|Win32'">
     <ClCompile>
@@ -421,6 +445,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(VcpkgRoot)lib\manual-link\gtest_main.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>if True==$(BuildingInsideVisualStudio) $(SolutionDir)build.bat INTERNAL_GENERATE_HEADERS</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -442,6 +469,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>if True==$(BuildingInsideVisualStudio) $(SolutionDir)build.bat INTERNAL_GENERATE_HEADERS</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_CLangWin|x64'">
     <ClCompile>
@@ -465,6 +495,9 @@
     <Lib>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
     </Lib>
+    <PostBuildEvent>
+      <Command>if True==$(BuildingInsideVisualStudio) $(SolutionDir)build.bat INTERNAL_GENERATE_HEADERS</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_VSAWAIT|x64'">
     <ClCompile>
@@ -485,6 +518,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>if True==$(BuildingInsideVisualStudio) $(SolutionDir)build.bat INTERNAL_GENERATE_HEADERS</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Actors\IActor.cpp" />

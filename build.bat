@@ -8,6 +8,22 @@ set CPP_HEADERS_FOLDER=bin\libs\includes\asynccpp
 set RSTEIN_ASYNC_LIB_FOLDER=RStein.AsyncCpp
 
 set TARGET=%1
+rem internal commands
+if "%TARGET%"=="INTERNAL_GENERATE_HEADERS" goto internal_command_regenerate_headers
+
+goto public_commands
+rem end internal commands
+
+rem internal commands handlers
+:internal_command_regenerate_headers
+cd %~dp0
+if exist "%CPP_HEADERS_FOLDER%" rmdir /q /s "%CPP_HEADERS_FOLDER%"
+mkdir "%CPP_HEADERS_FOLDER%"
+xcopy "%RSTEIN_ASYNC_LIB_FOLDER%\*.h" "%CPP_HEADERS_FOLDER%" /s /y
+exit /b 0
+rem end internal commands handlers
+
+:public_commands
 if "%TARGET%"=="" set TARGET=%LIB_WIN_CL_STD20_AWAIT%
 if not "%TARGET%"=="%LIB_WIN_CL_STD20_AWAIT%" (
 if not "%TARGET%"=="%LIB_WIN_CL_LEGACY_AWAIT%" (
@@ -20,6 +36,8 @@ if not exist "%VS_LOCATION%vcvars32.bat" (
   cd %~dp0
   exit /b ERROR_NO_VS
 )
+
+
 
 echo Preparing build environment. Calling vcvars32.bat.
 call "%VS_LOCATION%vcvars32.bat"
@@ -54,11 +72,18 @@ echo Deleting old header files.
 
 if exist "%CPP_HEADERS_FOLDER%" rmdir /q /s "%CPP_HEADERS_FOLDER%"
 
-:build_projects
+:clean_projects
 echo Cleaning previous builds.
-Msbuild "RStein.AsyncCppLib.sln" /t:clean
+Msbuild "RStein.AsyncCppLib.sln"  /p:configuration=%RELEASE_CONFIGURATION% /p:platform=x64 /t:clean
+if %ERRORLEVEL% NEQ 0 goto build_failed
+Msbuild "RStein.AsyncCppLib.sln"  /p:configuration=%DEBUG_CONFIGURATION% /p:platform=x64 /t:clean
+if %ERRORLEVEL% NEQ 0 goto build_failed
+Msbuild "RStein.AsyncCppLib.sln"  /p:configuration=%RELEASE_CONFIGURATION% /p:platform=x86 /t:clean
+if %ERRORLEVEL% NEQ 0 goto build_failed
+Msbuild "RStein.AsyncCppLib.sln"  /p:configuration=%DEBUG_CONFIGURATION% /p:platform=x86 /t:clean
 if %ERRORLEVEL% NEQ 0 goto build_failed
 
+:build_projects
 echo Building: Platform=x64 Configuration=%RELEASE_CONFIGURATION%.
 msbuild  "RStein.AsyncCppLib.sln" /p:configuration=%RELEASE_CONFIGURATION% /p:platform=x64 /t:build
 if %ERRORLEVEL% NEQ 0 goto build_failed
@@ -77,6 +102,8 @@ if %ERRORLEVEL% NEQ 0 goto build_failed
 :create_headers
 cd %~dp0
 echo Generating header files.
+echo.
+echo.
 if not exist "%CPP_HEADERS_FOLDER%" mkdir "%CPP_HEADERS_FOLDER%"
 xcopy "%RSTEIN_ASYNC_LIB_FOLDER%\*.h" "%CPP_HEADERS_FOLDER%" /s /y
 echo.
