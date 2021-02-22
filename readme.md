@@ -6,9 +6,8 @@
 
 - The library supports standard C++ 20 coroutines, legacy coroutines in the MSVC cl compiler (std::experimetal namespace, /await switch), and legacy coroutines (std::experimetal namespace in the shim header) in the clang compiler on Windows.
 
-- **The library supports compilation from the Visual Studio 2019 and from the command line (compilers MSVC cl and clang). Support for other compilers is planned.**
-
-- [`How to build the library.`](#Build-Library)
+- The library supports compilation from Visual Studio 2019 and from the command line (compilers MSVC cl and clang). Support for other compilers is planned.
+- **The library can be downloaded and built using the VCPKG package manager.** [`How to build the library.`](#Build-Library)
 
 
 
@@ -91,9 +90,41 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
  * [`SynchronizationContextScope - RAII class for SynchronizationContext. An instance of this class captures the current synchronization context in the constructor (now 'old' context), installs new synchronization context provided by the user, and restores 'old' synchronization context in the destructor.`](#SynchronizationContextScope)
 
  ## Build library
+
+ **Build using the VCPKG package manager. (when PR with new port will be merged)**
+* Install VCPKG.
+```
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg integrate install 
+```
+* Install Rstein.AsyncCpp library.
+```
+vcpkg install rsasynccpp rsasynccpp:x64-Windows
+```
+_Remark: If you need  legacy await support (the /await compiler switch is used, coroutines are in the std::experimental namespace) install Rstein.AsyncCpp library using the command._
+```
+vcpkg install rsasynccpp[lib-cl-win-legacy-await] rsasynccpp[lib-cl-win-legacy-await]:x64-Windows
+```
+* Use the library.
+``` C++
+
+#include <iostream>
+#include <asynccpp/Tasks/TaskFactory.h> //Include required headers
+
+int main()
+{
+    //Create (hot) task using the TaskFactory.
+    auto task = RStein::AsyncCpp::Tasks::TaskFactory::Run([]{std::cout << "Hello from Rstein.AsyncCpp library.";});
+    std::cin.get();
+}
+```
+
+
 **Build from the command line (Windows).**
 
-_Remark: Only library Rstein.AsyncCpp will be built. Samples and tests cannot be built built from the command line (yet)._
+_Remark: Only Rstein.AsyncCpp library will be built. Samples and tests cannot be built built from the command line (yet)._
 
 * Clone the repository. ```git clone git@github.com:renestein/Rstein.AsyncCpp.git```.
 * Run the ```<Project root>\build.bat``` file. Without options the batch file builds static library for the following platforms/configurations using the MSVC cl compiler with standard C++ coroutine support enabled:
@@ -124,6 +155,7 @@ _Remark: Only library Rstein.AsyncCpp will be built. Samples and tests cannot be
 * All build artifacts are located in the ```<Project root>\bin``` directory.
 * Libraries are under ```<Project root>\bin\libs\<Platform>\<Configuration>``` directory.
     * For example ```<Project root>\bin\libs\x64\Release``` directory contains x64/Release version of the RStein.AsyncCpp.lib library.
+* Header files are located in ```<Project root>\bin\libs\includes\asynccpp``` folder.
 * Compiled test projects (if they were built) are under ```<Project root>\bin\tests\<Platform>\<Configuration>\``` directory.
 * Compiled samples (if they were built) are under ```<Project root>\bin\samples\<Platformt>\<Configuration>\``` directory.
 
