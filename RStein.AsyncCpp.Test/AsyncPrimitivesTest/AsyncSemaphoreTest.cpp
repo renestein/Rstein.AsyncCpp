@@ -1,18 +1,18 @@
 #include <gtest/gtest.h>
+#if defined(__clang__)
+#include "../../RStein.AsyncCpp/ClangWinSpecific/Coroutine.h"
+#elif defined(__cpp_impl_coroutine)
+#include <coroutine>
+#else
+#include <experimental/coroutine>
+#endif
 
 #include "../../RStein.AsyncCpp/AsyncPrimitives/AsyncSemaphore.h"
 #include "../../RStein.AsyncCpp/AsyncPrimitives/OperationCanceledException.h"
 #include "../../RStein.AsyncCpp/AsyncPrimitives/CancellationTokenSource.h"
 #include "../../RStein.AsyncCpp/AsyncPrimitives/FutureEx.h"
-
-
 #include <future>
-#include <xutility>
-#if defined(__cpp_impl_coroutine) || defined(__clang__)
-#include <coroutine>
-#else
-#include <experimental/generator>
-#endif
+
 
 
 

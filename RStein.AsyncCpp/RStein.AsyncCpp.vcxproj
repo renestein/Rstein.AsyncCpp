@@ -195,6 +195,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\libs\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>bin\$(Configuration)\</IntDir>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_VSAWAIT|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -225,6 +226,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\libs\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>bin\$(Configuration)\</IntDir>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_VSAWAIT|Win32'">
     <LinkIncremental>false</LinkIncremental>

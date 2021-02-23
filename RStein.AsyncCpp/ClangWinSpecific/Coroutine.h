@@ -1,6 +1,6 @@
+#pragma once
 //From https://raw.githubusercontent.com/llvm-mirror/clang/master/test/CodeGenCoroutines/Inputs/coroutine.h
 #if defined(__clang__)
-#pragma once
 namespace std { namespace experimental { inline namespace coroutines_v1 {
 
 template <typename R, typename...> struct coroutine_traits {

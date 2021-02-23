@@ -141,6 +141,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug_ClangWin|Win32'">
     <PlatformToolset>ClangCL</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -245,6 +246,11 @@
     <IntDir>bin\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>true</VcpkgEnabled>
+    <VcpkgAutoLink>false</VcpkgAutoLink>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug_ClangWin|Win32'">
+    <VcpkgConfiguration>Debug</VcpkgConfiguration>
     <VcpkgEnabled>true</VcpkgEnabled>
     <VcpkgAutoLink>false</VcpkgAutoLink>
   </PropertyGroup>
