@@ -6,8 +6,9 @@
 
 - The library supports standard C++ 20 coroutines, legacy coroutines in the MSVC cl compiler (std::experimetal namespace, /await switch), and legacy coroutines (std::experimetal namespace in the shim header) in the clang compiler on Windows.
 
-- The library supports compilation from Visual Studio 2019 and from the command line (compilers MSVC cl and clang). Support for other compilers is planned.
 - **The library can be downloaded and built using the VCPKG package manager.** 
+
+- The library can be compiled with Visual Studio 2019 and from the command line (compilers MSVC cl and Clang). Support for other compilers is planned.
 
 - [`How to build the library.`](#Build-Library)
 
