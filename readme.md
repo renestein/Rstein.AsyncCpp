@@ -4,14 +4,13 @@
 
 - The library is my playground for testing coroutine support in C++.
 
-- The library supports standard C++ 20 coroutines, legacy coroutines in the MSVC cl compiler (std::experimetal namespace, /await switch), and legacy coroutines (std::experimetal namespace in the shim header) in the clang compiler on Windows.
+- The library supports standard C++ 20 coroutines, legacy coroutines in the MSVC cl compiler (std::experimental namespace, /await switch), and legacy coroutines (std::experimental namespace in the shim header) in the clang compiler on Windows.
 
 - **The library can be downloaded and built using the VCPKG package manager.** 
 
 - The library can be compiled with Visual Studio 2019 and from the command line (compilers MSVC cl and Clang). Support for other compilers is planned.
 
 - [`How to build the library.`](#Build-Library)
-
 
 
 ## **Task&lt;T&gt;.** 
@@ -161,7 +160,7 @@ _Remark: Only Rstein.AsyncCpp library will be built. Samples and tests cannot be
 
 **Important**: Test project in the solution file RStein.AsyncCppFull.sln requires reference to the  [gtest/gmock](https://github.com/google/googletest) library and utilises [vcpkg package manager](https://github.com/microsoft/vcpkg) for dependencies.
 
-* In the Visual Studio select desired configuration and platforms. For details about supported configurations see above the section 'Build from the command line (Windows)'.
+* In Visual Studio select desired configuration and platform. For details about supported configurations see above the section 'Build from the command line (Windows)'.
 * Build solution.
 * All build artifacts are located in the ```<Project root>\bin``` directory.
 * Libraries are under ```<Project root>\bin\libs\<Platform>\<Configuration>``` directory.
@@ -1306,55 +1305,42 @@ Tasks::Task<int> WhenAsyncForkJoinDataflowThenAllInputsProcessedImpl(int inputIt
 ```
 ## Actor V
 ``` C++
-TEST(SimpleActorTest, PingPongTest)
+
+  TEST(SimpleActorTest, PingPongTest)
   {
     const int PINGS_COUNT = 5;
     std::unique_ptr<IActor<string>> sigerus;
     std::unique_ptr<IActor<string>> thomasAquinas;
-
-    //The logger is an actor
     auto logger = CreateSimpleActor<string>([](const string& message)
       {
         cout << message << endl;
       });
 
-    //First player (actor)
-    thomasAquinas = CreateSimpleActor<string, int>([PINGS_COUNT, &sigerus, &logger](const string& message, const int& pingsSent)
+    thomasAquinas = CreateSimpleActor<string, int>([&sigerus, &logger](const string& message, const int& pingsSent)
       {
         if (message == "start" || message.starts_with("pong"))
         {
-          //Log the message.
           logger->Tell(message);
-
-          //Update an actor state.
           auto newState = pingsSent + 1;
 
-          //Send the 'ping' message.
           sigerus->Tell("ping " + to_string(newState));
-
           return newState;
-        }        
+        }
+        cout << message << endl;
         return pingsSent;
       }, 0);
-      
-      //Second player
-      sigerus = CreateSimpleActor<string, int>([PINGS_COUNT, &thomasAquinas, &logger](const string& message, const int& pongsSent)
+
+      sigerus = CreateSimpleActor<string, int>([&thomasAquinas, &logger](const string& message, const int& pongsSent)
         {
 
           if (message.starts_with("ping"))
           {
-             //Log the message.
             logger->Tell(message);
-
-            //Update an actor state.
             auto newState = pongsSent + 1;
 
-            //Send the 'pong' message or send the 'stop' message when the game is over.
-            thomasAquinas->Tell(newState < 5
+            thomasAquinas->Tell(newState < PINGS_COUNT
               ? "pong " + to_string(newState)
               : "stop");
-              
-            //Simulate wait.
             //missing Task.Delay
             this_thread::sleep_for(500ms);
             return newState;
@@ -1362,7 +1348,6 @@ TEST(SimpleActorTest, PingPongTest)
           return pongsSent;
         }, 0);
 
-      //Start the game.
       thomasAquinas->Tell("start");
       this_thread::sleep_for(5s);
   }

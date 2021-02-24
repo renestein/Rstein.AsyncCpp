@@ -39,6 +39,21 @@ strategy:
       x86-release_clangwin:
           buildPlatform: x86
           buildConfiguration: Release_CLangwin
+      x64-releaseMT:
+          buildPlatform: x64
+          buildConfiguration: ReleaseMT
+      x64-debugMT:
+          buildPlatform: x64
+          buildConfiguration: DebugMT
+      x86-releaseMT:
+          buildPlatform: x86
+          buildConfiguration: ReleaseMT
+      x86-debugMT:
+          buildPlatform: x86
+          buildConfiguration: DebugMT
+      x64-releaseMT_VSAWAIT:
+          buildPlatform: x64
+          buildConfiguration: ReleaseMT_VSAWAIT
 
 pool:
   vmImage: 'windows-latest'
@@ -51,9 +66,10 @@ variables:
 steps:
 - script: |
     vcpkg install gtest:$(buildPlatform)-windows
+    vcpkg install gtest:$(buildPlatform)-windows-static
     vcpkg integrate install
   displayName: vcpkg
-
+  
 - task: NuGetToolInstaller@0
   displayName: 'Nuget - Install'
 
