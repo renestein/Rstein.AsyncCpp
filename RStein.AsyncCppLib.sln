@@ -13,12 +13,20 @@ Global
 		Debug_VSAWAIT|x86 = Debug_VSAWAIT|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		DebugMT_VSAWAIT|x64 = DebugMT_VSAWAIT|x64
+		DebugMT_VSAWAIT|x86 = DebugMT_VSAWAIT|x86
+		DebugMT|x64 = DebugMT|x64
+		DebugMT|x86 = DebugMT|x86
 		Release_CLangWin|x64 = Release_CLangWin|x64
 		Release_CLangWin|x86 = Release_CLangWin|x86
 		Release_VSAWAIT|x64 = Release_VSAWAIT|x64
 		Release_VSAWAIT|x86 = Release_VSAWAIT|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		ReleaseMT_VSAWAIT|x64 = ReleaseMT_VSAWAIT|x64
+		ReleaseMT_VSAWAIT|x86 = ReleaseMT_VSAWAIT|x86
+		ReleaseMT|x64 = ReleaseMT|x64
+		ReleaseMT|x86 = ReleaseMT|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Debug_ClangWin|x64.ActiveCfg = Debug_ClangWin|x64
@@ -33,6 +41,14 @@ Global
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Debug|x64.Build.0 = Debug|x64
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Debug|x86.ActiveCfg = Debug|Win32
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Debug|x86.Build.0 = Debug|Win32
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.DebugMT_VSAWAIT|x64.ActiveCfg = DebugMT_VSAWAIT|x64
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.DebugMT_VSAWAIT|x64.Build.0 = DebugMT_VSAWAIT|x64
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.DebugMT_VSAWAIT|x86.ActiveCfg = DebugMT_VSAWAIT|Win32
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.DebugMT_VSAWAIT|x86.Build.0 = DebugMT_VSAWAIT|Win32
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.DebugMT|x64.ActiveCfg = DebugMT|x64
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.DebugMT|x64.Build.0 = DebugMT|x64
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.DebugMT|x86.ActiveCfg = DebugMT|Win32
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.DebugMT|x86.Build.0 = DebugMT|Win32
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Release_CLangWin|x64.ActiveCfg = Release_CLangWin|x64
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Release_CLangWin|x64.Build.0 = Release_CLangWin|x64
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Release_CLangWin|x86.ActiveCfg = Release_CLangWin|Win32
@@ -45,6 +61,14 @@ Global
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Release|x64.Build.0 = Release|x64
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Release|x86.ActiveCfg = Release|Win32
 		{03605C1F-427D-4AAA-8747-217CDD165A16}.Release|x86.Build.0 = Release|Win32
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.ReleaseMT_VSAWAIT|x64.ActiveCfg = ReleaseMT_VSAWAIT|x64
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.ReleaseMT_VSAWAIT|x64.Build.0 = ReleaseMT_VSAWAIT|x64
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.ReleaseMT_VSAWAIT|x86.ActiveCfg = ReleaseMT_VSAWAIT|Win32
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.ReleaseMT_VSAWAIT|x86.Build.0 = ReleaseMT_VSAWAIT|Win32
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.ReleaseMT|x64.ActiveCfg = ReleaseMT|x64
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.ReleaseMT|x64.Build.0 = ReleaseMT|x64
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.ReleaseMT|x86.ActiveCfg = ReleaseMT|Win32
+		{03605C1F-427D-4AAA-8747-217CDD165A16}.ReleaseMT|x86.Build.0 = ReleaseMT|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
