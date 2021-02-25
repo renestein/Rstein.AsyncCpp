@@ -6,7 +6,7 @@
 
 - The library supports standard C++ 20 coroutines, legacy coroutines in the MSVC cl compiler (std::experimental namespace, /await switch), and legacy coroutines (std::experimental namespace in the shim header) in the clang compiler on Windows.
 
-- **The library can be downloaded and built using the VCPKG package manager.** 
+- **The library can be downloaded and built using the vcpkg package manager.** 
 
 - The library can be compiled with Visual Studio 2019 and from the command line (compilers MSVC cl and Clang). Support for other compilers is planned.
 
@@ -94,8 +94,8 @@ The [`TaskFromResult method `](#TaskFromResult) can be used as a Unit (Return) m
  ## Build library
 
 
- **Build using the VCPKG package manager. (when PR with new port will be merged)**
-* Install VCPKG.
+ **Build using the vcpkg package manager.**
+* Install vcpkg.
 ```
 git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
