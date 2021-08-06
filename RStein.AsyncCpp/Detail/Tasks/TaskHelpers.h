@@ -260,13 +260,8 @@ namespace RStein::AsyncCpp::Detail
       }
     }
 
-    bool TrySetException(std::exception_ptr exception)
+    bool TrySetException(std::exception_ptr exception) noexcept
     {      
-       if(exception == nullptr)
-       {
-         throw std::invalid_argument("exception");
-       }
-
       {
         std::lock_guard lock{ _lockObject };
         if (_state != Tasks::TaskState::Created)
@@ -276,8 +271,16 @@ namespace RStein::AsyncCpp::Detail
         _exceptionPtr = exception;
         _state = Tasks::TaskState::Faulted;
       }
+
       _waitTaskCv.notify_all();
-      runContinuations();
+      try
+      {
+        runContinuations();
+      }
+      catch (...)
+      {
+      }
+
       return true;
     }
 
@@ -475,7 +478,19 @@ namespace RStein::AsyncCpp::Detail
 
       for (auto& continuation : continuations)
       {
-        continuation();
+        try
+        {
+          continuation();
+        }
+        catch(...)
+        {
+#ifdef DEBUG
+          __debugbreak;
+#else
+          std::terminate();
+#endif
+
+        }
       }
     }
 

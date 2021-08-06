@@ -48,10 +48,11 @@ namespace RStein::AsyncCpp::Tasks
       _task._sharedTaskState->SetException(exception, !_delayPropagationOfTheResult);
     }
 
-    bool TrySetException(std::exception_ptr exception)
+    bool TrySetException(std::exception_ptr exception) const noexcept
     {
       return _task._sharedTaskState->TrySetException(exception);
     }
+
     void SetCanceled()
     {
       return _task._sharedTaskState->SetCanceled(!_delayPropagationOfTheResult);
@@ -150,7 +151,15 @@ namespace RStein::AsyncCpp::Tasks
     [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
 #endif
     {
-      _tcs.publishResult();
+      try
+      {
+        _tcs.publishResult();
+      }
+      catch (...)
+      {
+        _tcs.TrySetException(std::current_exception());
+      }
+
       return {};
     }
 
@@ -212,7 +221,15 @@ namespace RStein::AsyncCpp::Tasks
     [[nodiscard]] std::experimental::suspend_never final_suspend() const noexcept
 #endif
     {
-      _tcs.publishResult();
+      try
+      {
+        _tcs.publishResult();
+      }
+      catch (...)
+      {
+        _tcs.TrySetException(std::current_exception());
+      }
+
       return {};
     }
 

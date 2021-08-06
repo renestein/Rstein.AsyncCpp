@@ -66,16 +66,37 @@ template <typename Promise> struct coroutine_handle : coroutine_handle<> {
   {
     return !(_Left == _Right);
   }
+//
+//  
+//// STRUCT suspend_never
+//struct suspend_never {
+//    constexpr bool await_ready() const noexcept {
+//        return true;
+//    }
+//
+//    void await_suspend(coroutine_handle<>) const noexcept {}
+//    constexpr void await_resume() const noexcept {}
+//};
+//
+//// STRUCT suspend_always
+//struct suspend_always {
+//      constexpr bool await_ready() const noexcept {
+//        return false;
+//    }
+//
+//    void await_suspend(coroutine_handle<>) const noexcept {}
+//    constexpr void await_resume() const noexcept {}
+//};
 
 struct suspend_always {
-  bool await_ready() { return false; }
-  void await_suspend(coroutine_handle<>) {}
-  void await_resume() {}
+  bool await_ready() /*noexcept */ { return false; } 
+  void await_suspend (coroutine_handle<>) /*noexcept */ {} 
+  void await_resume() /*noexcept */ {}
 };
 struct suspend_never {
-  bool await_ready() { return true; }
-  void await_suspend(coroutine_handle<>) {}
-  void await_resume() {}
+  bool await_ready() /*noexcept */{ return true; }
+  void await_suspend(coroutine_handle<>) /*noexcept */ {}
+  void await_resume() /*noexcept */ {}
 };
 
 }}}

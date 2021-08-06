@@ -76,7 +76,7 @@ namespace RStein::AsyncCpp::Detail
     bool _isAsyncNode;
     TransformFuncType _transformSyncFunc;
     AsyncTransformFuncType _transformAsyncFunc;
-    std::function<bool(const TInputItem&)> _canAcceptFunc;;
+    std::function<bool(const TInputItem&)> _canAcceptFunc;
     std::string _name;
     typename DataFlowBlockCommon::PromiseVoidType _completedTaskPromise;
     typename DataFlowBlockCommon::TaskVoidType _completedTask;
