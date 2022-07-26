@@ -122,7 +122,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
 
       for (int i = 0; i < tasksCount; ++i)
       {
-        
+      //Only for tests - do not use capturing lambdas that are coroutines  
         auto task = TaskFactory::Run([dataHolder=dataHolder]()-> Task<void>
                                 {
                                   co_await dataHolder.StartTasksTcs->GetTask();

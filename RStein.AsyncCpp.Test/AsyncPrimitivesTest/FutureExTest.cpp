@@ -18,6 +18,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
     {
       promise<void> promise;
       auto sharedFuture = promise.get_future().share();
+      //Only for tests - do not use capturing lambdas that are coroutines
       co_await async([&promise]
       {
         promise.set_value();
@@ -29,6 +30,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
     {
       promise<void> promise;
       auto sharedFuture = promise.get_future().share();
+      //Only for tests - do not use capturing lambdas that are coroutines
       co_await async([&promise]
       {
         promise.set_exception(make_exception_ptr(std::invalid_argument{"test exception"}));
@@ -84,6 +86,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       co_await sharedFuture;
       promise<int> promise2;
       auto future = promise2.get_future().share();
+      //Only for tests - do not use capturing lambdas that are coroutines
       co_await async([&promise2]
       {
         promise2.set_value(101);
@@ -96,6 +99,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
     {
       promise<void> promise1;
       auto sharedFuture = promise1.get_future().share();
+      //Only for tests - do not use capturing lambdas that are coroutines
       co_await async([&promise1]
       {
         promise1.set_value();
@@ -104,6 +108,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       co_await sharedFuture;
       promise<int> promise2;
       auto uniqueFuture = promise2.get_future().share();
+      //Only for tests - do not use capturing lambdas that are coroutines
       co_await async([&promise2]
       {
         promise2.set_exception(make_exception_ptr(OperationCanceledException{}));
@@ -123,6 +128,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       co_await sharedFuture;
       promise<int> promise2;
       auto uniqueFuture = promise2.get_future().share();
+      //Only for tests - do not use capturing lambdas that are coroutines
       co_await async([&promise2]
       {
         promise2.set_exception(make_exception_ptr(OperationCanceledException{}));
@@ -137,6 +143,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
     {
       promise<void> promise1;
       auto sharedFuture = promise1.get_future().share();
+      //Only for tests - do not use capturing lambdas that are coroutines
       co_await async([&promise1]
       {
         promise1.set_value();
@@ -145,6 +152,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       co_await sharedFuture;
       promise<int> promise2;
       auto future = promise2.get_future().share();
+      //Only for tests - do not use capturing lambdas that are coroutines
       co_await async([&promise2, expectedValue]
       {
         promise2.set_value(expectedValue);

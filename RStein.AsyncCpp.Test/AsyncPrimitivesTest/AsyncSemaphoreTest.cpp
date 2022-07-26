@@ -53,6 +53,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
 
       auto waitFuture = semaphore.WaitAsync();
 
+      //Only for tests - do not use capturing lambdas that are coroutines
       co_await async(launch::async, [&semaphore]()
       {
         semaphore.Release();
@@ -87,8 +88,6 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
       auto result = 0;
       for (auto i = 0; i < taskCount; i++)
       {
-        /*Action action {&semaphore, &result, i};*/
-        //lambda and nested futures/struct Action causes access violation
 
         packaged_task<shared_future<int>(int*, AsyncSemaphore*, int)> task{
             [](int* result, AsyncSemaphore* semaphore, int i)-> shared_future<int>
@@ -104,18 +103,7 @@ namespace RStein::AsyncCpp::AsyncPrimitivesTest
         auto taskFuture = task.get_future();
         thread runner{std::move(task), &result, &semaphore, i};
         runner.detach();
-        /*async(launch::async, [&result, &semaphore, i]()->future<int>
-        {
-          cout << "running " << i;
-          co_await semaphore.WaitAsync();
-          cout << "WaitAsync " << i;
-          result++;
-          semaphore.Release();
-          co_return i;
 
-        });*/ //Unwrap nested future
-
-        //auto taskFuture = async(launch::async, std::move(action));//Unwrap nested future
         futures.push_back(std::move(taskFuture));
       }
       semaphore.Release();

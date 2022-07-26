@@ -31,6 +31,7 @@ namespace RStein::AsyncCpp::ActorsTest
     const int EXPECTED_MESSAGES = 101;
     auto seenMessages = 0;
     {
+      //Only for tests - do not use capturing lambdas that are coroutines
       auto stateLessActor = CreateAsyncSimpleActor<int>([&seenMessages](const int& message)->Task<void>
         {
           co_await GetCompletedTask().ConfigureAwait(false);
@@ -70,6 +71,8 @@ namespace RStein::AsyncCpp::ActorsTest
     const int EXPECTED_MESSAGES = 101;
     auto seenMessages = 0;
     {
+
+      //Only for tests - do not use capturing lambdas that are coroutines
       auto stateFulActor = CreateAsyncSimpleActor<int, int>([&seenMessages](const int& state, const int& message)->Task<int>
         {
           seenMessages++;
@@ -117,6 +120,7 @@ namespace RStein::AsyncCpp::ActorsTest
     const int EXPECTED_STATE = MESSAGES_COUNT;
     auto seenMessages = 0;
     auto testState = 0;
+    //Only for tests - do not use capturing lambdas that are coroutines
     {
       auto stateFullActor = RStein::AsyncCpp::Actors::CreateAsyncSimpleActor<int, int>([&seenMessages, &testState](const int& message, const int& state)->Task<int>
         {
@@ -141,6 +145,7 @@ namespace RStein::AsyncCpp::ActorsTest
     const int EXPECTED_MESSAGES = 101;
     auto seenMessages = 0;
 
+    //Only for tests - do not use capturing lambdas that are coroutines
     auto stateLessActor = CreateAsyncSimpleActor<int>([&seenMessages](const int& message)->Task<void>
     {
         co_await GetCompletedTask().ConfigureAwait(false);
@@ -186,6 +191,7 @@ namespace RStein::AsyncCpp::ActorsTest
     const int EXPECTED_MESSAGES = 101;
     auto seenMessages = 0;
 
+    //Only for tests - do not use capturing lambdas that are coroutines
     auto stateFulActor = CreateAsyncSimpleActor<int>([&seenMessages](const int& message, const int& state)->Task<int>
     {
         co_await GetCompletedTask().ConfigureAwait(false);

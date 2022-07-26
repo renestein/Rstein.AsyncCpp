@@ -46,6 +46,7 @@ namespace RStein::AsyncCpp::DataFlowTest
       //For example: Save data to collection, send data to socket, write to log...
       //Following ActionBlock stores all strings which it has received from the previous block in the _processedItems collection.
       vector<string> _processedItems{};
+      //Only for tests - do not use capturing lambdas that are coroutines
       auto finalAction = DataFlowAsyncFactory::CreateActionBlock<string>([&_processedItems](const string& item)-> Tasks::Task<void>
                                                             {
                                                               auto message = "Final action: " + item + "\n";
@@ -310,6 +311,7 @@ namespace RStein::AsyncCpp::DataFlowTest
 
     int processedValue  = 0;
 
+    //Only for tests - do not use capturing lambdas that are coroutines
     auto ac2  = DataFlowAsyncFactory::CreateActionBlock<WithoutDefaultCtor*>([&processedValue](WithoutDefaultCtor* const& source)-> Tasks::Task<void>
     {
       co_await Tasks::GetCompletedTask();
