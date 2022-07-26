@@ -33,12 +33,12 @@ strategy:
       x86-debug_VSAWAIT:        
           buildPlatform: x86
           buildConfiguration: Debug_VSAWAIT
-      x64-release_clangwin:
-          buildPlatform: x64
-          buildConfiguration: Release_CLangwin
-      x86-release_clangwin:
-          buildPlatform: x86
-          buildConfiguration: Release_CLangwin
+      # x64-release_clangwin:
+          # buildPlatform: x64
+          # buildConfiguration: Release_CLangwin
+      # x86-release_clangwin:
+          # buildPlatform: x86
+          # buildConfiguration: Release_CLangwin
       x64-releaseMT:
           buildPlatform: x64
           buildConfiguration: ReleaseMT
