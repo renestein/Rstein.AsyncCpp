@@ -44,6 +44,7 @@ namespace RStein::AsyncCpp::TasksTest
 
     shared_future<string> ContinueWithWhenUsingTaskTAwaiterThenTaskIsCompletedWithExpectedValueImpl(string expectedValue) const
     {
+      //Only for tests - do not use capturing lambdas that are coroutines
       auto result = co_await TaskFactory::Run([expectedValue]
       {
         return expectedValue;
